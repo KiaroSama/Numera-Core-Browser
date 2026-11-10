@@ -1,0 +1,370 @@
+{
+  "native": {
+    "id": 42873209957,
+    "commit": "493760b7fdb89e8653a094bc2cd7f8b90f329580",
+    "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42873209957",
+    "status": "completed",
+    "result": "success",
+    "jobs": [
+      {
+        "id": 130029736753,
+        "name": "dependency-security",
+        "os_labels": [
+          "ubuntu-24.04"
+        ],
+        "status": "completed",
+        "result": "success",
+        "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42873209957/job/130029736753",
+        "started_at": "2026-11-10T18:15:03Z",
+        "completed_at": "2026-11-10T18:15:10Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Query current vulnerability database for every locked package",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "result": "success"
+          }
+        ]
+      },
+      {
+        "id": 130029737046,
+        "name": "native (ubuntu-24.04)",
+        "os_labels": [
+          "ubuntu-24.04"
+        ],
+        "status": "completed",
+        "result": "success",
+        "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42873209957/job/130029737046",
+        "started_at": "2026-11-10T18:15:03Z",
+        "completed_at": "2026-11-10T18:15:52Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Install pinned Rust toolchain",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Formatting and strict lints",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Validate PowerShell orchestration syntax",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Unit and actual CLI process tests",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Build CLI without a display or automation client dependency",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Native executable and canonical conformance",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "License inventory and complete dependency notices",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "result": "success"
+          }
+        ]
+      },
+      {
+        "id": 130029737114,
+        "name": "native (macos-15)",
+        "os_labels": [
+          "macos-15"
+        ],
+        "status": "completed",
+        "result": "success",
+        "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42873209957/job/130029737114",
+        "started_at": "2026-11-10T18:15:03Z",
+        "completed_at": "2026-11-10T18:15:43Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Install pinned Rust toolchain",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Formatting and strict lints",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Validate PowerShell orchestration syntax",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Unit and actual CLI process tests",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Build CLI without a display or automation client dependency",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Native executable and canonical conformance",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "License inventory and complete dependency notices",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "result": "success"
+          }
+        ]
+      },
+      {
+        "id": 130029737151,
+        "name": "native (macos-15-intel)",
+        "os_labels": [
+          "macos-15-intel"
+        ],
+        "status": "completed",
+        "result": "success",
+        "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42873209957/job/130029737151",
+        "started_at": "2026-11-10T18:15:04Z",
+        "completed_at": "2026-11-10T18:16:18Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Install pinned Rust toolchain",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Formatting and strict lints",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Validate PowerShell orchestration syntax",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Unit and actual CLI process tests",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Build CLI without a display or automation client dependency",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Native executable and canonical conformance",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "License inventory and complete dependency notices",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "result": "success"
+          }
+        ]
+      },
+      {
+        "id": 130029737477,
+        "name": "native (windows-2025)",
+        "os_labels": [
+          "windows-2025"
+        ],
+        "status": "completed",
+        "result": "success",
+        "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42873209957/job/130029737477",
+        "started_at": "2026-11-10T18:15:04Z",
+        "completed_at": "2026-11-10T18:16:22Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Install pinned Rust toolchain",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Formatting and strict lints",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Validate PowerShell orchestration syntax",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Unit and actual CLI process tests",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Build CLI without a display or automation client dependency",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Native executable and canonical conformance",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "License inventory and complete dependency notices",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "result": "success"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "result": "success"
+          }
+        ]
+      }
+    ]
+  },
+  "upstream_watcher": {
+    "id": 42873211641,
+    "commit": "493760b7fdb89e8653a094bc2cd7f8b90f329580",
+    "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42873211641",
+    "result": "success"
+  },
+  "feasibility": {
+    "id": 42871431763,
+    "commit": "8c0bcf819c0fcded67e5b7a20d69c7fd68902419",
+    "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42871431763",
+    "result": "BLOCKED",
+    "workflow_conclusion": "failure",
+    "artifacts": [
+      {
+        "id": 13789133540,
+        "name": "feasibility-macos-15-intel",
+        "sha256": "2802a72f731819ff24573e75e8397c934a62bd7d2db6d1fe612995463ebfd856",
+        "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42871431763/artifacts/13789133540"
+      },
+      {
+        "id": 13788963901,
+        "name": "feasibility-windows-2025-vs2026",
+        "sha256": "4586c0e3d154125c81f3b702783128494a1d62fdb1f2c298810cb6661146397c",
+        "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42871431763/artifacts/13788963901"
+      },
+      {
+        "id": 13788839694,
+        "name": "feasibility-ubuntu-24.04",
+        "sha256": "d98345c3718d28a3d1556b8717a71581db8704e9ce7d3e0925b083ddff7955d1",
+        "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42871431763/artifacts/13788839694"
+      },
+      {
+        "id": 13788568751,
+        "name": "feasibility-macos-15",
+        "sha256": "40457be6c63ab4936f4f5947bbd60ed5710acd70c56ef2d1aca3635ce6e67cdf",
+        "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42871431763/artifacts/13788568751"
+      }
+    ]
+  }
+}

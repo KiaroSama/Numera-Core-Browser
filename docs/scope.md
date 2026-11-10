@@ -3,6 +3,7 @@
 The supplied `original-build-specification.md` is the requirements baseline, not proof that work already exists. Subsequent user direction takes precedence:
 
 - On 2026-11-10 the user requested fresh research and updates, asked about one common engine, then requested the Orbita approach.
+- The user later created the exact public repository, requested matching logo dimensions, and explicitly authorized merging all existing Core side branches. The related current Numera READMEs use a 240-pixel logo. This merge authorization applies to the current Core branches, not automatic approval of future engine releases or changes to the manager repository.
 - Official GoLogin documentation says Orbita is Chromium-based and does not offer Firefox profiles. The initial milestone therefore focuses on an owned Chromium-derived browser with a shared Rust runtime, separate from the manager. Gecko and WebKit remain recorded future engine paths; they are not advertised as implemented. The original three-engine acceptance matrix is retained, with deferred entries explicit.
 - Desktop Android/iOS emulation is a later tested feature, not genuine Android/iOS or Safari. No native mobile application is implied.
 - Use free standard public GitHub-hosted runners only for engine compilation. No paid/self-hosted build service, stock browser relabeling, or security disabling.
