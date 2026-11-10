@@ -150,9 +150,9 @@ impl<'a> AttributeList<'a> {
 }
 impl Drop for AttributeList<'_> {
     fn drop(&mut self) {
-        // SAFETY: only successfully initialized lists reach this destructor;
-        // allocation and borrowed job handles still exist for the entire call.
         if self.initialized {
+            // SAFETY: initialization succeeded; allocation and borrowed job
+            // handles still exist throughout this matching destruction call.
             unsafe { DeleteProcThreadAttributeList(self.raw()) };
         }
     }
