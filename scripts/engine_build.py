@@ -152,12 +152,18 @@ def main():
     parser.add_argument('--budget-minutes', type=int, default=330)
     parser.add_argument('--component-build', action='store_true')
     parser.add_argument('--prerequisites-only', action='store_true')
+    parser.add_argument('--parallelism', type=int, choices=range(1, 5), default=4)
     args = parser.parse_args()
     if not 10 <= args.budget_minutes <= 330:
         parser.error('Budget must be between 10 and 330 minutes')
     if os.environ.get('GITHUB_ACTIONS') != 'true' or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted' or os.environ.get('GITHUB_REPOSITORY') != 'KiaroSama/Numera-Core-Browser':
         parser.error('Engine builds require the authorized public GitHub-hosted repository')
     import psutil
+    available_memory = psutil.virtual_memory().available
+    # Use the available free-runner CPUs while reserving at least 3 GiB of
+    # current available memory per local compiler. Record any reduction.
+    parallelism = min(args.parallelism, os.cpu_count() or 1,
+                      max(1, available_memory // (3 * 1024**3)))
     output = Path(args.output).resolve()
     output.mkdir(parents=True, exist_ok=True)
     scratch = Path(os.environ['RUNNER_TEMP']) / ('numera-cold-' + os.environ['GITHUB_RUN_ID'])
@@ -170,7 +176,10 @@ def main():
         'runner_image_version': os.environ.get('ImageVersion'), 'psutil_version': psutil.__version__,
         'cpu_count': os.cpu_count(), 'physical_memory_bytes': psutil.virtual_memory().total,
         'budget_minutes': args.budget_minutes, 'component_build': args.component_build,
-        'parallelism': 2, 'native_source_targets': [] if args.prerequisites_only else ['chrome', 'chromedriver'],
+        'requested_parallelism': args.parallelism, 'parallelism': parallelism,
+        'memory_available_initial_bytes': available_memory,
+        'parallelism_policy': 'At most available CPUs, requested ceiling and 3 GiB of initially available memory per local compiler; this is a conservative recipe, not a universal engine resource minimum',
+        'native_source_targets': [] if args.prerequisites_only else ['chrome', 'chromedriver'],
         'prerequisites_only': args.prerequisites_only,
         'disk_total_bytes': initial_disk.total, 'disk_free_initial_bytes': initial_disk.free,
         'disk_free_bytes': initial_disk.free, 'minimum_free_disk_bytes': initial_disk.free,
@@ -187,7 +196,7 @@ def main():
     try:
         if initial_disk.free < 100_000_000_000:
             raise RuntimeError('Conservative 100 GB source-build disk preflight failed')
-        command = ['pwsh', '-NoProfile', '-File', 'scripts/Build-Chromium.ps1', '-SourceRoot', str(scratch), '-Phase', 'Prerequisites' if args.prerequisites_only else 'Build', '-Parallelism', '2', '-BuildDriver']
+        command = ['pwsh', '-NoProfile', '-File', 'scripts/Build-Chromium.ps1', '-SourceRoot', str(scratch), '-Phase', 'Prerequisites' if args.prerequisites_only else 'Build', '-Parallelism', str(parallelism), '-BuildDriver']
         if args.component_build:
             command.append('-ComponentBuild')
         with (output / 'native-build.log').open('wb') as log_file:

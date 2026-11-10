@@ -2,9 +2,9 @@ name: Rust and NCB-1 control plane
 on:
   push:
     branches: [main, 'implementation/**']
-    paths: ['crates/**', 'Cargo.*', 'rust-toolchain.toml', 'contracts/**', 'scripts/**', 'licenses/**', 'requirements-dev.txt', '.github/workflows/**']
+    paths: ['crates/**', 'Cargo.*', 'rust-toolchain.toml', 'contracts/**', 'scripts/Build.ps1', 'scripts/Check-PowerShell.ps1', 'scripts/export-contracts.py', 'scripts/check-contracts.py', 'scripts/licenses.py', 'scripts/security-audit.py', 'scripts/logging_util.py', 'licenses/**', 'requirements-dev.txt', '.github/workflows/rust.yml']
   pull_request:
-    paths: ['crates/**', 'Cargo.*', 'rust-toolchain.toml', 'contracts/**', 'scripts/**', 'licenses/**', 'requirements-dev.txt', '.github/workflows/**']
+    paths: ['crates/**', 'Cargo.*', 'rust-toolchain.toml', 'contracts/**', 'scripts/Build.ps1', 'scripts/Check-PowerShell.ps1', 'scripts/export-contracts.py', 'scripts/check-contracts.py', 'scripts/licenses.py', 'scripts/security-audit.py', 'scripts/logging_util.py', 'licenses/**', 'requirements-dev.txt', '.github/workflows/rust.yml']
   workflow_dispatch:
 permissions:
   contents: read
