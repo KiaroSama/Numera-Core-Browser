@@ -24,15 +24,18 @@
   "platform_pins": {
     "windows": {
       "version": "157.0.8103.51",
-      "revision": "653674df293788cf4932c40d914e9e15b41a2d31"
+      "revision": "653674df293788cf4932c40d914e9e15b41a2d31",
+      "branding_source_sha256": "a8fb46cd865b6b7fbf829da098e98c6833b74bdcf2522c78183c30dde2cef942"
     },
     "linux": {
       "version": "157.0.8103.50",
-      "revision": "049750111b1e5c11565c792b2aeed5541f332bad"
+      "revision": "049750111b1e5c11565c792b2aeed5541f332bad",
+      "branding_source_sha256": "a8fb46cd865b6b7fbf829da098e98c6833b74bdcf2522c78183c30dde2cef942"
     },
     "macos": {
       "version": "157.0.8103.51",
-      "revision": "653674df293788cf4932c40d914e9e15b41a2d31"
+      "revision": "653674df293788cf4932c40d914e9e15b41a2d31",
+      "branding_source_sha256": "a8fb46cd865b6b7fbf829da098e98c6833b74bdcf2522c78183c30dde2cef942"
     }
   }
 }
