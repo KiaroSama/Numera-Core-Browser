@@ -95,10 +95,23 @@ fn parent_exit_does_not_release_descendants_or_stop_another_tree() {
     let other = spawn("leaf", &other_root);
     until(|| root.0.join("parent-ready").exists() && other_root.0.join("leaf-ready").exists());
     until(|| tree.root_exited().unwrap());
-    assert_eq!(tree.active_processes().unwrap(), 1);
+    // Native accounting can still include a terminating parent or console
+    // helper. The invariant is live owned descendants, not an exact count.
+    assert!(tree.active_processes().unwrap() > 0);
+    let descendant = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(root.0.join("alive.lock"))
+        .unwrap();
+    assert!(matches!(
+        descendant.try_lock(),
+        Err(TryLockError::WouldBlock)
+    ));
     tree.terminate_and_wait(Duration::from_secs(5)).unwrap();
     assert_eq!(tree.active_processes().unwrap(), 0);
-    assert_eq!(other.active_processes().unwrap(), 1);
+    assert!(descendant.try_lock().is_ok());
+    assert!(!other.root_exited().unwrap());
+    assert!(other.active_processes().unwrap() > 0);
     other.terminate_and_wait(Duration::from_secs(5)).unwrap();
 }
 
