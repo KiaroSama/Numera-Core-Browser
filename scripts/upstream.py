@@ -18,6 +18,7 @@ def get(url):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default="upstream/candidates.json")
+    parser.add_argument("--refresh-observation", action="store_true", help="Refresh a real feed observation even if versions are unchanged; useful for verifying draft PR permissions")
     args = parser.parse_args()
     chromium = {}
     for platform in ("win", "linux", "mac"):
@@ -50,7 +51,7 @@ def main():
         "webkit": {"revision": webkit["sha"], "source": webkit_url, "scope": "deferred", "note": "Not a universal Safari release version"}}
     output = Path(args.output)
     old = json.loads(output.read_text(encoding="utf-8")) if output.exists() else {}
-    if old.get("versions") == versions:
+    if old.get("versions") == versions and not args.refresh_observation:
         log("Official versions unchanged; candidate retained")
         return
     output.parent.mkdir(parents=True, exist_ok=True)

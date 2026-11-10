@@ -13,7 +13,7 @@ REPOSITORY = Path(__file__).resolve().parents[2]
 class CandidatePublication(unittest.TestCase):
     def test_existing_branch_update_and_repeat_are_safe(self):
         workflow = (REPOSITORY / '.github/workflows/upstream-watch.yml').read_text()
-        body = workflow.split('        run: |\n', 1)[1]
+        body = workflow.split('      - name: Maintain one review-only candidate PR\n', 1)[1].split('        run: |\n', 1)[1]
         body = textwrap.dedent(body)
         with tempfile.TemporaryDirectory(prefix='numera-watcher-') as temporary:
             root = Path(temporary)

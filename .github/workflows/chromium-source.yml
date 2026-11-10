@@ -1,0 +1,56 @@
+name: Chromium cold source build
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Standard public hosted target
+        type: choice
+        options: [windows-2025-vs2026, macos-15-intel]
+        default: windows-2025-vs2026
+      budget_minutes:
+        description: Bounded cold acquisition and compilation budget (10-330)
+        type: number
+        default: 330
+      component_build:
+        description: Use an explicitly labeled development component build
+        type: boolean
+        default: true
+permissions:
+  contents: read
+concurrency:
+  group: chromium-cold-${{ inputs.target }}
+  cancel-in-progress: false
+jobs:
+  source:
+    if: github.repository == 'KiaroSama/Numera-Core-Browser' && github.event.repository.private == false
+    runs-on: ${{ inputs.target }}
+    timeout-minutes: 350
+    permissions:
+      contents: read
+      checks: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install pinned build-only telemetry dependency
+        run: python -m pip install --disable-pip-version-check -r requirements-engine-build.txt
+      - name: Cold source acquisition, compilation and real renderer fixture
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUILD_BUDGET_MINUTES: ${{ inputs.budget_minutes }}
+          BUILD_COMPONENT: ${{ inputs.component_build }}
+        run: |
+          $Arguments = @('scripts/engine_build.py', '--output', 'build/engine-evidence', '--budget-minutes', $env:BUILD_BUDGET_MINUTES)
+          if ($env:BUILD_COMPONENT -eq 'true') { $Arguments += '--component-build' }
+          python @Arguments
+          exit $LASTEXITCODE
+      - name: Preserve evidence only; no unreviewed browser binary publication
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: cold-source-evidence-${{ inputs.target }}
+          path: build/engine-evidence
+          retention-days: 1
+          compression-level: 9
+          if-no-files-found: error

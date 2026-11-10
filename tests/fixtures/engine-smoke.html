@@ -1,0 +1,10 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Numera source build fixture</title>
+<style>body{font:20px system-ui;background:#191d24;color:#ecedf5;padding:40px}strong{color:#b7adff}</style>
+<h1>Numera Core Browser</h1>
+<strong id="result">Waiting for the renderer</strong>
+<script>
+document.getElementById('result').textContent = 'NUMERA_RENDERER_FIXTURE_PASS';
+document.documentElement.dataset.domReady = String(typeof document.querySelector === 'function');
+</script>
