@@ -1,0 +1,1 @@
+{"namespace":"numera.core","protocol":1,"id":"bad-duplicate","deadline_ms":30000,"operation":"hello","payload":{"protocols":{"min":1,"min":2,"max":2},"schemas":{"min":1,"max":1}}}

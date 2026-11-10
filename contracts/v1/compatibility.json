@@ -1,0 +1,53 @@
+{
+  "schema_revision": 1,
+  "core_version": "0.1.0-dev.1",
+  "integration_ready": false,
+  "declared_engine_support": [],
+  "engine_paths": [
+    {
+      "family": "chromium",
+      "package_id": "numera-chromium",
+      "scope": "initial milestone",
+      "owned_build": "NOT_RUN",
+      "browser_gui": "unsupported",
+      "device_modes": {"desktop": "unsupported", "android-emulated": "unsupported", "ios-emulated": "unsupported"},
+      "automation": [
+        {"client": "playwright", "transport": "CDP", "status": "unsupported", "planned": true, "limitation": "Chromium-only lower-fidelity attachment; no real Numera engine tests"},
+        {"client": "playwright", "transport": "native version-paired protocol", "status": "unsupported", "planned": true, "limitation": "Transport is not implemented"},
+        {"client": "puppeteer", "transport": "CDP", "status": "unsupported", "planned": true, "limitation": "No real Numera engine tests"},
+        {"client": "selenium", "transport": "ChromeDriver/WebDriver", "status": "unsupported", "planned": true, "limitation": "No version-paired driver or lifecycle tests"}
+      ]
+    },
+    {
+      "family": "gecko",
+      "package_id": "numera-gecko",
+      "scope": "deferred",
+      "owned_build": "NOT_RUN",
+      "browser_gui": "unsupported",
+      "automation": [
+        {"client": "playwright", "transport": "native version-paired protocol", "status": "unsupported", "limitation": "Generic BiDi alone is not Playwright protocol support"},
+        {"client": "puppeteer", "transport": "WebDriver BiDi", "status": "unsupported", "limitation": "Future supported upstream client path requires Numera tests"},
+        {"client": "selenium", "transport": "GeckoDriver/Marionette/BiDi", "status": "unsupported", "limitation": "No driver or Numera engine tests"}
+      ]
+    },
+    {
+      "family": "webkit",
+      "package_id": "numera-webkit",
+      "scope": "deferred",
+      "owned_build": "NOT_RUN",
+      "browser_gui": "unsupported",
+      "automation": [
+        {"client": "playwright", "transport": "native version-paired protocol", "status": "unsupported", "limitation": "No native transport or Numera engine tests"},
+        {"client": "puppeteer", "transport": null, "status": "unsupported", "limitation": "No native upstream Puppeteer WebKit support is claimed"},
+        {"client": "selenium", "transport": null, "status": "unsupported", "limitation": "A custom port is not SafariDriver; no tested custom adapter exists"}
+      ]
+    }
+  ],
+  "native_targets": [
+    {"os": "windows", "arch": "x86_64", "status": "NOT_RUN"},
+    {"os": "linux", "arch": "x86_64", "status": "NOT_RUN"},
+    {"os": "macos", "arch": "aarch64", "status": "NOT_RUN"},
+    {"os": "macos", "arch": "x86_64", "status": "NOT_RUN"}
+  ],
+  "note": "Control-plane Linux tests are recorded separately. A schema, listening socket or downloaded stock browser cannot pass these engine gates."
+}

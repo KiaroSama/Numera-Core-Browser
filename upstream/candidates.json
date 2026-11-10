@@ -1,0 +1,57 @@
+{
+  "schema_revision": 1,
+  "observed_at": "2026-11-10T17:28:00.544254+00:00",
+  "status": "unreviewed-candidate",
+  "trusted_release": false,
+  "versions": {
+    "chromium": {
+      "win": {
+        "version": "157.0.8103.51",
+        "serving_start": "2026-11-09T20:47:31.699304Z",
+        "source": "https://versionhistory.googleapis.com/v1/chrome/platforms/win/channels/stable/versions/all/releases?filter=endtime=none"
+      },
+      "linux": {
+        "version": "157.0.8103.50",
+        "serving_start": "2026-11-09T20:47:51.287144Z",
+        "source": "https://versionhistory.googleapis.com/v1/chrome/platforms/linux/channels/stable/versions/all/releases?filter=endtime=none"
+      },
+      "mac": {
+        "version": "157.0.8103.51",
+        "serving_start": "2026-11-09T20:47:24.900957Z",
+        "source": "https://versionhistory.googleapis.com/v1/chrome/platforms/mac/channels/stable/versions/all/releases?filter=endtime=none"
+      }
+    },
+    "automation_clients": {
+      "playwright": {
+        "tag": "v1.65.0",
+        "published_at": "2026-11-05T18:25:45Z",
+        "source": "https://api.github.com/repos/microsoft/playwright/releases/latest",
+        "compatibility": "NOT_RUN; not an engine protocol version lock"
+      },
+      "puppeteer": {
+        "tag": "puppeteer-v25.17.0",
+        "published_at": "2026-11-10T14:02:45Z",
+        "source": "https://api.github.com/repos/puppeteer/puppeteer/releases?per_page=50",
+        "compatibility": "NOT_RUN; not an engine protocol version lock"
+      },
+      "selenium": {
+        "tag": "selenium-4.52.0",
+        "published_at": "2026-10-29T13:16:00Z",
+        "source": "https://api.github.com/repos/SeleniumHQ/selenium/releases/latest",
+        "compatibility": "NOT_RUN; not an engine protocol version lock"
+      }
+    },
+    "gecko": {
+      "stable": "160.0",
+      "esr": "153.7.0esr",
+      "source": "https://product-details.mozilla.org/1.0/firefox_versions.json",
+      "scope": "deferred"
+    },
+    "webkit": {
+      "revision": "81aadcd6b5461c9a58dfa2a93c9833ce5e63f58f",
+      "source": "https://api.github.com/repos/WebKit/WebKit/commits/main",
+      "scope": "deferred",
+      "note": "Not a universal Safari release version"
+    }
+  }
+}

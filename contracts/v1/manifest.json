@@ -1,0 +1,19 @@
+{
+  "artifact": "numera-core-contracts-v1",
+  "schema_revision": 1,
+  "sha256": {
+    "fixtures/capabilities.json": "b391d8ff9a920ba4a5747c5fbf941576b07af9de7ce6bfd48f2aae82c8826c39",
+    "fixtures/engine-manifest.json": "a79905c0a498409942441d6579fe84ae0fcf94855f41d31d5b922cdf8b85e65b",
+    "fixtures/hello.json": "773117e6632647b2570320e50eb5630803ac5aadb0f745d97458ef2df832c2eb",
+    "fixtures/launch-desktop.json": "7d5e93baff5222ba1f5d00a5335ead399f8e68fd14e8044cee4b9a8b569ca488",
+    "fixtures/negative-duplicate-key.ndjson": "df19315c7a5ab7a3cf94a5290cbc6a051162acbb4ec98a3d00c70474ed6b91ea",
+    "fixtures/negative-namespace.json": "fcd3545881dd38364136529fad81f61ca6bf07d3bd018e8a95065cc2f3c71520",
+    "manifest.schema.json": "1b698a4c72d2541b9b7db459efff2d47e3fed8578808286e353778ec3519a020",
+    "request.schema.json": "e514eaf1c1afb271cff6b5746d7c7b6657e3d0cfe1d99a6c97434bedafdfe756",
+    "response.schema.json": "0b8ad9128adca8fdd708d0bbb95e8414a574f3abe5b91c65c7e3b4f6e13cf3eb",
+    "v1/compatibility.json": "124de564a8b9e863849fa4b2e8f185b2abf2c436c34c66fc5d8f724f9af7f810",
+    "v1/theme.tokens.json": "c238c6cd6815b81e2dc304d722b380701a14589c456438fb5d305e6acd0449a0"
+  },
+  "status": "development; not an integration-ready release",
+  "wire_major": 1
+}

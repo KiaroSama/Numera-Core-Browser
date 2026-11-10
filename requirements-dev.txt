@@ -1,0 +1,2 @@
+# Development conformance harness only; not a Core runtime dependency.
+jsonschema==4.26.0

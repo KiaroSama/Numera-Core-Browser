@@ -1,0 +1,32 @@
+{
+  "profile_id": "fixture-profile",
+  "launch_id": "fixture-launch",
+  "idempotency_key": "fixture-once",
+  "engine": "chromium",
+  "build_policy": {"kind": "approved"},
+  "device_mode": "desktop",
+  "required_capabilities": [],
+  "fingerprint_seed": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "identity": {
+    "viewport_width": 1280,
+    "viewport_height": 720,
+    "screen_width": 1920,
+    "screen_height": 1080,
+    "device_scale_factor": 1.0,
+    "touch": false,
+    "language": "en-US",
+    "timezone": "Etc/UTC"
+  },
+  "startup_urls": ["about:blank"],
+  "resources": {
+    "native_profile_dir": "/numera-fixture/profile",
+    "data_root": "/numera-fixture/data",
+    "cache_root": "/numera-fixture/cache",
+    "ownership_grant_ref": null
+  },
+  "extensions": [],
+  "lifetime": "standalone",
+  "proxy": {"mode": "direct"},
+  "theme": {"revision": 1, "mode": "system"},
+  "accept_emulation_limitations": false
+}

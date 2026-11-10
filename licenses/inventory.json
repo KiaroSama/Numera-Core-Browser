@@ -6,6 +6,8 @@
     "git_blob": "373e1b5b82fb98ca689731c206faa0661153941a"
   },
   "assets": [{"path": "assets/logo.svg", "origin": "user-supplied", "status": "authorized for requested project"}],
+  "upstream_derived_patches": [{"path": "upstream/chromium/patches/0001-product-name.patch", "license": "BSD-3-Clause", "notice": "upstream/chromium/patches/LICENSE.chromium", "scope": "branding only; no engine binary built"}],
+  "rust_dependencies": "licenses/dependencies.json",
   "bundled_engine_binaries": [],
   "engine_redistribution_review": "BLOCKED: no engine release or complete component inventory exists"
 }

@@ -1,0 +1,462 @@
+{
+  "$defs": {
+    "BuildPolicy": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "approved",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "pinned",
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "sha256"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "DeviceMode": {
+      "enum": [
+        "desktop",
+        "android-emulated",
+        "ios-emulated"
+      ],
+      "type": "string"
+    },
+    "Empty": {
+      "additionalProperties": false,
+      "type": "object"
+    },
+    "EngineFamily": {
+      "enum": [
+        "chromium",
+        "gecko",
+        "webkit"
+      ],
+      "type": "string"
+    },
+    "Hello": {
+      "additionalProperties": false,
+      "properties": {
+        "protocols": {
+          "$ref": "#/$defs/VersionRange"
+        },
+        "schemas": {
+          "$ref": "#/$defs/VersionRange"
+        }
+      },
+      "required": [
+        "protocols",
+        "schemas"
+      ],
+      "type": "object"
+    },
+    "Identity": {
+      "additionalProperties": false,
+      "properties": {
+        "device_scale_factor": {
+          "format": "double",
+          "type": "number"
+        },
+        "language": {
+          "type": "string"
+        },
+        "screen_height": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "screen_width": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "timezone": {
+          "type": "string"
+        },
+        "touch": {
+          "type": "boolean"
+        },
+        "viewport_height": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "viewport_width": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "viewport_width",
+        "viewport_height",
+        "screen_width",
+        "screen_height",
+        "device_scale_factor",
+        "touch",
+        "language",
+        "timezone"
+      ],
+      "type": "object"
+    },
+    "LaunchSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "accept_emulation_limitations": {
+          "description": "Explicit testing-only acceptance; never claims a real mobile OS.",
+          "type": "boolean"
+        },
+        "build_policy": {
+          "$ref": "#/$defs/BuildPolicy"
+        },
+        "device_mode": {
+          "$ref": "#/$defs/DeviceMode"
+        },
+        "engine": {
+          "$ref": "#/$defs/EngineFamily"
+        },
+        "extensions": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "fingerprint_seed": {
+          "type": "string"
+        },
+        "idempotency_key": {
+          "type": "string"
+        },
+        "identity": {
+          "$ref": "#/$defs/Identity"
+        },
+        "launch_id": {
+          "type": "string"
+        },
+        "lifetime": {
+          "$ref": "#/$defs/Lifetime"
+        },
+        "profile_id": {
+          "type": "string"
+        },
+        "proxy": {
+          "$ref": "#/$defs/ProxyPolicy"
+        },
+        "required_capabilities": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "resources": {
+          "$ref": "#/$defs/ResourceGrants"
+        },
+        "startup_urls": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "theme": {
+          "$ref": "#/$defs/Theme"
+        }
+      },
+      "required": [
+        "profile_id",
+        "launch_id",
+        "idempotency_key",
+        "engine",
+        "build_policy",
+        "device_mode",
+        "required_capabilities",
+        "fingerprint_seed",
+        "identity",
+        "startup_urls",
+        "resources",
+        "extensions",
+        "lifetime",
+        "proxy",
+        "theme",
+        "accept_emulation_limitations"
+      ],
+      "type": "object"
+    },
+    "Lifetime": {
+      "enum": [
+        "managed",
+        "standalone",
+        "detached"
+      ],
+      "type": "string"
+    },
+    "ProxyPolicy": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "mode": {
+              "const": "direct",
+              "type": "string"
+            }
+          },
+          "required": [
+            "mode"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "endpoint": {
+              "type": "string"
+            },
+            "mode": {
+              "const": "required",
+              "type": "string"
+            },
+            "secret_ref": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "mode",
+            "endpoint"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "ResourceGrants": {
+      "additionalProperties": false,
+      "properties": {
+        "cache_root": {
+          "type": "string"
+        },
+        "data_root": {
+          "type": "string"
+        },
+        "native_profile_dir": {
+          "type": "string"
+        },
+        "ownership_grant_ref": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "native_profile_dir",
+        "data_root",
+        "cache_root"
+      ],
+      "type": "object"
+    },
+    "Theme": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "$ref": "#/$defs/ThemeMode"
+        },
+        "revision": {
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "revision",
+        "mode"
+      ],
+      "type": "object"
+    },
+    "ThemeMode": {
+      "enum": [
+        "dark",
+        "light",
+        "system"
+      ],
+      "type": "string"
+    },
+    "VersionRange": {
+      "additionalProperties": false,
+      "properties": {
+        "max": {
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "min": {
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "min",
+        "max"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://numera.invalid/contracts/v1/request.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "oneOf": [
+    {
+      "properties": {
+        "operation": {
+          "const": "hello",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/Hello"
+        }
+      },
+      "required": [
+        "operation",
+        "payload"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "capabilities.get",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/Empty"
+        }
+      },
+      "required": [
+        "operation",
+        "payload"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "engines.list",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/Empty"
+        }
+      },
+      "required": [
+        "operation",
+        "payload"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "launch.plan",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/LaunchSnapshot"
+        }
+      },
+      "required": [
+        "operation",
+        "payload"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "session.launch",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/LaunchSnapshot"
+        }
+      },
+      "required": [
+        "operation",
+        "payload"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "diagnostics.collect",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/Empty"
+        }
+      },
+      "required": [
+        "operation",
+        "payload"
+      ],
+      "type": "object"
+    }
+  ],
+  "properties": {
+    "deadline_ms": {
+      "maximum": 30000,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9._-]+$",
+      "type": "string"
+    },
+    "namespace": {
+      "const": "numera.core"
+    },
+    "operation": {
+      "type": "string"
+    },
+    "payload": true,
+    "protocol": {
+      "const": 1
+    }
+  },
+  "required": [
+    "namespace",
+    "protocol",
+    "id",
+    "deadline_ms",
+    "operation",
+    "payload"
+  ],
+  "title": "Request",
+  "type": "object"
+}

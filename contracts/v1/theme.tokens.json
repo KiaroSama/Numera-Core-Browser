@@ -1,0 +1,60 @@
+{
+  "revision": 1,
+  "source": "https://github.com/KiaroSama/Numera-Browser/blob/3bf1d839fd33e42a10b982bd8607a7052ea7c4cd/dashboard/src/theme.ts",
+  "license": "LicenseRef-Noncommercial-Network-ShareAlike-1.0",
+  "palettes": {
+    "dark": {
+      "bg": "#191d24",
+      "bg2": "#1f242c",
+      "surface": "#252b35",
+      "surface2": "#2c323e",
+      "line": "#39404e",
+      "lineSoft": "#2e343f",
+      "text": "#ECEDF5",
+      "muted": "#A2A7BC",
+      "dim": "#6E7488",
+      "violet": "#8B7CFF",
+      "violetDeep": "#6D5CE8",
+      "violetDim": "#2C265221",
+      "lilac": "#B7ADFF",
+      "mint": "#4FE0B0",
+      "mintDim": "#1B4A3E",
+      "amber": "#F2B84B",
+      "amberDim": "rgba(240,180,80,.14)",
+      "red": "#FF6B7A",
+      "grey": "#7C8296"
+    },
+    "light": {
+      "bg": "#F5F5FB",
+      "bg2": "#FFFFFF",
+      "surface": "#FFFFFF",
+      "surface2": "#F0F0F8",
+      "line": "#E3E3EE",
+      "lineSoft": "#EDEDF5",
+      "text": "#171826",
+      "muted": "#5C5F79",
+      "dim": "#9A9DB8",
+      "violet": "#6D5CE8",
+      "violetDeep": "#5A48D6",
+      "violetDim": "#ECE9FB",
+      "lilac": "#6D5CE8",
+      "mint": "#12B886",
+      "mintDim": "#DCF5EC",
+      "amber": "#B7860B",
+      "amberDim": "#FBEFD3",
+      "red": "#E5484D",
+      "grey": "#8A8DA6"
+    }
+  },
+  "modes": [
+    "dark",
+    "light",
+    "system"
+  ],
+  "numeric_font": "ui-monospace, monospace",
+  "bidi_isolation": true,
+  "notes": [
+    "Browser-chrome theme is separate from page-visible prefers-color-scheme",
+    "No font binaries are bundled or downloaded"
+  ]
+}

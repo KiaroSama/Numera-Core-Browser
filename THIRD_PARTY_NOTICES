@@ -8,7 +8,16 @@ assets/logo.svg was supplied by the user for this project. No external fonts or
 browser binaries are bundled. Chromium, Gecko, WebKit, GoLogin and Orbita are
 referenced for identification; no endorsement or license to private code is implied.
 
-No upstream engine code is vendored in this initial repository. Future engine
+The minimal Chromium product-name patch is an upstream-derived modification
+under BSD-3-Clause, with upstream notice at
+upstream/chromium/patches/LICENSE.chromium. It changes product-name resource
+strings only. The noncommercial first-party license does not apply to this patch.
+Full source is fetched by the pinned build recipe, not vendored here. Future engine
 source, patches, data and binary distributions must include component-specific
 licenses, modification notices and corresponding complete source. The first-party
 license does not relicense upstream material. See licenses/inventory.json.
+
+Locked Rust dependencies, exact package checksums, declared SPDX expressions,
+source repositories and complete preserved crate license texts are recorded in
+licenses/dependencies.json and licenses/dependencies/. Development-only external
+tools are not part of the Core runtime and retain their upstream terms.

@@ -1,0 +1,38 @@
+{
+  "schema_revision": 1,
+  "family": "chromium",
+  "package_id": "numera-chromium",
+  "upstream_url": "https://chromium.googlesource.com/chromium/src.git",
+  "upstream_version": "157.0.8103.51",
+  "upstream_revision": "653674df293788cf4932c40d914e9e15b41a2d31",
+  "depot_tools_url": "https://chromium.googlesource.com/chromium/tools/depot_tools.git",
+  "depot_tools_revision": "c4cdaeebba9b9ed92d041997317ffdbd042158ac",
+  "patches": [
+    {
+      "path": "upstream/chromium/patches/0001-product-name.patch",
+      "sha256": "5e7e0c640b0f2289636183a6151ceeb5583e9065f8d07d22fd7a06ed77dbd3f5",
+      "license": "BSD-3-Clause",
+      "reason": "Identify the first source build as Numera Core Browser while retaining Chromium browser chrome. This is branding only, not identity control or automation compatibility.",
+      "regression_test": "scripts/check-brand-patch.py",
+      "rebase_or_remove_when": "Rebase on each upstream pin update; remove if upstream replaces these product-name messages."
+    }
+  ],
+  "status": "candidate-not-built",
+  "approved": false,
+  "build_mode": "release-symbols-0",
+  "target": "chrome",
+  "platform_pins": {
+    "windows": {
+      "version": "157.0.8103.51",
+      "revision": "653674df293788cf4932c40d914e9e15b41a2d31"
+    },
+    "linux": {
+      "version": "157.0.8103.50",
+      "revision": "049750111b1e5c11565c792b2aeed5541f332bad"
+    },
+    "macos": {
+      "version": "157.0.8103.51",
+      "revision": "653674df293788cf4932c40d914e9e15b41a2d31"
+    }
+  }
+}

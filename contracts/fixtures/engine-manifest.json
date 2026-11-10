@@ -1,0 +1,31 @@
+{
+  "schema_revision": 1,
+  "package_id": "numera-chromium",
+  "family": "chromium",
+  "upstream_revision": "fixture-upstream",
+  "upstream_source_url": "https://example.invalid/source.git",
+  "numera_patch_revision": "fixture-patch",
+  "patch_series_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "target_triple": "x86_64-unknown-linux-gnu",
+  "build_mode": "development",
+  "executable": "bin/numera-chromium",
+  "executable_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "source_archive_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+  "source_archive_url": "https://example.invalid/source.tar.xz",
+  "core_version_range": ">=0.1.0-dev.1, <0.2.0",
+  "profile_data_format": "fixture-only",
+  "licenses": [
+    "licenses/chromium.LICENSE"
+  ],
+  "features": [
+    {
+      "name": "browser.navigation",
+      "status": "unsupported",
+      "limitations": [
+        "This is a schema fixture; no engine exists"
+      ],
+      "evidence": []
+    }
+  ],
+  "build_evidence": "fixture-only-not-a-real-release"
+}

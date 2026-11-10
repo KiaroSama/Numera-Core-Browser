@@ -1,0 +1,95 @@
+{
+  "$defs": {
+    "CoreError": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/ErrorCode"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "type": "object"
+    },
+    "ErrorCode": {
+      "enum": [
+        "protocol_mismatch",
+        "unsupported_capability",
+        "incompatible_engine_data_format",
+        "missing_package",
+        "ownership_conflict",
+        "admission_timeout",
+        "authentication_failure",
+        "proxy_failure",
+        "invalid_configuration",
+        "update_signature_failure",
+        "insufficient_resources",
+        "launch_failure",
+        "cancellation",
+        "recovery_required"
+      ],
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "properties": {
+        "result": true,
+        "status": {
+          "const": "ok",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "result"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "error": {
+          "$ref": "#/$defs/CoreError"
+        },
+        "status": {
+          "const": "error",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "error"
+      ],
+      "type": "object"
+    }
+  ],
+  "properties": {
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "namespace": {
+      "type": "string"
+    },
+    "protocol": {
+      "format": "uint16",
+      "maximum": 65535,
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "namespace",
+    "protocol"
+  ],
+  "title": "Response",
+  "type": "object"
+}

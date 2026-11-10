@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import platform
 import shutil
+import signal
 import subprocess
 import time
 
@@ -38,6 +39,7 @@ def main():
         "runner_os": os.environ.get("RUNNER_OS", platform.system()),
         "runner_arch": os.environ.get("RUNNER_ARCH", platform.machine()),
         "runner_image": os.environ.get("ImageOS"),
+        "execution_context": "github-hosted" if os.environ.get("GITHUB_ACTIONS") == "true" else "local-observation-only",
         "runner_image_version": os.environ.get("ImageVersion"),
         "os_description": platform.platform(), "cpu_count": os.cpu_count(),
         "commit": os.environ.get("GITHUB_SHA"), "run_id": os.environ.get("GITHUB_RUN_ID"),
@@ -53,9 +55,43 @@ def main():
         "peak_engine_disk_bytes": None, "cold_build": "NOT_RUN", "warm_build": "NOT_RUN",
         "reason": "Upstream minimum free disk is not available; source checkout and compilation were not attempted.",
     }
-    if after.free >= report["required_free_bytes"]:
-        report["stage"] = "recipe-validation"
-        report["reason"] = "Disk preflight passed, but a reviewed pinned Numera patch/build recipe is required before compilation. No engine was built."
+    if after.free >= report["required_free_bytes"] and os.environ.get("GITHUB_ACTIONS") == "true":
+        report["stage"] = "source-acquisition"
+        build_start = time.monotonic()
+        command = ["pwsh", "-NoProfile", "-File", "scripts/Build-Chromium.ps1", "-SourceRoot", str(scratch), "-Phase", "Build"]
+        process = subprocess.Popen(command, start_new_session=os.name != "nt")
+        min_free = after.free
+        stop_reason = None
+        while process.poll() is None:
+            free = shutil.disk_usage(root).free
+            min_free = min(min_free, free)
+            if time.monotonic() - build_start > 300:
+                stop_reason = "Five-minute cold spike budget exhausted"
+            elif free < 20_000_000_000:
+                stop_reason = "Disk guard reached: preserve 20 GB free"
+            if stop_reason:
+                if os.name == "nt":
+                    subprocess.run(["taskkill", "/PID", str(process.pid), "/T", "/F"], check=False)
+                else:
+                    os.killpg(process.pid, signal.SIGTERM)
+                try:
+                    process.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    if os.name != "nt":
+                        os.killpg(process.pid, signal.SIGKILL)
+                    process.wait(timeout=10)
+                break
+            time.sleep(1)
+        progress = scratch / "phase.txt"
+        report["stage"] = progress.read_text(encoding="utf-8").strip() if progress.exists() else "source-acquisition"
+        report["source_and_build_attempt_seconds"] = round(time.monotonic() - build_start, 3)
+        report["source_attempt_exit_code"] = process.returncode
+        report["source_acquisition_bytes"] = sum(f.stat().st_size for f in scratch.rglob("*") if f.is_file() and not f.is_symlink())
+        report["peak_volume_disk_delta_bytes"] = max(0, after.free - min_free)
+        report["disk_measurement_note"] = "Sampled volume delta, not an exact process-tree working set"
+        report["reason"] = stop_reason or "Native recipe returned; compile/link/package provenance and real-engine acceptance remain unproven"
+        if process.returncode == 0:
+            report["stage"] = "native-acceptance-and-packaging"
     report["duration_seconds"] = round(time.monotonic() - started, 3)
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -65,8 +101,8 @@ def main():
     if summary:
         with open(summary, "a", encoding="utf-8") as f:
             f.write(f"### Chromium source-build gate: BLOCKED\n\nStage: `{report['stage']}`. "
-                    f"Free: {after.free / 1e9:.2f} GB; required: 100 GB.\n\n"
-                    "Compile, link, package, peak engine memory, and cold/warm build metrics are NOT_RUN.\n")
+                    f"Free: {after.free / 1e9:.2f} GB; required safety budget: 100 GB.\n\n"
+                    f"{report['reason']} Consult JSON for attempted stages; missing measurements are not a PASS.\n")
 
 
 if __name__ == "__main__":

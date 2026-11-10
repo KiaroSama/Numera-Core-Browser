@@ -1,0 +1,139 @@
+{
+  "$defs": {
+    "EngineFamily": {
+      "enum": [
+        "chromium",
+        "gecko",
+        "webkit"
+      ],
+      "type": "string"
+    },
+    "FeatureCapability": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "limitations": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "name": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/Support"
+        }
+      },
+      "required": [
+        "name",
+        "status",
+        "limitations",
+        "evidence"
+      ],
+      "type": "object"
+    },
+    "Support": {
+      "enum": [
+        "supported",
+        "partial",
+        "unsupported"
+      ],
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "build_evidence": {
+      "type": "string"
+    },
+    "build_mode": {
+      "type": "string"
+    },
+    "core_version_range": {
+      "type": "string"
+    },
+    "executable": {
+      "type": "string"
+    },
+    "executable_sha256": {
+      "type": "string"
+    },
+    "family": {
+      "$ref": "#/$defs/EngineFamily"
+    },
+    "features": {
+      "items": {
+        "$ref": "#/$defs/FeatureCapability"
+      },
+      "type": "array"
+    },
+    "licenses": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "numera_patch_revision": {
+      "type": "string"
+    },
+    "package_id": {
+      "type": "string"
+    },
+    "patch_series_sha256": {
+      "type": "string"
+    },
+    "profile_data_format": {
+      "type": "string"
+    },
+    "schema_revision": {
+      "format": "uint16",
+      "maximum": 65535,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "source_archive_sha256": {
+      "type": "string"
+    },
+    "source_archive_url": {
+      "type": "string"
+    },
+    "target_triple": {
+      "type": "string"
+    },
+    "upstream_revision": {
+      "type": "string"
+    },
+    "upstream_source_url": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_revision",
+    "package_id",
+    "family",
+    "upstream_revision",
+    "upstream_source_url",
+    "numera_patch_revision",
+    "patch_series_sha256",
+    "target_triple",
+    "build_mode",
+    "executable",
+    "executable_sha256",
+    "source_archive_sha256",
+    "source_archive_url",
+    "core_version_range",
+    "profile_data_format",
+    "licenses",
+    "features",
+    "build_evidence"
+  ],
+  "title": "EngineManifest",
+  "type": "object"
+}
