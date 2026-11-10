@@ -92,24 +92,31 @@ class CheckRun:
         self.repo = os.environ['GITHUB_REPOSITORY']
         self.id = None
 
-    def update(self, report, complete=False):
+    def request(self, path, body=None):
+        request = urllib.request.Request('https://api.github.com' + path,
+            data=json.dumps(body).encode() if body is not None else None,
+            method='PATCH' if body is not None else 'GET', headers={'Authorization': 'Bearer ' + self.token,
+            'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2026-03-10', 'User-Agent': 'Numera-Core-Browser'})
+        with urllib.request.urlopen(request, timeout=20) as response:
+            return json.load(response)
+
+    def update(self, report):
+        # Publish only into this running source job. A new check on the same
+        # head can attach to an unrelated suite and misreport its outcome.
+        # The Actions runner alone owns this job's status and conclusion.
+        if self.id is None:
+            jobs = self.request(f'/repos/{self.repo}/actions/runs/{os.environ["GITHUB_RUN_ID"]}/jobs?per_page=100')
+            own = [job for job in jobs['jobs'] if job['name'] == os.environ['GITHUB_JOB'] and job['status'] == 'in_progress']
+            if len(own) != 1:
+                raise RuntimeError('Source job telemetry target is ambiguous')
+            self.id = int(own[0]['check_run_url'].rsplit('/', 1)[1])
         summary = (f"Stage: `{report['stage']}`\n\nElapsed: {report['elapsed_seconds']:.0f} seconds. "
                    f"Free disk: {report['disk_free_bytes']/1e9:.2f} GB. "
                    f"Peak sampled process-tree RSS: {report['peak_tree_rss_bytes']/1e9:.2f} GB.\n\n"
                    f"Result: **{report['result']}**. Release ready: **false**.\n\n"
                    "Source compilation and a controlled renderer fixture are separate from full browser/automation/release acceptance.")
-        body = {'name': 'Chromium cold source build telemetry', 'status': 'completed' if complete else 'in_progress',
-                'details_url': report['run_url'], 'output': {'title': report['stage'], 'summary': summary}}
-        if complete:
-            body['conclusion'] = 'success' if report['result'] == 'PASS' else 'failure'
-        if self.id is None:
-            body['head_sha'] = report['commit']
-        path = f'/repos/{self.repo}/check-runs' + (f'/{self.id}' if self.id else '')
-        request = urllib.request.Request('https://api.github.com' + path, data=json.dumps(body).encode(),
-            method='PATCH' if self.id else 'POST', headers={'Authorization': 'Bearer ' + self.token,
-            'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2026-03-10', 'User-Agent': 'Numera-Core-Browser'})
-        with urllib.request.urlopen(request, timeout=20) as response:
-            self.id = json.load(response)['id']
+        self.request(f'/repos/{self.repo}/check-runs/{self.id}',
+                     {'output': {'title': report['stage'], 'summary': summary}})
 
 
 def smoke(binary, scratch, output, environment):
@@ -212,7 +219,13 @@ def main():
                 if elapsed >= next_publish:
                     report['timestamp'] = now()
                     write_json(output / 'report.json', report)
-                    checks.update(report)
+                    try:
+                        checks.update(report)
+                    except Exception as error:
+                        # A telemetry API outage must not abort expensive source
+                        # compilation. Local reports and the native log persist.
+                        report['telemetry_publish_error_type'] = type(error).__name__
+                        log('Live check output unavailable; local evidence continues', severity='WARN', component='engine-build')
                     log(f"{report['stage']}: {elapsed:.0f}s, {report['disk_free_bytes']/1e9:.2f} GB free", component='engine-build')
                     next_publish = elapsed + 30
                 time.sleep(1)
@@ -245,7 +258,7 @@ def main():
         report['measurement_note'] = 'RSS sums sampled process-tree resident memory; shared pages may be double-counted. Volume delta is not exact engine disk allocation.'
         write_json(output / 'report.json', report)
         try:
-            checks.update(report, complete=True)
+            checks.update(report)
         except Exception as error:
             report['telemetry_publish_error_type'] = type(error).__name__
             write_json(output / 'report.json', report)

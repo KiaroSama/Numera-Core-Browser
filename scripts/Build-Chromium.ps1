@@ -58,8 +58,18 @@ try {
             $VsPath = (& $VsWhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath).Trim()
             if ($VsPath) { $env:vs2026_install = $VsPath }
         }
-        Native -Command 'cmd.exe' -Arguments @('/d', '/c', 'gclient --help')
+        # DEPOT_TOOLS_UPDATE=0 deliberately bypasses update_depot_tools.bat,
+        # including its Python bootstrap. Run the pinned bootstrap explicitly;
+        # never enable the self-updater, which would replace our reviewed pin.
+        Native -Command 'cmd.exe' -Arguments @('/d', '/c', (Join-Path $Depot 'cipd_bin_setup.bat'))
+        Native -Command 'cmd.exe' -Arguments @('/d', '/c', (Join-Path $Depot 'bootstrap/win_tools.bat'))
+        if (-not (Test-Path (Join-Path $Depot 'python3_bin_reldir.txt') -PathType Leaf)) {
+            throw 'Pinned Windows Python bootstrap did not create its launcher marker'
+        }
+        Native -Command 'cmd.exe' -Arguments @('/d', '/c', ((Join-Path $Depot 'python-bin/python3.bat') + ' --version'))
     }
+    $DepotRevision = (& git -C $Depot rev-parse HEAD).Trim()
+    if ($LASTEXITCODE -ne 0 -or $DepotRevision -ne $Lock.depot_tools_revision) { throw 'Build-tool revision changed during bootstrap' }
     New-Item -ItemType Directory -Path $Checkout -Force | Out-Null
     Push-Location $Checkout
     try {
