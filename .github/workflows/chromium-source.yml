@@ -15,6 +15,10 @@ on:
         description: Use an explicitly labeled development component build
         type: boolean
         default: true
+      prerequisites_only:
+        description: Verify/install the Windows SDK without downloading engine source
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -41,9 +45,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           BUILD_BUDGET_MINUTES: ${{ inputs.budget_minutes }}
           BUILD_COMPONENT: ${{ inputs.component_build }}
+          BUILD_PREREQUISITES_ONLY: ${{ inputs.prerequisites_only }}
         run: |
           $Arguments = @('scripts/engine_build.py', '--output', 'build/engine-evidence', '--budget-minutes', $env:BUILD_BUDGET_MINUTES)
           if ($env:BUILD_COMPONENT -eq 'true') { $Arguments += '--component-build' }
+          if ($env:BUILD_PREREQUISITES_ONLY -eq 'true') { $Arguments += '--prerequisites-only' }
           python @Arguments
           exit $LASTEXITCODE
       - name: Preserve evidence only; no unreviewed browser binary publication

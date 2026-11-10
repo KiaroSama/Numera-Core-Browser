@@ -151,6 +151,7 @@ def main():
     parser.add_argument('--output', required=True)
     parser.add_argument('--budget-minutes', type=int, default=330)
     parser.add_argument('--component-build', action='store_true')
+    parser.add_argument('--prerequisites-only', action='store_true')
     args = parser.parse_args()
     if not 10 <= args.budget_minutes <= 330:
         parser.error('Budget must be between 10 and 330 minutes')
@@ -169,7 +170,8 @@ def main():
         'runner_image_version': os.environ.get('ImageVersion'), 'psutil_version': psutil.__version__,
         'cpu_count': os.cpu_count(), 'physical_memory_bytes': psutil.virtual_memory().total,
         'budget_minutes': args.budget_minutes, 'component_build': args.component_build,
-        'parallelism': 2, 'native_source_targets': ['chrome', 'chromedriver'],
+        'parallelism': 2, 'native_source_targets': [] if args.prerequisites_only else ['chrome', 'chromedriver'],
+        'prerequisites_only': args.prerequisites_only,
         'disk_total_bytes': initial_disk.total, 'disk_free_initial_bytes': initial_disk.free,
         'disk_free_bytes': initial_disk.free, 'minimum_free_disk_bytes': initial_disk.free,
         'elapsed_seconds': 0, 'peak_tree_rss_bytes': 0, 'peak_tree_process_count': 0,
@@ -185,7 +187,7 @@ def main():
     try:
         if initial_disk.free < 100_000_000_000:
             raise RuntimeError('Conservative 100 GB source-build disk preflight failed')
-        command = ['pwsh', '-NoProfile', '-File', 'scripts/Build-Chromium.ps1', '-SourceRoot', str(scratch), '-Phase', 'Build', '-Parallelism', '2', '-BuildDriver']
+        command = ['pwsh', '-NoProfile', '-File', 'scripts/Build-Chromium.ps1', '-SourceRoot', str(scratch), '-Phase', 'Prerequisites' if args.prerequisites_only else 'Build', '-Parallelism', '2', '-BuildDriver']
         if args.component_build:
             command.append('-ComponentBuild')
         with (output / 'native-build.log').open('wb') as log_file:
@@ -232,6 +234,10 @@ def main():
         report['native_exit_code'] = process.returncode
         if process.returncode != 0:
             raise RuntimeError('Pinned native source-build recipe failed; inspect retained native-build.log')
+        if args.prerequisites_only:
+            report['result'] = 'PREREQUISITES_PASS'
+            report['stage'] = 'prerequisites-pass-source-build-not-run'
+            return 0
         report['source_build'] = 'PASS'
         report['stage'] = 'controlled-renderer-fixture'
         binary = scratch / 'checkout/src/out/Numera' / ('chrome.exe' if os.name == 'nt' else 'Chromium.app/Contents/MacOS/Chromium')
@@ -255,7 +261,7 @@ def main():
         # phase instead of reporting the previous sampled phase as the failure.
         if report['result'] == 'BLOCKED' and (scratch / 'phase.txt').is_file():
             report['stage'] = (scratch / 'phase.txt').read_text(encoding='utf-8-sig').strip()
-        for name in ['phase.txt', 'phases.ndjson', 'gn-args.txt']:
+        for name in ['phase.txt', 'phases.ndjson', 'gn-args.txt', 'windows-sdk.json', 'windows-sdk.log']:
             if (scratch / name).is_file():
                 shutil.copyfile(scratch / name, output / name)
         report['sampled_volume_delta_bytes'] = initial_disk.free - report['minimum_free_disk_bytes']

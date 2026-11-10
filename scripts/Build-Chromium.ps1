@@ -4,7 +4,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$SourceRoot,
-    [ValidateSet('Acquire', 'Build')][string]$Phase = 'Acquire',
+    [ValidateSet('Prerequisites', 'Acquire', 'Build')][string]$Phase = 'Acquire',
     [ValidateRange(1,4)][int]$Parallelism = 2,
     [switch]$ComponentBuild,
     [switch]$BuildDriver
@@ -36,6 +36,15 @@ try {
     $Depot = Join-Path $SourceRoot 'depot_tools'
     $Checkout = Join-Path $SourceRoot 'checkout'
     New-Item -ItemType Directory -Path $SourceRoot -Force | Out-Null
+    if ($IsWindows) {
+        Stage 'windows-sdk-preparation'
+        & (Join-Path $PSScriptRoot 'Install-WindowsSdk.ps1') -EvidenceRoot $SourceRoot
+    }
+    if ($Phase -eq 'Prerequisites') {
+        if (-not $IsWindows) { throw 'SDK-only verification is Windows-specific' }
+        Stage 'prerequisites-complete'
+        exit 0
+    }
     Stage 'build-tool-acquisition'
     if (Test-Path $Depot) { throw 'Cold spike requires a fresh task-owned source directory' }
     Log 'INFO' 'Acquiring pinned upstream build tools and full Chromium source dependencies'
