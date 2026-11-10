@@ -28,21 +28,22 @@ jobs:
         run: |
           if git diff --quiet -- upstream/candidates.json; then exit 0; fi
           branch=automation/upstream-candidate
+          cp upstream/candidates.json "$RUNNER_TEMP/numera-candidate.json"
+          git restore -- upstream/candidates.json
           if git ls-remote --exit-code --heads origin "$branch" >/dev/null; then
-            cp upstream/candidates.json "$RUNNER_TEMP/numera-candidate.json"
             git fetch origin "$branch"
             git checkout -b "$branch" FETCH_HEAD
-            cp "$RUNNER_TEMP/numera-candidate.json" upstream/candidates.json
           else
             git checkout -b "$branch"
           fi
-          if git diff --quiet -- upstream/candidates.json; then exit 0; fi
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add upstream/candidates.json
-          git commit -m 'chore: refresh unreviewed official upstream candidates'
-          gh auth setup-git
-          git push origin "$branch"
+          cp "$RUNNER_TEMP/numera-candidate.json" upstream/candidates.json
+          if ! git diff --quiet -- upstream/candidates.json; then
+            git config user.name github-actions[bot]
+            git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+            git add upstream/candidates.json
+            git commit -m 'chore: refresh unreviewed official upstream candidates'
+            git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push origin "$branch"
+          fi
           if [ "$(gh pr list --head "$branch" --state open --json number --jq length)" = 0 ]; then
             gh pr create --draft --base main --head "$branch" --title 'chore: review upstream release candidates' --body-file .github/upstream-pr.md
           fi

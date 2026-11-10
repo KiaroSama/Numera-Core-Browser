@@ -1,4 +1,4 @@
-<p align="center"><img src="assets/logo.svg" width="112" alt="Numera Core Browser"></p>
+<p align="center"><img src="assets/logo.svg" width="240" height="240" alt="Numera Core Browser"></p>
 
 # Numera Core Browser
 
