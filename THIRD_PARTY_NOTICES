@@ -1,0 +1,14 @@
+Numera Core Browser
+
+First-party material: LICENSE (LicenseRef-Noncommercial-Network-ShareAlike-1.0).
+The license text is copied byte-for-byte from the user-selected Numera Browser
+migration branch. Git blob: 373e1b5b82fb98ca689731c206faa0661153941a.
+
+assets/logo.svg was supplied by the user for this project. No external fonts or
+browser binaries are bundled. Chromium, Gecko, WebKit, GoLogin and Orbita are
+referenced for identification; no endorsement or license to private code is implied.
+
+No upstream engine code is vendored in this initial repository. Future engine
+source, patches, data and binary distributions must include component-specific
+licenses, modification notices and corresponding complete source. The first-party
+license does not relicense upstream material. See licenses/inventory.json.

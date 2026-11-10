@@ -1,0 +1,11 @@
+{
+  "schema_revision": 1,
+  "first_party": {
+    "license": "LicenseRef-Noncommercial-Network-ShareAlike-1.0",
+    "source": "https://github.com/KiaroSama/Numera-Browser/blob/migration/native-runtime-checkpoint-20261012/LICENSE",
+    "git_blob": "373e1b5b82fb98ca689731c206faa0661153941a"
+  },
+  "assets": [{"path": "assets/logo.svg", "origin": "user-supplied", "status": "authorized for requested project"}],
+  "bundled_engine_binaries": [],
+  "engine_redistribution_review": "BLOCKED: no engine release or complete component inventory exists"
+}

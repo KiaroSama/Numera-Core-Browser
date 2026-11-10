@@ -1,0 +1,30 @@
+name: Engine source-build feasibility
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: engine-feasibility-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  cold-preflight:
+    name: Chromium / ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-2025, macos-15, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - name: Measure cold build prerequisites
+        run: python scripts/feasibility.py --output build/feasibility.json
+      - name: Preserve measurements even when build is blocked
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: feasibility-${{ matrix.os }}
+          path: build/feasibility.json
+          if-no-files-found: error
+      - name: Enforce owned-engine gate
+        run: python -c "import json; r=json.load(open('build/feasibility.json')); raise SystemExit(0 if r['result']=='PASS' else 1)"
