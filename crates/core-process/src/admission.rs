@@ -261,8 +261,10 @@ impl StandaloneLease {
             return Err(recovery());
         }
         let temporary = self.directory.join(format!(".{}.tmp", nonce()?));
+        // A failed create_new does not grant ownership of an existing path.
+        // Only files created successfully here may enter cleanup below.
+        let mut file = nofollow(&temporary, true, false, true).map_err(|_| recovery())?;
         let result = (|| {
-            let mut file = nofollow(&temporary, true, false, true).map_err(|_| recovery())?;
             let bytes = serde_json::to_vec(&self.claim).map_err(|_| recovery())?;
             file.write_all(&bytes)
                 .and_then(|()| file.sync_all())
@@ -438,7 +440,7 @@ mod tests {
     }
 
     #[test]
-    fn actual_cross_process_lease_is_exclusive_and_survives_lost_client_reply() {
+    fn actual_cross_process_lock_blocks_retry_until_explicit_release() {
         let r = Root::new();
         let mut child = Command::new(std::env::current_exe().unwrap())
             .args(["--exact", "admission::tests::subprocess_lease_holder"])
