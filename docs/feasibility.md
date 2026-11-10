@@ -1,4 +1,4 @@
-# Source-build feasibility — measured bounded spike, full build unresolved
+# Source-build feasibility — cold source acquired, compilation unresolved
 
 The initial GitHub integration denied both repository-creation routes: GraphQL `createRepository` and REST `POST /user/repos` returned `Resource not accessible by integration` (REST HTTP 403). The user subsequently created the exact public repository and its prepared source history was published. No existing repository was renamed or overwritten.
 
@@ -11,7 +11,7 @@ The first public hosted spike is [run 42871431763](https://github.com/KiaroSama/
 | macOS 15 ARM64 | 49.41 | resource-preflight | Below the initial 100 GB safety budget; no source acquisition |
 | macOS 15 Intel | 116.20 | source-acquisition | Five-minute budget exhausted; 709,874,509 logical bytes in partial task files |
 
-Source acquisition remained incomplete on Windows and Intel macOS. Compilation, final linking, engine artifact size, exact peak engine working set/disk and warm-build behavior remain unmeasured. The scratch-file counts include source/build-tool acquisition files and are not the size of a complete engine checkout. The five-minute budget is a bounded probe limit, not GitHub's six-hour limit: these observations do **not** establish that a full build either can or cannot fit an allowed six-hour job.
+During this initial spike, source acquisition remained incomplete on Windows and Intel macOS. The scratch-file counts include partial source/build-tool acquisition files and are not the size of a complete engine checkout. The five-minute budget is a bounded probe limit, not GitHub's six-hour limit: these observations do **not** establish that a full build either can or cannot fit an allowed six-hour job.
 
 Official GitHub documentation retrieved on 2026-11-10 lists 14 GB SSD for standard public runners and a 6-hour job limit. Current Chromium Windows prerequisites require at least 100 GB free NTFS space; current source paths must avoid spaces. These are a documented concern, not proof of the actual disk available on an unmeasured runner.
 
@@ -21,7 +21,11 @@ If that budget is available, the bounded native recipe acquires pinned depot_too
 
 The source recipe is a candidate, with PowerShell parsing checked separately from execution. Native SDK availability, GN arguments, sandbox behavior, final link/package size and reproducibility require actual hosted execution. No split-DAG or incremental cache approach has been proven. No paid/self-hosted fallback is authorized.
 
-Next action: a longer bounded cold-bootstrap experiment on the Windows/Intel macOS targets, validated platform budgets and reviewed safe cleanup where applicable. Only measured source acquisition, dependency invalidation, final link/package and provenance can establish feasibility. Until then leave engine acceptance BLOCKED and continue independent work without claiming an owned browser exists. The native Rust control-plane CI passed separately on all four targets; its result is not substituted for this failed engine gate.
+The separate `chromium-source.yml` workflow now permits up to 330 minutes for cold source/dependency acquisition, Chrome/ChromeDriver compilation and controlled JavaScript/DOM/screenshot fixtures. The whole job is bounded to 350 minutes, below the hosted six-hour limit. Build-only `psutil` samples process-tree RSS and volume free space; evidence and the running job's check output are updated every 30 seconds. It does not create a separate check on another workflow's suite or set the Actions job's conclusion. Only small evidence artifacts are retained, for one day; browser objects and binaries are not cached or published.
+
+The first full-budget [Windows run 42876581655](https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42876581655), at `a4b43089f43b333570376788853aef501340e4ec`, completed the pinned source checkout, dependencies and branding patch. It reached GN generation after 1,126.734 seconds, with 204.04 GB still free (initial 236.09 GB), 2.07 GB peak sampled process-tree RSS and 4 logical CPUs/17.17 GB physical memory. It stopped on `python3_bin_reldir.txt not found`: disabling depot_tools self-update also skipped its Windows Python bootstrap. These measurements are retained in [the report](evidence/cold-source-42876581655.json); the volume delta includes build tools and is not exact engine allocation.
+
+Commit `e186d7cb92efbc43fb643e2c89c4b15fc5578831` explicitly runs the pinned CIPD/Windows bootstrap, probes its Python launcher and verifies the depot revision stayed pinned. [A fresh cold run](https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42881287336) was dispatched with the full 330-minute budget. The earlier failure is a recipe defect, not evidence of resource exhaustion. Compilation, final linking, artifact size, engine working set, native fixtures and warm behavior remain unmeasured until a subsequent run reaches them. Engine acceptance stays BLOCKED. Native Rust control-plane success is kept separate.
 
 Sources:
 

@@ -1,6 +1,10 @@
 # ADR 002 — admission and local security gate
 
-Design accepted; durable supervision is not implemented.
+Standalone admission primitives implemented; browser spawning and durable descendant supervision are not implemented.
+
+`core-process::StandaloneLease` takes an explicit existing data root, acquires a real OS file lock per profile and atomically persists a bounded, strictly parsed claim with a cryptographic owner nonce. An explicit pre-spawn cancellation records `stopped`. A dropped/killed holder leaves its active claim intact; a free OS lock or reusable PID never authorizes automatic relaunch. Corruption, duplicate keys, oversize claims, unexpected state/owner edits and ambiguous ownership return `recovery_required` without rewriting the evidence. These are library primitives, not a new `session.launch` capability.
+
+Tests exercise real separate processes, same-profile contention, independent profiles, lost replies and a killed holder. Unix checks owner UID, private directory permissions and no-follow/single-link files. Windows rejects reparse points, but full ACL validation and hard-link identity checks are still open. The caller must supply a trusted data root. Directory replacement by a hostile same-user process and power-loss recovery are not proven. No production launch is admitted through this partial boundary.
 
 Managed mode must consume the manager's existing lease/claim admission grant rather than acquire a conflicting second lock. Standalone mode needs an equivalent Core-owned grant. Before a successful launch response, a single logical authority and durable OS ownership must exist. Windows job objects and POSIX ownership need separate tests; a process group or reusable PID alone is insufficient.
 
