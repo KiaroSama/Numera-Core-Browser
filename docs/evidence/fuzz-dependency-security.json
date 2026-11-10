@@ -1,0 +1,8 @@
+{
+  "timestamp": "2026-11-10T20:45:53.592655+00:00",
+  "source": "https://api.osv.dev/v1/querybatch",
+  "lock_file": "fuzz/Cargo.lock",
+  "result": "PASS",
+  "packages_checked": 64,
+  "findings": []
+}

@@ -1,0 +1,29 @@
+[package]
+name = "numera-core-fuzz"
+version = "0.0.0"
+edition = "2024"
+publish = false
+license = "LicenseRef-Noncommercial-Network-ShareAlike-1.0"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "=0.4.13"
+serde_json = "=1.0.154"
+core-contracts = { path = "../crates/core-contracts" }
+core-engines = { path = "../crates/core-engines" }
+core-runtime = { path = "../crates/core-runtime" }
+
+[[bin]]
+name = "wire"
+path = "fuzz_targets/wire.rs"
+test = false
+doc = false
+bench = false
+
+[workspace]
+members = ["."]
+
+[lints.rust]
+unsafe_code = "deny"

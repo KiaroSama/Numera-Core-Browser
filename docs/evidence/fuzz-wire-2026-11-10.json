@@ -1,0 +1,31 @@
+{
+  "timestamp": "2026-11-10T21:05:50.246254+00:00",
+  "result": "PASS",
+  "scope": "Bounded x86-64 Linux development campaign; strict JSON, manifest parsing, framing and pure connection operations only",
+  "base_source_commit": "ab1395095cbfe7d03607eb7a2c3542362802dee0",
+  "cargo_fuzz": "0.13.2",
+  "libfuzzer_sys": "0.4.13",
+  "rustc": "1.102.0-nightly (ac8310ba6 2026-11-09)",
+  "nightly": "nightly-2026-11-10",
+  "sanitizer": "address",
+  "seed": 20261110,
+  "configured_seconds": 60,
+  "observed_seconds": 61,
+  "executions": 159936,
+  "coverage_counters": 3931,
+  "coverage_features": 11093,
+  "max_input_bytes_configured": 1048576,
+  "rss_limit_mb": 1024,
+  "per_input_timeout_seconds": 2,
+  "raw_log_sha256": "70d93066a3a85c44763827cd3dee51d08df6e6313a8491a3d0b051f3ab70744f",
+  "log": "docs/evidence/fuzz-wire-2026-11-10.log.gz",
+  "log_gzip_sha256": "a11917ca87216eae282530d6e281f02d7920ef9ac4c50b0fa0c4bda215ea600f",
+  "target_sha256": "f0cb4c85371778fd1c0f97dd822f7b809222dfccddb5ad23a6ea665b4b7e6ef3",
+  "fuzz_lock_sha256": "13ec4f312b59aff3ee1f81510476efc6c35d5a2b507f97e02f309c428be4f479",
+  "runtime_lock_sha256": "3969b702562fbcd90587dfca9bf4dcf936cdecdf329ef12c348d2165da5c4c32",
+  "limits": [
+    "Not exhaustive; no exact coverage-percentage or maximum-size exploration claim",
+    "Runtime pure operations only; valid installer/session operations are excluded",
+    "No browser sanitizer, Windows FFI, hostile-origin gateway or full release security acceptance claim"
+  ]
+}
