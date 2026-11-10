@@ -98,7 +98,10 @@ fn nofollow(path: &Path, write: bool, create: bool, exclusive: bool) -> std::io:
         use std::os::unix::fs::OpenOptionsExt;
         options
             .mode(0o600)
-            .custom_flags(nix::libc::O_NOFOLLOW | nix::libc::O_CLOEXEC);
+            // Opening a corrupt FIFO read-only can block before metadata is
+            // available. Nonblocking open lets the regular-file check reject
+            // special files without waiting for a writer or reading from them.
+            .custom_flags(nix::libc::O_NOFOLLOW | nix::libc::O_CLOEXEC | nix::libc::O_NONBLOCK);
     }
     #[cfg(windows)]
     {
@@ -206,13 +209,25 @@ impl StandaloneLease {
             .map_err(|_| recovery())?
             .join("core-ownership");
         private_directory(&directory)?;
-        let lock = nofollow(
-            &directory.join(format!("{profile}.lock")),
-            true,
-            true,
-            false,
-        )
-        .map_err(|_| recovery())?;
+        // This inode is a permanent first-admission marker, even when a failed
+        // first attempt never writes its claim. Never unlink/recreate it to
+        // clear an error: another process may already hold this exact inode.
+        let lock_path = directory.join(format!("{profile}.lock"));
+        let (lock, created_lock) = match nofollow(&lock_path, true, false, true) {
+            Ok(lock) => (lock, true),
+            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => (
+                nofollow(&lock_path, true, false, false).map_err(|_| recovery())?,
+                false,
+            ),
+            Err(_) => return Err(recovery()),
+        };
+        let claim_path = directory.join(format!("{profile}.json"));
+        // A contender must not take a newly created, uninitialized marker's
+        // lock ahead of its creator: that could make both first attempts fail.
+        // This early rejection is not authorization; reread under the lock.
+        if !created_lock && read_claim(&claim_path, profile)?.is_none() {
+            return Err(recovery());
+        }
         match lock.try_lock() {
             Ok(()) => (),
             Err(TryLockError::WouldBlock) => {
@@ -223,8 +238,10 @@ impl StandaloneLease {
             }
             Err(TryLockError::Error(_)) => return Err(recovery()),
         }
-        let claim_path = directory.join(format!("{profile}.json"));
         let previous = read_claim(&claim_path, profile)?;
+        if !created_lock && previous.is_none() {
+            return Err(recovery());
+        }
         if previous
             .as_ref()
             .is_some_and(|c| c.state != Lifecycle::Stopped)
@@ -381,6 +398,55 @@ mod tests {
     }
 
     #[test]
+    fn missing_claim_under_existing_lock_requires_recovery() {
+        for stopped in [false, true] {
+            let r = Root::new();
+            let lease = StandaloneLease::acquire(&r.0, "a", "launch", "key").unwrap();
+            if stopped {
+                lease.cancel().unwrap();
+            } else {
+                drop(lease);
+            }
+            let claim = r.0.join("core-ownership/a.json");
+            let lock = r.0.join("core-ownership/a.lock");
+            fs::remove_file(&claim).unwrap();
+            let lock_before = fs::read(&lock).unwrap();
+            assert_eq!(
+                StandaloneLease::acquire(&r.0, "a", "retry", "key")
+                    .err()
+                    .expect("A missing ledger must not authorize reuse of an existing lock")
+                    .code,
+                ErrorCode::RecoveryRequired
+            );
+            assert!(
+                !claim.exists(),
+                "Ambiguous ownership evidence was overwritten"
+            );
+            assert_eq!(fs::read(lock).unwrap(), lock_before);
+        }
+    }
+
+    #[test]
+    fn incomplete_marker_is_rejected_before_lock_contention() {
+        let r = Root::new();
+        let directory = r.0.join("core-ownership");
+        private_directory(&directory).unwrap();
+        // Model the first creator before its initial claim is committed. A
+        // contender must reject the incomplete marker before trying its lock;
+        // otherwise it can win the lock and make both initializers fail.
+        let creator = nofollow(&directory.join("a.lock"), true, false, true).unwrap();
+        creator.try_lock().unwrap();
+        assert_eq!(
+            StandaloneLease::acquire(&r.0, "a", "launch", "key")
+                .err()
+                .unwrap()
+                .code,
+            ErrorCode::RecoveryRequired
+        );
+        assert!(!directory.join("a.json").exists());
+    }
+
+    #[test]
     fn tampered_owner_and_invalid_state_cannot_be_released() {
         let r = Root::new();
         let mut a = StandaloneLease::acquire(&r.0, "a", "launch", "key").unwrap();
@@ -520,5 +586,59 @@ mod tests {
         fs::hard_link(&outside, &lock).unwrap();
         assert!(StandaloneLease::acquire(&r.0, "a", "launch", "key").is_err());
         assert_eq!(fs::read(outside).unwrap(), b"preserve");
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn subprocess_fifo_claim_reader() {
+        if std::env::var("NUMERA_FIXTURE_ROLE").as_deref() != Ok("fifo-claim-reader") {
+            return;
+        }
+        let root = PathBuf::from(std::env::var_os("NUMERA_FIXTURE_ROOT").unwrap());
+        fs::write(root.join("reader-ready"), b"ready").unwrap();
+        assert_eq!(
+            StandaloneLease::acquire(&root, "fifo", "launch", "key")
+                .err()
+                .unwrap()
+                .code,
+            ErrorCode::RecoveryRequired
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn fifo_claim_is_rejected_without_blocking_or_rewriting() {
+        use std::os::unix::fs::FileTypeExt;
+        let r = Root::new();
+        private_directory(&r.0.join("core-ownership")).unwrap();
+        let path = r.0.join("core-ownership/fifo.json");
+        nix::unistd::mkfifo(
+            &path,
+            nix::sys::stat::Mode::S_IRUSR | nix::sys::stat::Mode::S_IWUSR,
+        )
+        .unwrap();
+        let mut child = Command::new(std::env::current_exe().unwrap())
+            .args(["--exact", "admission::tests::subprocess_fifo_claim_reader"])
+            .env("NUMERA_FIXTURE_ROLE", "fifo-claim-reader")
+            .env("NUMERA_FIXTURE_ROOT", &r.0)
+            .stdout(Stdio::null())
+            .stderr(Stdio::inherit())
+            .spawn()
+            .unwrap();
+        let started = Instant::now();
+        loop {
+            if let Some(status) = child.try_wait().unwrap() {
+                assert!(status.success(), "Special ownership file was not rejected");
+                break;
+            }
+            if started.elapsed() > Duration::from_secs(5) {
+                child.kill().unwrap();
+                child.wait().unwrap();
+                assert!(r.0.join("reader-ready").exists(), "Reader never started");
+                panic!("Opening a FIFO ownership claim blocked admission");
+            }
+            std::thread::sleep(Duration::from_millis(10));
+        }
+        assert!(fs::symlink_metadata(path).unwrap().file_type().is_fifo());
     }
 }
