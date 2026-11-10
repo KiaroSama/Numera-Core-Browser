@@ -1,0 +1,23 @@
+{
+  "verified_at": "2026-11-10T19:08:44.444Z",
+  "proof": "A fresh draft pull request was created by the workflow bot after the owner enabled Actions PR creation; a no-op workflow pass alone was not used as proof.",
+  "workflow": {
+    "id": 42876574326,
+    "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42876574326",
+    "commit": "a4b43089f43b333570376788853aef501340e4ec",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-11-10T18:34:30Z",
+    "completed_by": "2026-11-10T18:35:03Z"
+  },
+  "pull_request": {
+    "number": 4,
+    "url": "https://github.com/KiaroSama/Numera-Core-Browser/pull/4",
+    "author": "github-actions[bot]",
+    "created_at": "2026-11-10T18:35:00Z",
+    "head": "automation/upstream-candidate",
+    "state": "open",
+    "draft": true
+  },
+  "limits": "Permission verified for PR creation. Candidate observations remain unreviewed; no auto-merge, engine activation or trusted-update claim."
+}
