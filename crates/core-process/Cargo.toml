@@ -16,7 +16,13 @@ serde_json.workspace = true
 nix = { version = "=0.31.3", features = ["user", "fs"] }
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "=0.61.2", features = ["Win32_Storage_FileSystem"] }
+windows-sys = { version = "=0.61.2", features = ["Win32_Foundation", "Win32_Security", "Win32_Storage_FileSystem", "Win32_System_JobObjects", "Win32_System_Threading"] }
 
 [lints]
 workspace = true
+
+[[bin]]
+name = "numera-process-fixture"
+path = "tests/fixtures/process.rs"
+test = false
+bench = false

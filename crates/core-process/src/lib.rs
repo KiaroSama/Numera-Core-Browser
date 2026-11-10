@@ -3,3 +3,6 @@
 //! are separate runtime gates and are not implemented by this module.
 mod admission;
 pub use admission::{Claim, Lifecycle, StandaloneLease};
+
+#[cfg(windows)]
+pub mod windows;

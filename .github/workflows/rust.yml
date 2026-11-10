@@ -37,6 +37,8 @@ jobs:
         shell: pwsh
         run: ./scripts/Check-PowerShell.ps1
       - name: Unit and actual CLI process tests
+        env:
+          NUMERA_PARENT_SECRET: synthetic-fixture-only
         run: cargo test --workspace --locked
       - name: Build CLI without a display or automation client dependency
         run: cargo build --locked -p core-cli
