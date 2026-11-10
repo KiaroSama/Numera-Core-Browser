@@ -1,0 +1,62 @@
+{
+  "run_id": 42914426653,
+  "commit": "4053a3f31b1eb5c43f3fa04da13676bf6378a405",
+  "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42914426653",
+  "result": "PASS",
+  "jobs": [
+    {
+      "name": "native (macos-15-intel)",
+      "id": 130173036341,
+      "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42914426653/job/130173036341",
+      "result": "PASS",
+      "started_at": "2026-11-10T22:25:35Z",
+      "completed_at": "2026-11-10T22:27:26Z",
+      "rust_tests_passed": 45,
+      "saturated_stderr_exit": "PASS",
+      "file_swap_regression": "NOT_RUN: Linux syscall fixture only"
+    },
+    {
+      "name": "native (ubuntu-24.04)",
+      "id": 130173036746,
+      "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42914426653/job/130173036746",
+      "result": "PASS",
+      "started_at": "2026-11-10T22:25:31Z",
+      "completed_at": "2026-11-10T22:26:15Z",
+      "rust_tests_passed": 45,
+      "saturated_stderr_exit": "PASS",
+      "file_swap_regression": "PASS"
+    },
+    {
+      "name": "dependency-security",
+      "id": 130173036956,
+      "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42914426653/job/130173036956",
+      "result": "PASS",
+      "started_at": "2026-11-10T22:25:34Z",
+      "completed_at": "2026-11-10T22:25:39Z"
+    },
+    {
+      "name": "native (windows-2025)",
+      "id": 130173037006,
+      "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42914426653/job/130173037006",
+      "result": "PASS",
+      "started_at": "2026-11-10T22:25:31Z",
+      "completed_at": "2026-11-10T22:26:52Z",
+      "rust_tests_passed": 47,
+      "saturated_stderr_exit": "PASS",
+      "file_swap_regression": "NOT_RUN: Linux syscall fixture only"
+    },
+    {
+      "name": "native (macos-15)",
+      "id": 130173037040,
+      "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42914426653/job/130173037040",
+      "result": "PASS",
+      "started_at": "2026-11-10T22:25:33Z",
+      "completed_at": "2026-11-10T22:26:53Z",
+      "rust_tests_passed": 45,
+      "saturated_stderr_exit": "PASS",
+      "file_swap_regression": "NOT_RUN: Linux syscall fixture only"
+    }
+  ],
+  "combined_job_logs_sha256": "509479ff600d182a92496255e6e595baeb5f9192c159434b68d3f18ab0c30f82",
+  "scope": "Native Rust/NCB-1/control-plane and selected-input tests; no owned engine, GUI, native browser automation, updater or release acceptance"
+}

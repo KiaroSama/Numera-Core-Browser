@@ -1,21 +1,26 @@
 {
-  "scope": "Authored source and tests in crates/, scripts/ and fuzz/fuzz_targets/. Excludes generated corpora/schemas, locks, license texts, upstream-derived patch and upstream engines. No Rust-majority claim over browser engine source.",
+  "scope": "Authored source and tests in crates/, scripts/ and fuzz/fuzz_targets/. Excludes generated corpora/schemas, locks, license texts, upstream-derived patch and upstream engines. C fixture is development-only. No Rust-majority claim over browser engine source.",
   "languages": {
     "Rust": {
       "files": 14,
-      "lines": 2765,
-      "bytes": 100130
+      "lines": 2954,
+      "bytes": 107841
     },
-    "Python development tooling": {
-      "files": 15,
-      "lines": 1030,
-      "bytes": 54052
+    "C development fixture": {
+      "files": 1,
+      "lines": 39,
+      "bytes": 1316
     },
     "PowerShell orchestration": {
       "files": 4,
       "lines": 228,
       "bytes": 13982
+    },
+    "Python development tooling": {
+      "files": 15,
+      "lines": 1135,
+      "bytes": 58847
     }
   },
-  "source_commit": "8f3ece1ac26afb875cdeda34460d4a0b5b196923"
+  "source_commit": "4053a3f31b1eb5c43f3fa04da13676bf6378a405"
 }

@@ -417,8 +417,8 @@
       ],
       "limitation": "All four native Rust targets and dependency-security job passed. This does not certify an engine binary.",
       "hosted_control_plane_result": "PASS",
-      "hosted_commit": "493760b7fdb89e8653a094bc2cd7f8b90f329580",
-      "hosted_workflow_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42873209957"
+      "hosted_commit": "4053a3f31b1eb5c43f3fa04da13676bf6378a405",
+      "hosted_workflow_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42914426653"
     },
     {
       "id": "C02",
@@ -453,8 +453,12 @@
       ],
       "limitation": "Development inherited-stdio producer/consumer passed; paired manager/browser is not accepted",
       "hosted_control_plane_result": "PASS",
-      "hosted_commit": "493760b7fdb89e8653a094bc2cd7f8b90f329580",
-      "hosted_workflow_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42873209957"
+      "hosted_commit": "4053a3f31b1eb5c43f3fa04da13676bf6378a405",
+      "hosted_workflow_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42914426653",
+      "regressions": [
+        "scripts/check-contracts.py: full inherited stderr pipe and terminal error exit",
+        "scripts/check-contracts.py: Linux real-file-to-FIFO swaps for plan/manifest/hash"
+      ]
     },
     {
       "id": "C03",
@@ -475,8 +479,8 @@
       ],
       "limitation": "Configuration validation only; device catalog and native identity application are unimplemented",
       "hosted_control_plane_result": "PASS",
-      "hosted_commit": "493760b7fdb89e8653a094bc2cd7f8b90f329580",
-      "hosted_workflow_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42873209957"
+      "hosted_commit": "4053a3f31b1eb5c43f3fa04da13676bf6378a405",
+      "hosted_workflow_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42914426653"
     },
     {
       "id": "C04",
@@ -633,18 +637,23 @@
           "log": "docs/evidence/logs/rust-tests.log"
         }
       ],
-      "limitation": "Required proxy configuration fails closed; no network transport/leak evidence"
+      "limitation": "Required proxy configuration fails closed; no network transport/leak evidence",
+      "configuration_tests": [
+        "proxy_effective_ports_accept_http_defaults_and_require_nonzero_socks_ports",
+        "required_proxy_is_blocked_and_never_silently_direct"
+      ]
     },
     {
       "id": "C16",
       "requirement": "Admission concurrency and idempotent launch",
-      "development_result": "NOT_RUN",
+      "development_result": "BLOCKED",
       "release_acceptance": "BLOCKED",
       "scope": "local managed Linux; no hosted/native browser acceptance",
       "commit": "e5d5f022db16b5dae0106e3b7d4cf205a34c07bc",
       "workflow_url": null,
       "evidence": [],
-      "limitation": "No session admission/spawn implementation"
+      "limitation": "Standalone admission library passed real contention, stale/missing/corrupt-claim and incomplete-initializer tests; production session idempotency and manager grants remain unimplemented.",
+      "primitive_evidence": "docs/evidence/native-control-plane-42914426653.json"
     },
     {
       "id": "C17",
@@ -656,7 +665,8 @@
       "workflow_url": null,
       "evidence": [],
       "limitation": "Five native Windows ownership fixtures passed; production grant integration, Windows ACL/hard-link coverage, detach/recovery repair and POSIX containment remain open.",
-      "partial_evidence": "docs/evidence/native-ownership-windows.json"
+      "partial_evidence": "docs/evidence/native-ownership-windows.json",
+      "primitive_evidence": "docs/evidence/native-control-plane-42914426653.json"
     },
     {
       "id": "C18",
@@ -717,7 +727,8 @@
         }
       ],
       "limitation": "Bounded IPC libFuzzer/ASAN campaign passed locally and hosted; native browser sanitizers, Windows FFI and hostile-origin gateway acceptance remain untested.",
-      "partial_evidence": "docs/evidence/hosted-fuzz-42903883413.json"
+      "partial_evidence": "docs/evidence/hosted-fuzz-42903883413.json",
+      "latest_bounded_fuzz_evidence": "docs/evidence/hosted-fuzz-42914426670.json"
     },
     {
       "id": "C22",
@@ -731,12 +742,19 @@
       "limitation": "Manager unchanged; no integration-ready contract or real engine release"
     }
   ],
-  "updated_at": "2026-11-10T21:34:40.783414+00:00",
+  "updated_at": "2026-11-10T22:31:23.863124+00:00",
   "native_control_plane_targets_passed": [
     "linux-x86_64",
     "windows-x86_64",
     "macos-aarch64",
     "macos-x86_64"
   ],
-  "hosted_evidence": "docs/evidence/hosted-verification.json"
+  "hosted_evidence": "docs/evidence/hosted-verification.json",
+  "latest_control_plane": {
+    "commit": "4053a3f31b1eb5c43f3fa04da13676bf6378a405",
+    "result": "PASS",
+    "native_evidence": "docs/evidence/native-control-plane-42914426653.json",
+    "local_rust_tests_passed": 45,
+    "scope": "Native Rust/NCB-1/control-plane and selected-input tests; no owned engine, GUI, native browser automation, updater or release acceptance"
+  }
 }
