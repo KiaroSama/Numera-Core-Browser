@@ -1,0 +1,1 @@
+{"timestamp": "2026-11-10T17:32:24.189907+00:00", "severity": "INFO", "component": "repository-tool", "message": "PASS: canonical schemas match Rust producer types"}

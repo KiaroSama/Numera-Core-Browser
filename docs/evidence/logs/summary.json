@@ -1,0 +1,96 @@
+{
+  "timestamp": "2026-11-10T17:32:25.314848+00:00",
+  "tested_commit": "e5d5f022db16b5dae0106e3b7d4cf205a34c07bc",
+  "runner": "managed-cloud (not GitHub-hosted)",
+  "os": "linux",
+  "arch": "x86_64",
+  "rust": "1.99.1",
+  "workflow_url": null,
+  "result": "PASS",
+  "checks": [
+    {
+      "name": "format",
+      "result": "PASS",
+      "exit_code": 0,
+      "duration_seconds": 0.121,
+      "log": "docs/evidence/logs/format.log"
+    },
+    {
+      "name": "clippy",
+      "result": "PASS",
+      "exit_code": 0,
+      "duration_seconds": 0.667,
+      "log": "docs/evidence/logs/clippy.log"
+    },
+    {
+      "name": "rust-tests",
+      "result": "PASS",
+      "exit_code": 0,
+      "duration_seconds": 6.906,
+      "log": "docs/evidence/logs/rust-tests.log"
+    },
+    {
+      "name": "cli-build",
+      "result": "PASS",
+      "exit_code": 0,
+      "duration_seconds": 0.083,
+      "log": "docs/evidence/logs/cli-build.log"
+    },
+    {
+      "name": "schema-drift",
+      "result": "PASS",
+      "exit_code": 0,
+      "duration_seconds": 0.083,
+      "log": "docs/evidence/logs/schema-drift.log"
+    },
+    {
+      "name": "external-consumer",
+      "result": "PASS",
+      "exit_code": 0,
+      "duration_seconds": 0.23,
+      "log": "docs/evidence/logs/external-consumer.log"
+    },
+    {
+      "name": "license-inventory",
+      "result": "PASS",
+      "exit_code": 0,
+      "duration_seconds": 0.179,
+      "log": "docs/evidence/logs/license-inventory.log"
+    },
+    {
+      "name": "powershell-syntax",
+      "result": "PASS",
+      "exit_code": 0,
+      "duration_seconds": 0.537,
+      "log": "docs/evidence/logs/powershell-syntax.log"
+    },
+    {
+      "name": "workflow-syntax",
+      "result": "PASS",
+      "exit_code": 0,
+      "duration_seconds": 0.007,
+      "log": "docs/evidence/logs/workflow-syntax.log"
+    },
+    {
+      "name": "branding-win-mac",
+      "result": "PASS",
+      "exit_code": 0,
+      "duration_seconds": 0.076,
+      "log": "docs/evidence/logs/branding-win-mac.log"
+    },
+    {
+      "name": "branding-linux",
+      "result": "PASS",
+      "exit_code": 0,
+      "duration_seconds": 0.077,
+      "log": "docs/evidence/logs/branding-linux.log"
+    },
+    {
+      "name": "diff-whitespace",
+      "result": "PASS",
+      "exit_code": 0,
+      "duration_seconds": 0.004,
+      "log": "docs/evidence/logs/diff-whitespace.log"
+    }
+  ]
+}

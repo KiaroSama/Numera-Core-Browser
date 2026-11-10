@@ -1,0 +1,49 @@
+{
+  "browser_gui_available": false,
+  "core_version": "0.1.0-dev.1",
+  "development_status": "BLOCKED",
+  "display_required": false,
+  "engines": {
+    "available_approved": [],
+    "families": [
+      {
+        "family": "chromium",
+        "package_id": "numera-chromium",
+        "reason": "No owned source-built and approved engine package exists",
+        "status": "blocked"
+      },
+      {
+        "family": "gecko",
+        "package_id": "numera-gecko",
+        "reason": "Future engine path after Chromium milestone",
+        "status": "deferred"
+      },
+      {
+        "family": "webkit",
+        "package_id": "numera-webkit",
+        "reason": "Future engine path after Chromium milestone",
+        "status": "deferred"
+      }
+    ],
+    "installed": []
+  },
+  "host": {
+    "arch": "x86_64",
+    "os": "linux"
+  },
+  "limitations": [
+    "Source-build feasibility must be measured on authorized GitHub runners",
+    "No real browser or automation suite has passed",
+    "No engine download, installation or update is performed"
+  ],
+  "manager_integration_ready": false,
+  "node_required": false,
+  "owned_engine_available": false,
+  "product": "Numera Core Browser",
+  "protocol": {
+    "major": 1,
+    "namespace": "numera.core",
+    "schema_revision": 1
+  },
+  "python_required": false
+}

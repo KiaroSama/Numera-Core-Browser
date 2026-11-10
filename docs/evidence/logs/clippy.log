@@ -1,0 +1,4 @@
+    Checking core-engines v0.1.0-dev.1 (/workspace/work/Numera-Core-Browser/crates/core-engines)
+    Checking core-runtime v0.1.0-dev.1 (/workspace/work/Numera-Core-Browser/crates/core-runtime)
+    Checking core-cli v0.1.0-dev.1 (/workspace/work/Numera-Core-Browser/crates/core-cli)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.59s

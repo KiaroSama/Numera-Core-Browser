@@ -1,0 +1,1 @@
+{"timestamp": "2026-11-10T17:32:24.405027+00:00", "severity": "INFO", "component": "repository-tool", "message": "PASS: external consumer/schema fixtures and real producer agree; real-browser integration remains NOT_RUN"}

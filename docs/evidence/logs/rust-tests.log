@@ -1,0 +1,101 @@
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 8 tests
+test clean_eof_exits_without_a_response_or_background_session ... ok
+test cli_doctor_runs_without_display_or_client_runtimes ... ok
+test duplicate_nested_keys_rejected_by_actual_process ... ok
+test parser_output_never_contains_supplied_synthetic_secret ... ok
+test real_producer_negotiates_and_reports_no_installed_browser ... ok
+test oversized_frame_is_fatal_and_bounded ... ok
+test incomplete_or_invalid_utf8_frames_fail_with_clean_json ... ok
+test stalled_protocol_reader_cannot_block_server_forever ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.04s
+
+
+running 9 tests
+test strict::tests::preserves_json_scalars ... ok
+test strict::tests::parser_errors_do_not_echo_secrets ... ok
+test strict::tests::rejects_nested_and_escaped_duplicate_keys ... ok
+test tests::adjacent_frames_and_clean_eof ... ok
+test tests::ids_are_safe_for_correlation ... ok
+test tests::truncated_frame_is_never_accepted ... ok
+test strict::tests::rejects_trailing_data_invalid_utf8_and_deep_nesting ... ok
+test tests::schema_has_typed_command_branches ... ok
+test tests::frame_limit_includes_newline ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 3 tests
+test tests::cross_platform_path_escapes_rejected ... ok
+test tests::empty_inventory_does_not_claim_a_browser ... ok
+test tests::manifest_consistency_and_evidence_fail_closed ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test tests::duplicate_ids_and_unknown_fields_rejected ... ok
+test tests::handshake_order_and_version_skew_fail_closed ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 9 tests
+test impossible_mobile_combination_requires_explicit_acceptance ... ok
+test identity_is_stable_and_changes_only_with_identity_inputs ... ok
+test identity_consistency_rejects_bad_screen_scale_and_touch ... ok
+test embedded_credentials_rejected_without_echo ... ok
+test lexical_path_traversal_rejected_before_any_storage_action ... ok
+test snapshot_rejects_unknown_fields_and_engine_enums ... ok
+test required_proxy_is_blocked_and_never_silently_direct ... ok
+test unknown_required_capability_is_unavailable ... ok
+test planning_preserves_family_and_does_not_create_directories ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Compiling core-engines v0.1.0-dev.1 (/workspace/work/Numera-Core-Browser/crates/core-engines)
+   Compiling core-runtime v0.1.0-dev.1 (/workspace/work/Numera-Core-Browser/crates/core-runtime)
+   Compiling core-cli v0.1.0-dev.1 (/workspace/work/Numera-Core-Browser/crates/core-cli)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.48s
+     Running unittests src/main.rs (target/debug/deps/numera_core-eeeceb4be491ca5b)
+     Running tests/stdio.rs (target/debug/deps/stdio-85670b1570205481)
+     Running unittests src/lib.rs (target/debug/deps/core_contracts-19fd0bde44da04ea)
+     Running unittests src/lib.rs (target/debug/deps/core_engines-574e8d7f0fa4d1b4)
+     Running unittests src/lib.rs (target/debug/deps/core_identity-f37eee7437e2b8a2)
+     Running unittests src/lib.rs (target/debug/deps/core_runtime-7968f0b605c9f9a2)
+     Running tests/planning.rs (target/debug/deps/planning-8a83e61aef0143f0)
+   Doc-tests core_contracts
+   Doc-tests core_engines
+   Doc-tests core_identity
+   Doc-tests core_runtime

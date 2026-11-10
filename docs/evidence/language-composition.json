@@ -1,0 +1,20 @@
+{
+  "scope": "Authored source and tests in crates/ and scripts/. Excludes generated schemas, Cargo.lock, license texts, upstream-derived patch and upstream engines. No Rust-majority claim over browser engine source.",
+  "languages": {
+    "Rust": {
+      "files": 8,
+      "lines": 1552,
+      "bytes": 56444
+    },
+    "Python development tooling": {
+      "files": 9,
+      "lines": 426,
+      "bytes": 22204
+    },
+    "PowerShell orchestration": {
+      "files": 3,
+      "lines": 107,
+      "bytes": 6548
+    }
+  }
+}
