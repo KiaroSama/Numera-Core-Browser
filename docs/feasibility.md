@@ -1,8 +1,8 @@
-# Source-build feasibility — BLOCKED before hosted execution
+# Source-build feasibility — hosted spike dispatched
 
-No GitHub-hosted source-build run or compiled engine is available. The GitHub integration denied both repository-creation routes: GraphQL `createRepository` and REST `POST /user/repos` returned `Resource not accessible by integration` (REST HTTP 403). The exact requested repository was absent when inspected. No existing repository was renamed or overwritten.
+The initial GitHub integration denied both repository-creation routes: GraphQL `createRepository` and REST `POST /user/repos` returned `Resource not accessible by integration` (REST HTTP 403). The user subsequently created the exact public repository and its prepared source history was published. No existing repository was renamed or overwritten.
 
-Consequently the required public hosted spike could not be dispatched. Runner image, hosted free disk, engine working set, cold/warm acquisition, compile/link/package durations and resulting artifacts are **NOT_RUN**, not inferred from this managed environment. No workflow success URL is claimed. See `docs/evidence/coverage.json` and the retained local observation, explicitly labeled as local.
+The first public hosted spike is [run 42871431763](https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42871431763), dispatched against source commit `8c0bcf819c0fcded67e5b7a20d69c7fd68902419`. Its results are pending. No compiled engine or workflow success is claimed. Hosted measurements will be retained separately from the earlier local-only observation in `docs/evidence`.
 
 Official GitHub documentation retrieved on 2026-11-10 lists 14 GB SSD for standard public runners and a 6-hour job limit. Current Chromium Windows prerequisites require at least 100 GB free NTFS space; current source paths must avoid spaces. These are a documented concern, not proof of the actual disk available on an unmeasured runner.
 
@@ -12,7 +12,7 @@ If that budget is available, the bounded native recipe acquires pinned depot_too
 
 The source recipe is a candidate, with PowerShell parsing checked separately from execution. Native SDK availability, GN arguments, sandbox behavior, final link/package size and reproducibility require actual hosted execution. No split-DAG or incremental cache approach has been proven. No paid/self-hosted fallback is authorized.
 
-Next action after repository access is available: push the prepared repository, dispatch `engine-feasibility.yml`, retain every native artifact, review the failures, and update this report with measured evidence. If source acquisition or compilation still cannot fit allowed infrastructure, leave the target BLOCKED and continue independent work without claiming an owned browser exists.
+Next action: retain every native spike artifact, review exact failing stages, and update this report with measured evidence. If source acquisition or compilation still cannot fit allowed infrastructure, leave the target BLOCKED and continue independent work without claiming an owned browser exists.
 
 Sources:
 

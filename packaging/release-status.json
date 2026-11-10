@@ -8,5 +8,6 @@
   "engine_packages_published": [],
   "trusted_update_root": null,
   "signing": {"application_update": "NOT_RUN", "github_attestation": "NOT_RUN", "windows_authenticode": "NOT_RUN", "apple_notarization": "NOT_RUN"},
-  "blockers": ["GitHub repository creation denied", "Hosted cold engine source build not run", "No real browser/native automation acceptance", "No signed updater or paired manager smoke suite"]
+  "repository_published": true,
+  "blockers": ["Hosted cold engine source build acceptance pending", "No real browser/native automation acceptance", "No signed updater or paired manager smoke suite"]
 }

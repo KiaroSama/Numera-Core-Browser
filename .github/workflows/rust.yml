@@ -2,8 +2,9 @@ name: Rust and NCB-1 control plane
 on:
   push:
     branches: [main, 'implementation/**']
+    paths: ['crates/**', 'Cargo.*', 'rust-toolchain.toml', 'contracts/**', 'scripts/**', 'licenses/**', 'requirements-dev.txt', '.github/workflows/**']
   pull_request:
-    paths: ['crates/**', 'Cargo.*', 'rust-toolchain.toml', 'contracts/**', 'scripts/**', 'licenses/**', '.github/workflows/rust.yml']
+    paths: ['crates/**', 'Cargo.*', 'rust-toolchain.toml', 'contracts/**', 'scripts/**', 'licenses/**', 'requirements-dev.txt', '.github/workflows/**']
   workflow_dispatch:
 permissions:
   contents: read

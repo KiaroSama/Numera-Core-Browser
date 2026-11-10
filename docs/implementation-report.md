@@ -10,13 +10,13 @@
 - Candidate PowerShell native source-build recipe and bounded public-hosted feasibility workflow; a separate native Rust CI matrix; official feed observation and one review-only candidate PR workflow.
 - Exact selected custom license, user-supplied logo, 56 locked dependency entries with preserved license texts, public-reference research, security/update/process ADRs and a manager integration checklist.
 
-The checked-in evidence describes actual tests and exact source commits. Local managed-Linux tests are separate from GitHub/native browser acceptance. There are no published successful Actions runs, PRs, source/binary releases or remote commits because repository creation was denied.
+The checked-in local evidence describes actual tests and exact source commits. Local managed-Linux tests are separate from GitHub/native browser acceptance. The user created the exact public repository after the initial API creation denial, and the prepared history was published without rewriting it. Native CI and the hosted engine-feasibility spike have been dispatched; completed results will be retained separately. No browser binary release is available.
 
 ## Open gates
 
 | Gate | Status | Remaining acceptance |
 | --- | --- | --- |
-| A: repository, license, baseline, feasibility | BLOCKED | Publish exact public repository and run the bounded hosted cold source-build spike; retain real runner metrics |
+| A: repository, license, baseline, feasibility | IN_PROGRESS | Public repository and source history published; native CI and hosted source feasibility dispatched |
 | B: working owned browser slice | BLOCKED | Build Chromium, native browser GUI, durable process ownership, real Playwright/Puppeteer/Selenium tests |
 | C: broader engines/device/package scope | NOT_RUN | Engine-applied emulation, modular installers and themes; Gecko/WebKit deferred after the Orbita direction |
 | D: trusted updates and integration | NOT_RUN | Signed metadata, staging/leases/activation/real-data rollback and paired manager/browser smoke suite |
@@ -24,8 +24,8 @@ The checked-in evidence describes actual tests and exact source commits. Local m
 
 No engine download or alternative wrapper was used to satisfy these gates. No Tauri/system-webview shell, imitation settings dashboard, unreviewed engine promotion or fake release badge was created. No changes were made to the manager, open PRs or issues.
 
-## Access blocker and continuation
+## Publication and continuation
 
-GraphQL and REST repository creation failed with `Resource not accessible by integration` (REST 403). Existing GitHub connectivity can read the manager but cannot create `KiaroSama/Numera-Core-Browser`. No token or secret is needed in chat. Publication can continue when the exact public empty repository exists and the connection can write it, or repository-creation access is provided.
+Initial GraphQL and REST repository creation failed with `Resource not accessible by integration` (REST 403). The user then created `KiaroSama/Numera-Core-Browser`; the connection can write that repository. The initial access blocker is resolved. No token or secret was supplied in chat.
 
-The local repository and complete source archive remain reviewable and usable. After access is available: preserve the local history, publish it without force-pushing, dispatch source feasibility, fix measured failures, then proceed through owned-browser gates. A Rust green check cannot replace a blocked engine build.
+The source and preserved history are available at https://github.com/KiaroSama/Numera-Core-Browser. Next, retain hosted measurements, fix actual CI/source-recipe failures and proceed through owned-browser gates. A Rust green check cannot replace a blocked engine build. Earlier local evidence retains its original timestamp/context and must not be mistaken for the later hosted state.
