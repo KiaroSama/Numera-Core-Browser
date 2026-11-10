@@ -1,0 +1,29 @@
+name: Verify Actions PR creation
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  prove:
+    if: github.repository == 'KiaroSama/Numera-Core-Browser' && github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Create and close a task-owned draft PR; verify bot identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/permission_probe.py
+      - name: Preserve actual permission proof and cleanup outcome
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: actions-permission-proof
+          path: build/permission-check.json
+          if-no-files-found: error
+          retention-days: 1
