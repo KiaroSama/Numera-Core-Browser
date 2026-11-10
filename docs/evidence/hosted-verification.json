@@ -366,5 +366,28 @@
         "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42871431763/artifacts/13788568751"
       }
     ]
+  },
+  "native_current": {
+    "id": 42903883125,
+    "commit": "e304d6b6bf19ef5392950236a5ee05bb7c29eed3",
+    "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42903883125",
+    "result": "success",
+    "targets": {
+      "windows-x86_64": 44,
+      "linux-x86_64": 40,
+      "macos-x86_64": 40,
+      "macos-aarch64": 40
+    },
+    "dependency_security": "PASS: 63 locked runtime dependencies",
+    "scope": "Control-plane tests; Windows-only native containment fixtures do not establish POSIX process-tree containment or browser acceptance"
+  },
+  "ipc_fuzz": {
+    "id": 42903883413,
+    "commit": "e304d6b6bf19ef5392950236a5ee05bb7c29eed3",
+    "result": "success",
+    "evidence": "docs/evidence/hosted-fuzz-42903883413.json",
+    "executions": 399097,
+    "seconds": 61,
+    "dependency_security": "PASS: 64 development fuzz dependencies"
   }
 }

@@ -649,13 +649,14 @@
     {
       "id": "C17",
       "requirement": "OS ownership, cancellation, crash and recovery",
-      "development_result": "NOT_RUN",
+      "development_result": "BLOCKED",
       "release_acceptance": "BLOCKED",
       "scope": "local managed Linux; no hosted/native browser acceptance",
       "commit": "e5d5f022db16b5dae0106e3b7d4cf205a34c07bc",
       "workflow_url": null,
       "evidence": [],
-      "limitation": "Protocol EOF/backpressure tests do not prove browser process supervision"
+      "limitation": "Five native Windows ownership fixtures passed; production grant integration, Windows ACL/hard-link coverage, detach/recovery repair and POSIX containment remain open.",
+      "partial_evidence": "docs/evidence/native-ownership-windows.json"
     },
     {
       "id": "C18",
@@ -715,7 +716,8 @@
           "log": "docs/evidence/logs/rust-tests.log"
         }
       ],
-      "limitation": "Strict parser and secret-boundary tests passed; no fuzz campaign or native sanitizer evidence"
+      "limitation": "Bounded IPC libFuzzer/ASAN campaign passed locally and hosted; native browser sanitizers, Windows FFI and hostile-origin gateway acceptance remain untested.",
+      "partial_evidence": "docs/evidence/hosted-fuzz-42903883413.json"
     },
     {
       "id": "C22",
@@ -729,7 +731,7 @@
       "limitation": "Manager unchanged; no integration-ready contract or real engine release"
     }
   ],
-  "updated_at": "2026-11-10T18:19:24.900401+00:00",
+  "updated_at": "2026-11-10T21:34:40.783414+00:00",
   "native_control_plane_targets_passed": [
     "linux-x86_64",
     "windows-x86_64",

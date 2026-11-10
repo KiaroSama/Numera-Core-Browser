@@ -1,0 +1,14 @@
+{
+  "run_id": 42903883413,
+  "commit": "e304d6b6bf19ef5392950236a5ee05bb7c29eed3",
+  "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42903883413",
+  "result": "PASS",
+  "target": "ubuntu-24.04 x86_64",
+  "sanitizer": "address",
+  "executions": 399097,
+  "observed_seconds": 61,
+  "artifact_id": 13802974640,
+  "artifact_sha256": "fadd18ed674014873a75cf86a332f8d09bb0e6b671df29d4d326a1177341a398",
+  "fuzz_log_sha256": "00d33d61a4bd8c3fdc0055e2eb3717d0fa68f6e4763bba86d1e75dbc5237a20d",
+  "scope": "Pure IPC/decode/manifest paths; excludes installed browser/native Windows FFI/hostile-origin security acceptance"
+}
