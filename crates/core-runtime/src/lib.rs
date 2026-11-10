@@ -138,7 +138,7 @@ pub fn plan(snapshot: &LaunchSnapshot) -> Result<Value, CoreError> {
             url::Url::parse(endpoint).map_err(|_| CoreError::invalid("Invalid proxy endpoint"))?;
         if !matches!(u.scheme(), "http" | "https" | "socks5" | "socks5h")
             || u.host_str().is_none()
-            || u.port().is_none()
+            || u.port_or_known_default().is_none_or(|port| port == 0)
             || !u.username().is_empty()
             || u.password().is_some()
             || u.query().is_some()
@@ -147,7 +147,7 @@ pub fn plan(snapshot: &LaunchSnapshot) -> Result<Value, CoreError> {
             || secret_ref.as_ref().is_some_and(|s| !valid_id(s))
         {
             return Err(CoreError::invalid(
-                "Proxy requires a host and port, with credentials delivered separately",
+                "Proxy requires a host and nonzero effective port, with credentials delivered separately",
             ));
         }
         blockers.push(json!({"code":"unsupported_capability","message":"Required proxy transport is not implemented; direct fallback is forbidden"}));

@@ -56,6 +56,8 @@ python scripts/security-audit.py
 
 Windows executable paths end in `.exe`. Use the native CI matrix for Windows/Linux/macOS verification. [Protocol](contracts/PROTOCOL.md), [security](SECURITY.md), [updates](docs/adr/003-updates.md), [feasibility](docs/feasibility.md), and [manager checklist](docs/manager-integration.md) describe the current boundaries.
 
+The external consumer also tests shutdown with a saturated stderr pipe. On Linux it compiles a small development fixture with the system `cc` to reproduce file replacement during opening; this fixture is never linked into the installed CLI.
+
 [Bounded IPC fuzzing](fuzz/README.md) has its own pinned development toolchain,
 dependency inventory and CI job. It does not add nightly Rust or libFuzzer to
 the installed CLI or imply native browser security acceptance.

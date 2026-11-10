@@ -72,6 +72,51 @@ fn required_proxy_is_blocked_and_never_silently_direct() {
     }));
     assert!(!p.to_string().contains("vault-ref-1"));
 }
+
+#[test]
+fn proxy_effective_ports_accept_http_defaults_and_require_nonzero_socks_ports() {
+    let mut s = snapshot();
+    for endpoint in [
+        "http://127.0.0.1:80",
+        "https://127.0.0.1:443",
+        "http://127.0.0.1",
+        "https://127.0.0.1",
+        "socks5://127.0.0.1:1080",
+        "socks5h://[::1]:1080",
+    ] {
+        s.proxy = ProxyPolicy::Required {
+            endpoint: endpoint.into(),
+            secret_ref: None,
+        };
+        let plan = core_runtime::plan(&s).expect("A valid proxy endpoint must pass syntax checks");
+        assert_eq!(plan["status"], "blocked");
+        assert_eq!(plan["side_effects"], false);
+        assert_eq!(plan["settings_applied"], false);
+        assert!(plan["blockers"].as_array().unwrap().iter().any(|v| {
+            v["message"]
+                .as_str()
+                .unwrap()
+                .contains("direct fallback is forbidden")
+        }));
+    }
+    for endpoint in [
+        "socks5://127.0.0.1",
+        "socks5h://[::1]",
+        "http://127.0.0.1:0",
+        "https://127.0.0.1:0",
+        "socks5://127.0.0.1:0",
+    ] {
+        s.proxy = ProxyPolicy::Required {
+            endpoint: endpoint.into(),
+            secret_ref: None,
+        };
+        assert_eq!(
+            core_runtime::plan(&s).unwrap_err().code,
+            ErrorCode::InvalidConfiguration
+        );
+    }
+}
+
 #[test]
 fn embedded_credentials_rejected_without_echo() {
     let mut s = snapshot();

@@ -4,7 +4,6 @@ use core_contracts::{
 use serde_json::{Value, json};
 use std::{
     env,
-    fs::File,
     io::{self, BufReader, Read, Write},
     path::Path,
     process::ExitCode,
@@ -13,15 +12,27 @@ use std::{
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 
-fn log(level: &str, message: &str) {
+fn terminal_log(level: &str, message: &str) {
     let timestamp = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
         .as_millis();
-    eprintln!(
-        "{}",
-        json!({"timestamp_unix_ms":timestamp,"timezone":"UTC","severity":level,"component":"core-cli","message":message})
-    );
+    let record = json!({"timestamp_unix_ms":timestamp,"timezone":"UTC","severity":level,"component":"core-cli","message":message}).to_string();
+    let (send, receive) = mpsc::sync_channel(1);
+    // One terminal event only: an unread inherited stderr pipe must not defeat
+    // protocol cancellation. Never join the worker or reacquire its I/O lock.
+    // Process exit ends a stalled worker; diagnostics are best effort.
+    if thread::Builder::new()
+        .name("terminal-diagnostic".into())
+        .spawn(move || {
+            let mut stderr = io::stderr().lock();
+            let _ = writeln!(stderr, "{record}").and_then(|()| stderr.flush());
+            let _ = send.send(());
+        })
+        .is_ok()
+    {
+        let _ = receive.recv_timeout(Duration::from_millis(100));
+    }
 }
 fn output(value: &Value) -> io::Result<()> {
     let mut stdout = io::stdout().lock();
@@ -30,12 +41,8 @@ fn output(value: &Value) -> io::Result<()> {
     stdout.flush()
 }
 fn read_bounded(path: &str) -> Result<Vec<u8>, CoreError> {
-    if !std::fs::metadata(path).is_ok_and(|m| m.is_file()) {
-        return Err(CoreError::invalid("Input must be a regular file"));
-    }
     let mut bytes = Vec::new();
-    File::open(path)
-        .map_err(|_| CoreError::invalid("Cannot open selected input file"))?
+    core_engines::open_regular_file(Path::new(path))?
         .take(MAX_FRAME as u64)
         .read_to_end(&mut bytes)
         .map_err(|_| CoreError::invalid("Cannot read selected input file"))?;
@@ -194,7 +201,7 @@ fn main() -> ExitCode {
     match result {
         Ok(()) => ExitCode::SUCCESS,
         Err(error) => {
-            log("ERROR", &error.message);
+            terminal_log("ERROR", &error.message);
             if !server {
                 let _ = output(
                     &serde_json::to_value(Response::new(None, Err(error.clone())))

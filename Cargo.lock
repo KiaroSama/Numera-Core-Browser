@@ -60,6 +60,7 @@ name = "core-engines"
 version = "0.1.0-dev.1"
 dependencies = [
  "core-contracts",
+ "libc",
  "schemars",
  "serde",
  "serde_json",

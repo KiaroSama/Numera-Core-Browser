@@ -1,10 +1,10 @@
 //! Untrusted package metadata inspection. Hash matching is not trust approval.
-use core_contracts::{CoreError, EngineFamily, ErrorCode, strict_json};
+use core_contracts::{CoreError, EngineFamily, strict_json};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
-    fs::File,
+    fs::{File, OpenOptions},
     io::Read,
     path::{Component, Path},
 };
@@ -112,12 +112,29 @@ pub fn inspect_manifest(bytes: &[u8]) -> Result<EngineManifest, CoreError> {
     Ok(m)
 }
 
-pub fn hash_file(path: &Path) -> Result<String, CoreError> {
-    if !std::fs::metadata(path).is_ok_and(|m| m.is_file()) {
-        return Err(CoreError::invalid("Hash input must be a regular file"));
+/// Open once and validate the held descriptor, avoiding path-check/open races.
+/// The caller must separately bound reads and establish any package trust.
+pub fn open_regular_file(path: &Path) -> Result<File, CoreError> {
+    let mut options = OpenOptions::new();
+    options.read(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        // A substituted FIFO must not wait for a writer before fstat can
+        // reject it. Regular files retain their ordinary read behavior.
+        options.custom_flags(libc::O_NONBLOCK | libc::O_CLOEXEC);
     }
-    let mut file = File::open(path)
-        .map_err(|_| CoreError::new(ErrorCode::MissingPackage, "Cannot read the selected file"))?;
+    let file = options
+        .open(path)
+        .map_err(|_| CoreError::invalid("Cannot open selected regular file"))?;
+    if !file.metadata().is_ok_and(|metadata| metadata.is_file()) {
+        return Err(CoreError::invalid("Input must be a regular file"));
+    }
+    Ok(file)
+}
+
+pub fn hash_file(path: &Path) -> Result<String, CoreError> {
+    let mut file = open_regular_file(path)?;
     let mut hash = Sha256::new();
     let mut buffer = [0u8; 65536];
     loop {
