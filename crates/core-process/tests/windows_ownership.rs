@@ -109,7 +109,14 @@ fn parent_exit_does_not_release_descendants_or_stop_another_tree() {
     ));
     tree.terminate_and_wait(Duration::from_secs(5)).unwrap();
     assert_eq!(tree.active_processes().unwrap(), 0);
-    assert!(descendant.try_lock().is_ok());
+    // Windows can publish zero active members before asynchronous I/O/handle
+    // cleanup releases the descendant's file lock. Admission needs this second
+    // proof; the job counter alone is insufficient for profile reuse.
+    until(|| match descendant.try_lock() {
+        Ok(()) => true,
+        Err(TryLockError::WouldBlock) => false,
+        Err(e) => panic!("{e}"),
+    });
     assert!(!other.root_exited().unwrap());
     assert!(other.active_processes().unwrap() > 0);
     other.terminate_and_wait(Duration::from_secs(5)).unwrap();

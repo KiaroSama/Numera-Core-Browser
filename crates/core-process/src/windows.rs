@@ -160,7 +160,9 @@ impl Drop for AttributeList<'_> {
 
 /// A process tree held by one non-inheritable kernel job handle. Dropping it
 /// asks Windows to terminate all members. Admission must remain active until
-/// `terminate_and_wait` proves that the job is empty; Drop alone is no proof.
+/// the job is empty AND the caller proves native profile resources are free.
+/// Windows can clear its active counter before asynchronous I/O/handle cleanup
+/// releases file locks. Neither Drop nor the counter alone authorizes reuse.
 pub struct OwnedProcessTree {
     job: OwnedHandle,
     process: OwnedHandle,
@@ -319,6 +321,9 @@ impl OwnedProcessTree {
         }
         Ok(info.ActiveProcesses)
     }
+    /// Terminate the owned cohort and wait for zero active job members. The
+    /// caller must additionally verify its native resource/lock clearance
+    /// before releasing profile admission. This method never releases a grant.
     pub fn terminate_and_wait(&self, timeout: Duration) -> io::Result<()> {
         let end = Instant::now().checked_add(timeout).ok_or_else(invalid)?;
         // SAFETY: this job contains only the tree assigned during our spawn.
