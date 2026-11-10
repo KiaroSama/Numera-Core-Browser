@@ -1,0 +1,11 @@
+{
+  "debugging_tools_version": "10.0.28000.2957 (WinBuild.160101.0800)",
+  "installer_signer": "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",
+  "installed_by_task": true,
+  "installer_exit_code": 0,
+  "applied_installer_release": "10.0.28000.2957",
+  "requested_release": "10.0.28000.2957",
+  "installer_sha256": "e8e264aca8bc34abdf592352bf09f986a85cdb96db0efba405ca9e149181fe61",
+  "directory_version": "10.0.28000.0",
+  "ready": true
+}

@@ -1,0 +1,24 @@
+{
+  "source_commit": "0db96ff6f8f0c737e570fbda62c4758d9684144c",
+  "run_id": 42890284816,
+  "run_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42890284816",
+  "job_id": 130089345115,
+  "job_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42890284816/job/130089345115",
+  "target": "windows-x86_64",
+  "result": "PASS",
+  "rust_tests_passed": 44,
+  "native_ownership_tests_passed": 5,
+  "cases": [
+    "Unicode executable path, exact argv and explicit environment",
+    "Root exit with owned descendants; independent job survives another stop",
+    "Breakaway attempt rejected",
+    "Owner crash kills descendant and retains recovery claim",
+    "Invalid executable and aliased environment rejected"
+  ],
+  "native_resource_finding": "Windows job accounting can reach zero before asynchronous I/O/handle cleanup releases file locks. Native-resource clearance must be proven separately before profile reuse.",
+  "limitations": [
+    "Development fixture processes, not an approved browser engine",
+    "Production standalone session admission integration, full Windows ACL/hard-link checks, manager grants, detach and recovery repair remain open",
+    "This job does not establish macOS or Linux native process-tree containment"
+  ]
+}

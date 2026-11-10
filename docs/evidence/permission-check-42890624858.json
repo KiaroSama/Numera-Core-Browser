@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-11-10T19:59:51.499310+00:00",
+  "commit": "0db96ff6f8f0c737e570fbda62c4758d9684144c",
+  "run_id": "42890624858",
+  "result": "PASS",
+  "branch": "automation/permission-probe-42890624858-1",
+  "pull_request": {
+    "number": 5,
+    "url": "https://github.com/KiaroSama/Numera-Core-Browser/pull/5",
+    "author": "github-actions[bot]"
+  },
+  "probe_pr_closed": true,
+  "probe_branch_removed": true,
+  "engine_promoted": false
+}

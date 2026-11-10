@@ -32,7 +32,7 @@ The compiled CLI requires no Node.js, Python, display server or manager installa
 | `crates/core-contracts` | Typed NCB-1 messages, strict JSON, schemas and NDJSON bounds |
 | `crates/core-identity` | Coherence validation and deterministic identity keys; no browser overrides |
 | `crates/core-engines` | Package-manifest validation, hashing and truthful empty inventory |
-| `crates/core-process` | Standalone profile lock and durable admission claim; no browser spawning yet |
+| `crates/core-process` | Standalone admission claims and a tested Windows atomic job primitive; production session integration remains open |
 | `crates/core-runtime` | Shared planning, connection/version negotiation and diagnostics |
 | `crates/core-cli` | Standalone CLI and bounded inherited-stdio service |
 | `contracts` | Generated canonical schemas, fixtures and manager theme tokens |
