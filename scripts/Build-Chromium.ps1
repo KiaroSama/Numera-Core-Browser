@@ -93,7 +93,11 @@ try {
                 $Component = if ($ComponentBuild) { 'true' } else { 'false' }
                 $GnArgs = 'is_debug=false is_component_build=' + $Component + ' symbol_level=0 blink_symbol_level=0 v8_symbol_level=0 use_remoteexec=false is_official_build=false is_chrome_branded=false proprietary_codecs=false ffmpeg_branding="Chromium" target_cpu="' + $Cpu + '"'
                 Set-Content (Join-Path $SourceRoot 'gn-args.txt') $GnArgs -Encoding utf8NoBOM
-                Native -Command 'gn' -Arguments @('gen', 'out/Numera', ('--args=' + $GnArgs))
+                # Windows .bat launchers consume quotes inside --args. A native
+                # args.gn file preserves GN string literals on every platform.
+                New-Item -ItemType Directory -Path 'out/Numera' -Force | Out-Null
+                Set-Content 'out/Numera/args.gn' $GnArgs -Encoding utf8NoBOM
+                Native -Command 'gn' -Arguments @('gen', 'out/Numera')
                 Stage 'compile-link'
                 $Targets = @('-C', 'out/Numera', '-j', $Parallelism.ToString(), 'chrome')
                 if ($BuildDriver) { $Targets += 'chromedriver' }
@@ -104,6 +108,6 @@ try {
         } finally { Pop-Location }
     } finally { Pop-Location }
 } catch {
-    Log 'ERROR' 'Chromium source recipe stopped; retain native tool diagnostics and feasibility evidence'
+    Log 'ERROR' ('Chromium source recipe stopped at line ' + $_.InvocationInfo.ScriptLineNumber + '; error type: ' + $_.Exception.GetType().Name + '; retain native diagnostics')
     exit 1
 }

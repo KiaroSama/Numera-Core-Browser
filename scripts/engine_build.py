@@ -251,6 +251,10 @@ def main():
     finally:
         report['timestamp'] = now()
         report['elapsed_seconds'] = round(time.monotonic() - started, 3)
+        # A fast failure can occur between samples; preserve the exact final
+        # phase instead of reporting the previous sampled phase as the failure.
+        if report['result'] == 'BLOCKED' and (scratch / 'phase.txt').is_file():
+            report['stage'] = (scratch / 'phase.txt').read_text(encoding='utf-8-sig').strip()
         for name in ['phase.txt', 'phases.ndjson', 'gn-args.txt']:
             if (scratch / name).is_file():
                 shutil.copyfile(scratch / name, output / name)
