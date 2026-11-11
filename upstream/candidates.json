@@ -1,6 +1,6 @@
 {
   "schema_revision": 1,
-  "observed_at": "2026-11-11T06:15:04.163935+00:00",
+  "observed_at": "2026-11-11T14:27:04.247588+00:00",
   "status": "unreviewed-candidate",
   "trusted_release": false,
   "versions": {
@@ -48,7 +48,7 @@
       "scope": "deferred"
     },
     "webkit": {
-      "revision": "75effcf5bbed08ffe70a740fe69edf7982b3afbc",
+      "revision": "b0abe4a894485b181b33315d1168547855ecd346",
       "source": "https://api.github.com/repos/WebKit/WebKit/commits/main",
       "scope": "deferred",
       "note": "Not a universal Safari release version"
