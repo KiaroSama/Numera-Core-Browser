@@ -1,23 +1,23 @@
 {
   "schema_revision": 1,
-  "observed_at": "2026-11-11T14:27:04.247588+00:00",
+  "observed_at": "2026-11-12T00:41:44.787860+00:00",
   "status": "unreviewed-candidate",
   "trusted_release": false,
   "versions": {
     "chromium": {
       "win": {
-        "version": "157.0.8103.51",
-        "serving_start": "2026-11-09T20:47:31.699304Z",
+        "version": "157.0.8103.79",
+        "serving_start": "2026-11-11T19:50:36.096729Z",
         "source": "https://versionhistory.googleapis.com/v1/chrome/platforms/win/channels/stable/versions/all/releases?filter=endtime=none"
       },
       "linux": {
-        "version": "157.0.8103.50",
-        "serving_start": "2026-11-09T20:47:51.287144Z",
+        "version": "157.0.8103.78",
+        "serving_start": "2026-11-11T21:45:02.774509Z",
         "source": "https://versionhistory.googleapis.com/v1/chrome/platforms/linux/channels/stable/versions/all/releases?filter=endtime=none"
       },
       "mac": {
-        "version": "157.0.8103.51",
-        "serving_start": "2026-11-09T20:47:24.900957Z",
+        "version": "157.0.8103.79",
+        "serving_start": "2026-11-11T19:51:01.554717Z",
         "source": "https://versionhistory.googleapis.com/v1/chrome/platforms/mac/channels/stable/versions/all/releases?filter=endtime=none"
       }
     },
@@ -48,7 +48,7 @@
       "scope": "deferred"
     },
     "webkit": {
-      "revision": "b0abe4a894485b181b33315d1168547855ecd346",
+      "revision": "1b3837664d63c401f06538da96f97db951c29b40",
       "source": "https://api.github.com/repos/WebKit/WebKit/commits/main",
       "scope": "deferred",
       "note": "Not a universal Safari release version"
