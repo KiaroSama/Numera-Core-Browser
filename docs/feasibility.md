@@ -39,6 +39,8 @@ The optimized fourth attempt actually exhausted its 330-minute budget at `compil
 
 The next candidate selects upstream's development configuration (`is_debug=true`, component build and zero symbol levels), retaining the sandbox, security boundaries and local-only compilation. This tests whether removing compiler optimization work lets the cold build fit; speed is not assumed. Native action counters, when present, are read from a bounded binary log tail and published live alongside effective compiler parallelism. Missing counters remain unmeasured. Attempted gates become `RUNNING`/`BLOCKED` instead of incorrectly remaining `NOT_RUN`; a passed source gate stays separate from fixture failure. Current reviewed source pins are Windows/macOS 157.0.8103.79 and Linux 157.0.8103.78. The branding patch passed exact-source checks; DEPS changes are recorded in [the research refresh](research/2026-11-13.md). A debug result cannot establish optimized release performance or release readiness.
 
+The [bounded checkpoint research fixture](research/checkpoint-probe.md) passed partial compilation/resumption across two fresh Linux jobs with a pinned toolchain container, correct header invalidation and content-corruption rejection. This is an authored tiny C fixture. It does not prove a full Chromium split build, Windows resumption, intermediate storage size/allowance or final-link fit; the engine gate stays open.
+
 Sources:
 
 - https://docs.github.com/en/actions/reference/runners/github-hosted-runners

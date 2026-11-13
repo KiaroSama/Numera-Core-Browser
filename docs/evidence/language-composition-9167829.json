@@ -1,0 +1,32 @@
+{
+  "source_commit": "9167829bc14220ae228141b99e8200d139eaedd3",
+  "scope": "Authored source/tests under crates/, scripts/, fuzz/fuzz_targets/. Generated data, vendored/upstream source, prose, lockfiles and license texts excluded. All implemented application runtime code is Rust; Python/PowerShell/C are development tooling/fixtures.",
+  "languages": {
+    ".rs": {
+      "files": 14,
+      "lines": 2954,
+      "bytes": 107841
+    },
+    ".c": {
+      "files": 1,
+      "lines": 39,
+      "bytes": 1316
+    },
+    ".ps1": {
+      "files": 4,
+      "lines": 230,
+      "bytes": 14086
+    },
+    ".py": {
+      "files": 18,
+      "lines": 1554,
+      "bytes": 83004
+    }
+  },
+  "github_workflow_metadata": {
+    "files": 8,
+    "bytes": 35041,
+    "scope": "Mixed declarative YAML with embedded shell/Python, listed separately; raw workflow bytes are not assigned to Rust."
+  },
+  "claim_limit": "No Rust-majority claim over upstream engines or over all repository bytes, workflows or documentation."
+}

@@ -1,0 +1,138 @@
+{
+  "schema_revision": 1,
+  "run_id": 43515347693,
+  "run_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/43515347693",
+  "source_commit": "9167829bc14220ae228141b99e8200d139eaedd3",
+  "scope": "Tiny authored Linux C checkpoint fixture; not Chromium source-build acceptance",
+  "native_jobs": [
+    {
+      "job_id": 132195812329,
+      "phase": "seed",
+      "conclusion": "success",
+      "host_image_from_job_header": "20261111.370.1"
+    },
+    {
+      "job_id": 132196022023,
+      "phase": "resume",
+      "conclusion": "success",
+      "host_image_from_job_header": "20261111.370.1"
+    }
+  ],
+  "producer_reports": {
+    "seed": {
+      "schema_revision": 1,
+      "phase": "seed",
+      "context": {
+        "source_commit": "9167829bc14220ae228141b99e8200d139eaedd3",
+        "probe_script_sha256": "7b9d123be5eb24fbfbb36d3d040a8453ea439f4e5eca2664390aebe15695d556",
+        "run_id": "43515347693",
+        "run_attempt": "1",
+        "runner_image": null,
+        "toolchain_container": "python@sha256:934f4289019d6c3dc94d5e6341ff3a70c82f19bb118756eb03bdd700fe4b5c98",
+        "workspace": "/__w/Numera-Core-Browser/Numera-Core-Browser/build/siso-probe/workspace",
+        "siso_sha256": "8df1ad4f15ad38ba5232bb91d54426ab84893ce9e28fd63fe64bf44fb1cb8036",
+        "compiler": "/usr/bin/x86_64-linux-gnu-gcc-12",
+        "compiler_sha256": "75e997ec62297a6484f491bae28ab0ccb489daba23e398fd10fe68e9e6f0def8"
+      },
+      "results": [
+        {
+          "case": "cold-partial",
+          "steps": 1,
+          "program_exit": null,
+          "result": "PASS"
+        },
+        {
+          "case": "checkpoint-size",
+          "bytes": 440378
+        }
+      ],
+      "execution_context": "github-actions",
+      "job": "seed",
+      "host_runner_image": null,
+      "checkpoint_sha256": "c864ffbaffb440e0eb0399d8046221901b2a16abaf42e963b0fa769848fb2691",
+      "engine_source_acceptance": "NOT_RUN",
+      "limits": "Tiny authored Linux C fixture only. Full Chromium outputs, transitive toolchain/SDK provenance, Windows resume, storage allowance and final-link fit remain unproven."
+    },
+    "resume": {
+      "schema_revision": 1,
+      "phase": "resume",
+      "context": {
+        "source_commit": "9167829bc14220ae228141b99e8200d139eaedd3",
+        "probe_script_sha256": "7b9d123be5eb24fbfbb36d3d040a8453ea439f4e5eca2664390aebe15695d556",
+        "run_id": "43515347693",
+        "run_attempt": "1",
+        "runner_image": null,
+        "toolchain_container": "python@sha256:934f4289019d6c3dc94d5e6341ff3a70c82f19bb118756eb03bdd700fe4b5c98",
+        "workspace": "/__w/Numera-Core-Browser/Numera-Core-Browser/build/siso-probe/workspace",
+        "siso_sha256": "8df1ad4f15ad38ba5232bb91d54426ab84893ce9e28fd63fe64bf44fb1cb8036",
+        "compiler": "/usr/bin/x86_64-linux-gnu-gcc-12",
+        "compiler_sha256": "75e997ec62297a6484f491bae28ab0ccb489daba23e398fd10fe68e9e6f0def8"
+      },
+      "results": [
+        {
+          "case": "restored-partial-checkpoint",
+          "steps": 2,
+          "program_exit": 7,
+          "result": "PASS"
+        },
+        {
+          "case": "unchanged",
+          "steps": 0,
+          "program_exit": 7,
+          "result": "PASS"
+        },
+        {
+          "case": "header-invalidation",
+          "steps": 2,
+          "program_exit": 8,
+          "result": "PASS"
+        },
+        {
+          "case": "same-size-mtime-corruption-a.o",
+          "result": "REJECTED"
+        },
+        {
+          "case": "same-size-mtime-corruption-value.h",
+          "result": "REJECTED"
+        }
+      ],
+      "execution_context": "github-actions",
+      "job": "resume",
+      "host_runner_image": null,
+      "checkpoint_sha256": "c864ffbaffb440e0eb0399d8046221901b2a16abaf42e963b0fa769848fb2691",
+      "engine_source_acceptance": "NOT_RUN",
+      "limits": "Tiny authored Linux C fixture only. Full Chromium outputs, transitive toolchain/SDK provenance, Windows resume, storage allowance and final-link fit remain unproven."
+    }
+  },
+  "artifacts": [
+    {
+      "id": 14080622030,
+      "name": "tiny-siso-seed-evidence",
+      "transport_zip_bytes": 2114,
+      "transport_zip_sha256": "053a6d1268788a810e377281764e98151f1fba3db2a99f82241cc4501543b33b",
+      "expires_at": "2026-11-20T21:58:58Z"
+    },
+    {
+      "id": 14080492152,
+      "name": "tiny-siso-checkpoint",
+      "transport_zip_bytes": 440142,
+      "transport_zip_sha256": "224554ab87fe1da6d51e77e9477de8505790600d44b009203e6b96f0c5b8418a",
+      "expires_at": "2026-11-20T21:58:58Z"
+    },
+    {
+      "id": 14080042912,
+      "name": "tiny-siso-resume-evidence",
+      "transport_zip_bytes": 3509,
+      "transport_zip_sha256": "0b44db57212c2cae3ca28b2679dc305fec2ecb48fe21c947af4769a72c5f3872",
+      "expires_at": "2026-11-20T21:59:30Z"
+    }
+  ],
+  "independent_download_verification": "PASS: all three transport ZIP digests, checkpoint digest, all restored member hashes and matching source/license verified",
+  "complete_source_sha256": "fbe053e2da7eb88697a0231558697d2dfdc8081702363c340c05c5ea2f7f5417",
+  "engine_acceptance": "NOT_RUN",
+  "limitations": [
+    "The two jobs used distinct fresh hosted jobs and the same pinned container; their observed host image versions also matched on this passing attempt.",
+    "ImageVersion was not passed into container step environments; null producer fields are unmeasured. Versions above were recovered from actual public job headers.",
+    "This does not measure full Chromium object size, storage allowance, complete SDK/toolchain inputs, Windows state restoration or final link fit."
+  ]
+}
