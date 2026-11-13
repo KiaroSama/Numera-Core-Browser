@@ -1,0 +1,27 @@
+{
+  "schema_revision": 1,
+  "run_id": 42893263429,
+  "commit": "79e9452268010f6aa28acd78e31e8045307c72ac",
+  "run_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42893263429",
+  "result": "BLOCKED",
+  "stage": "compile-link",
+  "reason": "Bounded cold source-build time budget exhausted",
+  "budget_minutes": 330,
+  "elapsed_seconds_reported": 19801,
+  "free_disk_gb_reported": 196.16,
+  "peak_sampled_process_tree_rss_gb_reported": 7.23,
+  "measurement_scope": "Rounded values recovered from final job check output, not the expired raw report. RSS can count shared pages more than once.",
+  "retained_sources": [
+    "Public workflow job log 130099611276",
+    "Final check-run output 130099611276"
+  ],
+  "artifact_id": 13820781950,
+  "artifact_sha256_reported_by_upload": "4f5a4c34b51e2e949272fe92019cdf689e82507fa410ebfc85cf5dcb4d9cb762",
+  "artifact_available_on_2026_11_13": false,
+  "artifact_independently_downloaded_and_verified": false,
+  "native_action_counter": null,
+  "native_compiler_diagnostics": "UNAVAILABLE: native log was only in the expired evidence artifact",
+  "renderer_fixture": "NOT_RUN",
+  "release_ready": false,
+  "limitation": "This proves exhaustion of this optimized recipe budget, not that every allowed configuration or the full six-hour platform limit is infeasible."
+}

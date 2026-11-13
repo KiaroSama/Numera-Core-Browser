@@ -12,6 +12,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -37,6 +38,35 @@ def sha256(path):
         for block in iter(lambda: file.read(1024 * 1024), b''):
             digest.update(block)
     return digest.hexdigest()
+
+
+def read_progress(path):
+    """Read a bounded binary tail; absent counters remain unmeasured."""
+    try:
+        with path.open('rb') as file:
+            file.seek(0, os.SEEK_END)
+            file.seek(max(0, file.tell() - 65536))
+            tail = file.read(65536)
+    except OSError:
+        return None
+    progress = None
+    for match in re.finditer(rb'(?:^|[\r\n])[ \t]*\[(\d{1,9})/(\d{1,9})\][ \t]', tail):
+        completed, total = map(int, match.groups())
+        if 0 <= completed <= total and total > 0:
+            progress = {'completed': completed, 'total': total}
+    return progress
+
+
+def record_stage(report, stage):
+    report['stage'] = stage
+    if stage in {'compile-link', 'compile-complete'} and report['source_build'] == 'NOT_RUN':
+        report['source_build'] = 'RUNNING'
+    if stage == 'controlled-renderer-fixture' and report['renderer_fixture'] == 'NOT_RUN':
+        report['renderer_fixture'] = 'RUNNING'
+    if report['result'] == 'BLOCKED':
+        for gate in ['source_build', 'renderer_fixture']:
+            if report[gate] == 'RUNNING':
+                report[gate] = 'BLOCKED'
 
 
 class RendererFixture(HTMLParser):
@@ -115,6 +145,12 @@ class CheckRun:
                    f"Peak sampled process-tree RSS: {report['peak_tree_rss_bytes']/1e9:.2f} GB.\n\n"
                    f"Result: **{report['result']}**. Release ready: **false**.\n\n"
                    "Source compilation and a controlled renderer fixture are separate from full browser/automation/release acceptance.")
+        if report.get('parallelism') is not None:
+            summary += f"\n\nLocal compiler ceiling: {report['parallelism']}. Debug build: {report.get('debug_build', False)}."
+        if report.get('native_action_progress'):
+            progress = report['native_action_progress']
+            summary += (f"\n\nObserved native action counter: {progress['completed']}/{progress['total']}. "
+                        "Actions include generation, compilation and linking; this is not browser acceptance or a time estimate.")
         self.request(f'/repos/{self.repo}/check-runs/{self.id}',
                      {'output': {'title': report['stage'], 'summary': summary}})
 
@@ -151,6 +187,7 @@ def main():
     parser.add_argument('--output', required=True)
     parser.add_argument('--budget-minutes', type=int, default=330)
     parser.add_argument('--component-build', action='store_true')
+    parser.add_argument('--debug-build', action='store_true')
     parser.add_argument('--prerequisites-only', action='store_true')
     parser.add_argument('--parallelism', type=int, choices=range(1, 5), default=4)
     args = parser.parse_args()
@@ -176,6 +213,7 @@ def main():
         'runner_image_version': os.environ.get('ImageVersion'), 'psutil_version': psutil.__version__,
         'cpu_count': os.cpu_count(), 'physical_memory_bytes': psutil.virtual_memory().total,
         'budget_minutes': args.budget_minutes, 'component_build': args.component_build,
+        'debug_build': args.debug_build, 'native_action_progress': None,
         'requested_parallelism': args.parallelism, 'parallelism': parallelism,
         'memory_available_initial_bytes': available_memory,
         'parallelism_policy': 'At most available CPUs, requested ceiling and 3 GiB of initially available memory per local compiler; this is a conservative recipe, not a universal engine resource minimum',
@@ -199,6 +237,8 @@ def main():
         command = ['pwsh', '-NoProfile', '-File', 'scripts/Build-Chromium.ps1', '-SourceRoot', str(scratch), '-Phase', 'Prerequisites' if args.prerequisites_only else 'Build', '-Parallelism', str(parallelism), '-BuildDriver']
         if args.component_build:
             command.append('-ComponentBuild')
+        if args.debug_build:
+            command.append('-DebugBuild')
         with (output / 'native-build.log').open('wb') as log_file:
             process = subprocess.Popen(command, stdout=log_file, stderr=subprocess.STDOUT, env=environment)
             parent = psutil.Process(process.pid)
@@ -209,7 +249,8 @@ def main():
                 report['minimum_free_disk_bytes'] = min(report['minimum_free_disk_bytes'], report['disk_free_bytes'])
                 phase = scratch / 'phase.txt'
                 if phase.exists():
-                    report['stage'] = phase.read_text(encoding='utf-8-sig').strip()
+                    record_stage(report, phase.read_text(encoding='utf-8-sig').strip())
+                report['native_action_progress'] = read_progress(output / 'native-build.log')
                 try:
                     tree = [parent, *parent.children(recursive=True)]
                     rss = 0
@@ -237,7 +278,9 @@ def main():
                         # compilation. Local reports and the native log persist.
                         report['telemetry_publish_error_type'] = type(error).__name__
                         log('Live check output unavailable; local evidence continues', severity='WARN', component='engine-build')
-                    log(f"{report['stage']}: {elapsed:.0f}s, {report['disk_free_bytes']/1e9:.2f} GB free", component='engine-build')
+                    progress = report['native_action_progress']
+                    counter = f", actions {progress['completed']}/{progress['total']}" if progress else ', actions unmeasured'
+                    log(f"{report['stage']}: {elapsed:.0f}s, {report['disk_free_bytes']/1e9:.2f} GB free, compiler ceiling {parallelism}{counter}", component='engine-build')
                     next_publish = elapsed + 30
                 time.sleep(1)
         report['native_exit_code'] = process.returncode
@@ -248,7 +291,7 @@ def main():
             report['stage'] = 'prerequisites-pass-source-build-not-run'
             return 0
         report['source_build'] = 'PASS'
-        report['stage'] = 'controlled-renderer-fixture'
+        record_stage(report, 'controlled-renderer-fixture')
         binary = scratch / 'checkout/src/out/Numera' / ('chrome.exe' if os.name == 'nt' else 'Chromium.app/Contents/MacOS/Chromium')
         report['binary_sha256'] = sha256(binary)
         report['binary_bytes'] = binary.stat().st_size
@@ -268,8 +311,10 @@ def main():
         report['elapsed_seconds'] = round(time.monotonic() - started, 3)
         # A fast failure can occur between samples; preserve the exact final
         # phase instead of reporting the previous sampled phase as the failure.
-        if report['result'] == 'BLOCKED' and (scratch / 'phase.txt').is_file():
+        if report['result'] == 'BLOCKED' and report['source_build'] != 'PASS' and (scratch / 'phase.txt').is_file():
             report['stage'] = (scratch / 'phase.txt').read_text(encoding='utf-8-sig').strip()
+        record_stage(report, report['stage'])
+        report['native_action_progress'] = read_progress(output / 'native-build.log')
         for name in ['phase.txt', 'phases.ndjson', 'gn-args.txt', 'windows-sdk.json', 'windows-sdk.log']:
             if (scratch / name).is_file():
                 shutil.copyfile(scratch / name, output / name)

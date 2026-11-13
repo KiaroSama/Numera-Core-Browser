@@ -528,9 +528,10 @@
       "commit": "e5d5f022db16b5dae0106e3b7d4cf205a34c07bc",
       "workflow_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42871431763",
       "evidence": [],
-      "limitation": "Linux/ARM64 macOS were below the conservative preflight disk budget. Windows/Intel macOS cold acquisition exhausted the five-minute spike. Full six-hour source-build viability is unresolved.",
+      "limitation": "The optimized Windows cold build exhausted its 330-minute budget at compile-link; substantial disk remained. Exact native progress was lost with the one-day artifact. A debug/component source candidate is pending; full six-hour viability remains unresolved.",
       "hosted_commit": "8c0bcf819c0fcded67e5b7a20d69c7fd68902419",
-      "artifact_directory": "docs/evidence/hosted-feasibility-42871431763"
+      "artifact_directory": "docs/evidence/hosted-feasibility-42871431763",
+      "latest_attempt_summary": "docs/evidence/cold-source-42893263429-summary.json"
     },
     {
       "id": "C07",

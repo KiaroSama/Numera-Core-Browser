@@ -15,6 +15,10 @@ on:
         description: Use an explicitly labeled development component build
         type: boolean
         default: true
+      debug_build:
+        description: Use upstream debug compilation to reduce cold compiler optimization work
+        type: boolean
+        default: true
       prerequisites_only:
         description: Verify/install the Windows SDK without downloading engine source
         type: boolean
@@ -56,11 +60,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           BUILD_BUDGET_MINUTES: ${{ inputs.budget_minutes }}
           BUILD_COMPONENT: ${{ inputs.component_build }}
+          BUILD_DEBUG: ${{ inputs.debug_build }}
           BUILD_PREREQUISITES_ONLY: ${{ inputs.prerequisites_only }}
           BUILD_PARALLELISM: ${{ inputs.parallelism }}
         run: |
           $Arguments = @('scripts/engine_build.py', '--output', 'build/engine-evidence', '--budget-minutes', $env:BUILD_BUDGET_MINUTES, '--parallelism', $env:BUILD_PARALLELISM)
           if ($env:BUILD_COMPONENT -eq 'true') { $Arguments += '--component-build' }
+          if ($env:BUILD_DEBUG -eq 'true') { $Arguments += '--debug-build' }
           if ($env:BUILD_PREREQUISITES_ONLY -eq 'true') { $Arguments += '--prerequisites-only' }
           python @Arguments
           exit $LASTEXITCODE
@@ -70,6 +76,6 @@ jobs:
         with:
           name: cold-source-evidence-${{ inputs.target }}
           path: build/engine-evidence
-          retention-days: 1
+          retention-days: 7
           compression-level: 9
           if-no-files-found: error

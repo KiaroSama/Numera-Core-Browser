@@ -7,6 +7,7 @@ param(
     [ValidateSet('Prerequisites', 'Acquire', 'Build')][string]$Phase = 'Acquire',
     [ValidateRange(1,4)][int]$Parallelism = 2,
     [switch]$ComponentBuild,
+    [switch]$DebugBuild,
     [switch]$BuildDriver
 )
 $ErrorActionPreference = 'Stop'
@@ -100,7 +101,8 @@ try {
                 Stage 'gn-generation'
                 $Cpu = if ($env:RUNNER_ARCH -eq 'ARM64') { 'arm64' } else { 'x64' }
                 $Component = if ($ComponentBuild) { 'true' } else { 'false' }
-                $GnArgs = 'is_debug=false is_component_build=' + $Component + ' symbol_level=0 blink_symbol_level=0 v8_symbol_level=0 use_remoteexec=false is_official_build=false is_chrome_branded=false proprietary_codecs=false ffmpeg_branding="Chromium" target_cpu="' + $Cpu + '"'
+                $Debug = if ($DebugBuild) { 'true' } else { 'false' }
+                $GnArgs = 'is_debug=' + $Debug + ' is_component_build=' + $Component + ' symbol_level=0 blink_symbol_level=0 v8_symbol_level=0 use_remoteexec=false is_official_build=false is_chrome_branded=false proprietary_codecs=false ffmpeg_branding="Chromium" target_cpu="' + $Cpu + '"'
                 Set-Content (Join-Path $SourceRoot 'gn-args.txt') $GnArgs -Encoding utf8NoBOM
                 # Windows .bat launchers consume quotes inside --args. A native
                 # args.gn file preserves GN string literals on every platform.

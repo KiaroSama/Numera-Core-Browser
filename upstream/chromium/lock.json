@@ -3,8 +3,8 @@
   "family": "chromium",
   "package_id": "numera-chromium",
   "upstream_url": "https://chromium.googlesource.com/chromium/src.git",
-  "upstream_version": "157.0.8103.51",
-  "upstream_revision": "653674df293788cf4932c40d914e9e15b41a2d31",
+  "upstream_version": "157.0.8103.79",
+  "upstream_revision": "6dc9bc3bdaea5c35ed6d41fceab2f7a3a2227c4f",
   "depot_tools_url": "https://chromium.googlesource.com/chromium/tools/depot_tools.git",
   "depot_tools_revision": "c4cdaeebba9b9ed92d041997317ffdbd042158ac",
   "patches": [
@@ -19,22 +19,22 @@
   ],
   "status": "candidate-not-built",
   "approved": false,
-  "build_mode": "release-symbols-0",
+  "build_mode": "development",
   "target": "chrome",
   "platform_pins": {
     "windows": {
-      "version": "157.0.8103.51",
-      "revision": "653674df293788cf4932c40d914e9e15b41a2d31",
+      "version": "157.0.8103.79",
+      "revision": "6dc9bc3bdaea5c35ed6d41fceab2f7a3a2227c4f",
       "branding_source_sha256": "a8fb46cd865b6b7fbf829da098e98c6833b74bdcf2522c78183c30dde2cef942"
     },
     "linux": {
-      "version": "157.0.8103.50",
-      "revision": "049750111b1e5c11565c792b2aeed5541f332bad",
+      "version": "157.0.8103.78",
+      "revision": "4b3d0dabb8250b6f152d2d85d79e7706e309d087",
       "branding_source_sha256": "a8fb46cd865b6b7fbf829da098e98c6833b74bdcf2522c78183c30dde2cef942"
     },
     "macos": {
-      "version": "157.0.8103.51",
-      "revision": "653674df293788cf4932c40d914e9e15b41a2d31",
+      "version": "157.0.8103.79",
+      "revision": "6dc9bc3bdaea5c35ed6d41fceab2f7a3a2227c4f",
       "branding_source_sha256": "a8fb46cd865b6b7fbf829da098e98c6833b74bdcf2522c78183c30dde2cef942"
     }
   }

@@ -1,6 +1,7 @@
 import importlib.util
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -18,6 +19,35 @@ class RendererEvidence(unittest.TestCase):
 
     def test_only_the_executed_dom_marker_passes(self):
         self.assertTrue(module.renderer_passed('<strong id="result">NUMERA_RENDERER_FIXTURE_PASS</strong>'))
+
+
+class BuildProgress(unittest.TestCase):
+    def test_extracts_last_valid_action_counter_without_decoding_binary_noise(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'native.log'
+            path.write_bytes(b'\xff\r[12/300] CXX a.cc\r[13/300] LINK a.dll\n[999/2] invalid')
+            self.assertEqual(module.read_progress(path), {'completed': 13, 'total': 300})
+
+    def test_absent_counter_does_not_invent_a_percentage(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'native.log'
+            path.write_bytes(b'source acquisition still running')
+            self.assertIsNone(module.read_progress(path))
+
+    def test_compile_timeout_records_attempted_gate_and_preserves_passed_gate(self):
+        report = {'result': 'RUNNING', 'source_build': 'NOT_RUN', 'renderer_fixture': 'NOT_RUN'}
+        module.record_stage(report, 'compile-link')
+        self.assertEqual(report['source_build'], 'RUNNING')
+        report['result'] = 'BLOCKED'
+        module.record_stage(report, 'compile-link')
+        self.assertEqual(report['source_build'], 'BLOCKED')
+        self.assertEqual(report['renderer_fixture'], 'NOT_RUN')
+        report.update(result='RUNNING', source_build='PASS')
+        module.record_stage(report, 'controlled-renderer-fixture')
+        report['result'] = 'BLOCKED'
+        module.record_stage(report, 'controlled-renderer-fixture')
+        self.assertEqual(report['source_build'], 'PASS')
+        self.assertEqual(report['renderer_fixture'], 'BLOCKED')
 
 
 class TelemetryIsolation(unittest.TestCase):
