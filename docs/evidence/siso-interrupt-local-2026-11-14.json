@@ -1,0 +1,55 @@
+{
+  "schema_revision": 1,
+  "scope": "Local authored tiny C experiment; no Chromium source or engine compilation",
+  "siso_revision": "b521b230cb7c56c821235e498285cf8e548a73ee",
+  "siso_executable_sha256": "8df1ad4f15ad38ba5232bb91d54426ab84893ce9e28fd63fe64bf44fb1cb8036",
+  "compiler_sha256": "a23ecab8ff08f09ad8c80602c2c5df7f49e09c25905cb8975902e101bf72635f",
+  "host_system": "Linux",
+  "host_machine": "x86_64",
+  "cases": [
+    {
+      "scope": "Local tiny authored C interrupt/state-flush experiment; no engine source",
+      "siso_executable_sha256": "8df1ad4f15ad38ba5232bb91d54426ab84893ce9e28fd63fe64bf44fb1cb8036",
+      "interrupted_exit": 1,
+      "completed_objects_before_interrupt": 2,
+      "fs_state_preserved": true,
+      "resume_exit": 0,
+      "resume_steps": 3,
+      "program_exit": 7,
+      "engine_acceptance": "NOT_RUN",
+      "acknowledged_steps_at_interruption": 0,
+      "native_interruption_summary": "Build Failure: 0 done, 0 failed, 3 remaining - 0.00/s",
+      "interrupted_log_sha256": "ae955815e2457ac5f6ce23eb5c3bcca08f67d4804693fd2c7f2ddb13d75e1886",
+      "resumed_log_sha256": "983bcdbac78dc62833b1fe73ef87dfbfaeff2bf1a33b9b62db6e681b1944c78f"
+    },
+    {
+      "scope": "Local tiny authored C experiment after completed-step acknowledgement; not engine acceptance",
+      "siso_executable_sha256": "8df1ad4f15ad38ba5232bb91d54426ab84893ce9e28fd63fe64bf44fb1cb8036",
+      "interrupted_exit": 1,
+      "completed_native_steps_before_interrupt": 2,
+      "fs_state_preserved": true,
+      "resume_exit": 0,
+      "resume_steps": 1,
+      "program_exit": 7,
+      "engine_acceptance": "NOT_RUN",
+      "acknowledged_steps_at_interruption": 2,
+      "native_interruption_summary": "Build Failure: 2 done, 0 failed, 1 remaining - 10.27/s",
+      "interrupted_log_sha256": "50ae15e6a672441da852fa13bbc224701ef2bc41fe4006a1a1414db4aad890df",
+      "resumed_log_sha256": "dd0ea9adcae08b8f20dc006fc7f8f15e20b28fe8d5ba93dd68403506de9973b6"
+    }
+  ],
+  "fixture_sources": {
+    "a.c": "#include \"value.h\"\nint answer(void) { return VALUE; }\n",
+    "main.c": "int answer(void); int main(void) { return answer(); }\n",
+    "value.h": "#define VALUE 7\n",
+    "build.ninja": "rule cc\n  command = /usr/bin/cc -MMD -MF $out.d -c $in -o $out\n  depfile = $out.d\n  deps = gcc\nrule link\n  command = /usr/bin/sleep 8 && /usr/bin/cc $in -o $out\nbuild a.o: cc a.c\nbuild main.o: cc main.c\nbuild sample: link a.o main.o\ndefault sample\n"
+  },
+  "method": "Launch Siso in a new process group, signal only that owned group with SIGINT, wait for exit/state flush, copy its owned workspace/state preserving file metadata back to the same absolute path, then invoke Siso and execute the produced sample. The first case signalled when object files appeared; the second waited for two native completion acknowledgements and link start.",
+  "conclusion": "File existence did not prove a completed native step: the first case acknowledged zero steps and safely rebuilt all three. After two acknowledged steps, the interrupted state reused both objects and executed only one final link; the program returned7.",
+  "limitations": [
+    "Same local Linux machine and exact workspace path; not a two-runner result.",
+    "SIGINT is not evidence that SIGKILL or process-tree termination flushes valid state.",
+    "Does not prove Chromium intermediate size/provenance, Windows SDK/state resumption, cache allowance or final engine link fit."
+  ],
+  "engine_acceptance": "NOT_RUN"
+}
