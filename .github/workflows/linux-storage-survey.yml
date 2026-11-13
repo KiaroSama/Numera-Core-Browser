@@ -1,0 +1,44 @@
+name: Linux hosted storage survey
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  survey:
+    if: github.repository == 'KiaroSama/Numera-Core-Browser' && github.event.repository.private == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Measure distinct task-relevant volumes without modifying them
+        run: |
+          python3 - <<'PY'
+          import json, os, shutil
+          from pathlib import Path
+          measurements = []
+          for name in ['GITHUB_WORKSPACE', 'RUNNER_TEMP', '/mnt', '/tmp']:
+              path = Path(os.environ[name] if name in os.environ else name)
+              if not path.is_dir():
+                  measurements.append({'candidate': name, 'available': False})
+                  continue
+              usage = shutil.disk_usage(path)
+              measurements.append({'candidate': name, 'path': str(path.resolve()),
+                  'device_id': path.stat().st_dev, 'total_bytes': usage.total,
+                  'free_bytes': usage.free, 'write_access_reported': os.access(path, os.W_OK)})
+          report = {'schema_revision': 1, 'source_commit': os.environ['GITHUB_SHA'],
+              'run_id': os.environ['GITHUB_RUN_ID'], 'image_version': os.environ.get('ImageVersion'),
+              'measurements': measurements, 'engine_acceptance': 'NOT_RUN',
+              'note': 'Read-only filesystem observations. Repeated device IDs share capacity; this is not proof of combined build fit or permission to clean installed tools.'}
+          output = Path('build/linux-storage-survey')
+          output.mkdir(parents=True, exist_ok=False)
+          (output / 'report.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
+          print(json.dumps(report, indent=2))
+          PY
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: linux-storage-survey
+          path: build/linux-storage-survey/report.json
+          retention-days: 7
+          if-no-files-found: error
