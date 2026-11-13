@@ -15,7 +15,7 @@ jobs:
       - name: Measure distinct task-relevant volumes without modifying them
         run: |
           python3 - <<'PY'
-          import json, os, shutil
+          import json, os, shutil, subprocess
           from pathlib import Path
           measurements = []
           for name in ['GITHUB_WORKSPACE', 'RUNNER_TEMP', '/mnt', '/tmp']:
@@ -27,9 +27,20 @@ jobs:
               measurements.append({'candidate': name, 'path': str(path.resolve()),
                   'device_id': path.stat().st_dev, 'total_bytes': usage.total,
                   'free_bytes': usage.free, 'write_access_reported': os.access(path, os.W_OK)})
+          sdk = Path('/usr/local/lib/android/sdk')
+          optional_sdk = {'path': str(sdk), 'exists': sdk.is_dir(),
+              'symlink': sdk.is_symlink(), 'resolved_path': str(sdk.resolve()),
+              'android_home': os.environ.get('ANDROID_HOME'), 'measured_bytes': None}
+          if sdk.is_dir() and not sdk.is_symlink():
+              result = subprocess.run(['du', '-sx', '--block-size=1', str(sdk)],
+                  capture_output=True, text=True, timeout=45)
+              optional_sdk['du_exit'] = result.returncode
+              if result.returncode == 0:
+                  optional_sdk['measured_bytes'] = int(result.stdout.split()[0])
           report = {'schema_revision': 1, 'source_commit': os.environ['GITHUB_SHA'],
               'run_id': os.environ['GITHUB_RUN_ID'], 'image_version': os.environ.get('ImageVersion'),
-              'measurements': measurements, 'engine_acceptance': 'NOT_RUN',
+              'measurements': measurements, 'optional_preinstalled_android_sdk': optional_sdk,
+              'engine_acceptance': 'NOT_RUN',
               'note': 'Read-only filesystem observations. Repeated device IDs share capacity; this is not proof of combined build fit or permission to clean installed tools.'}
           output = Path('build/linux-storage-survey')
           output.mkdir(parents=True, exist_ok=False)
