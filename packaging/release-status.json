@@ -3,7 +3,7 @@
   "core_version": "0.1.0-dev.1",
   "source_delivery": "Published development source snapshot; not a promoted release",
   "binary_release_eligible": false,
-  "cli_binary_published": false,
+  "cli_binary_published": true,
   "gui_binary_published": false,
   "engine_packages_published": [],
   "trusted_update_root": null,
@@ -15,8 +15,23 @@
   },
   "repository_published": true,
   "blockers": [
-    "Owned engine source-build acceptance unresolved: preflight disk budget or bounded cold-acquisition timeout",
+    "Owned engine cold source-build acceptance unresolved: optimized run reached its 330-minute compile-link budget; separate debug source run 43498547353 is pending",
     "No real browser/native automation acceptance",
     "No signed updater or paired manager smoke suite"
-  ]
+  ],
+  "development_cli": {
+    "source_commit": "344fbb49b30dea922578ccdef1fb8ec1ef76f1a3",
+    "run_id": 43509657873,
+    "channel": "unsigned-development-control-plane",
+    "targets": [
+      "windows-x86_64",
+      "linux-x86_64",
+      "macos-aarch64",
+      "macos-x86_64"
+    ],
+    "evidence": "docs/evidence/development-cli-43509657873.json",
+    "browser_included": false,
+    "clean_machine_installation": "NOT_RUN",
+    "retention_days": 7
+  }
 }

@@ -25,9 +25,11 @@ cargo run --locked -q -p core-cli -- serve
 
 The compiled CLI requires no Node.js, Python, display server or manager installation. Python is used only by development/research/conformance tools. On Windows use PowerShell 7: `./scripts/Build.ps1 -Mode Check` or `-Mode Build`.
 
-## Source layout
-
 Successful native CI jobs produce `development-cli-*` artifacts with a `development-cli.tar.gz` bundle containing the tested CLI, notices and matching `complete-source.zip`. After extracting the artifact ZIP, extract the tar bundle with `tar -xzf development-cli.tar.gz`. In its `development-cli` directory run `./numera-core --json doctor` (PowerShell: `.\numera-core.exe --json doctor`). These unsigned development archives contain the control plane; browser/GUI and clean-machine installation acceptance remain open.
+
+[Verified development downloads](https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/43509657873) are available for Windows x86-64, Linux x86-64, macOS ARM64 and macOS Intel. Select the matching `development-cli-*` artifact on that run; GitHub may require login. The seven-day artifacts expire on 2026-11-20 UTC. [Recorded hashes and native execution evidence](docs/evidence/development-cli-43509657873.json) bind them to source `344fbb49b30dea922578ccdef1fb8ec1ef76f1a3`; later source changes are not included in those archives.
+
+## Source layout
 
 | Path | Implemented responsibility |
 | --- | --- |

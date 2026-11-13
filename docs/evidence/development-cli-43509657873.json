@@ -1,0 +1,213 @@
+{
+  "schema_revision": 1,
+  "run": {
+    "id": 43509657873,
+    "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/43509657873",
+    "source_commit": "344fbb49b30dea922578ccdef1fb8ec1ef76f1a3",
+    "conclusion": "success"
+  },
+  "scope": "Unsigned development Rust CLI only. No browser engine or GUI, trusted updater, clean-machine certification or manager integration release.",
+  "native_jobs": [
+    {
+      "name": "native (ubuntu-24.04)",
+      "job_id": 132176292428,
+      "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/43509657873/job/132176292428",
+      "tests": 45,
+      "result": "success",
+      "package_execution": "PASS",
+      "privacy_controls": "PASS"
+    },
+    {
+      "name": "native (macos-15)",
+      "job_id": 132176292492,
+      "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/43509657873/job/132176292492",
+      "tests": 45,
+      "result": "success",
+      "package_execution": "PASS",
+      "privacy_controls": "PASS"
+    },
+    {
+      "name": "native (macos-15-intel)",
+      "job_id": 132176292520,
+      "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/43509657873/job/132176292520",
+      "tests": 45,
+      "result": "success",
+      "package_execution": "PASS",
+      "privacy_controls": "PASS"
+    },
+    {
+      "name": "native (windows-2025)",
+      "job_id": 132176292626,
+      "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/43509657873/job/132176292626",
+      "tests": 47,
+      "result": "success",
+      "package_execution": "PASS",
+      "privacy_controls": "PASS"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 14078590116,
+      "name": "development-cli-macos-15",
+      "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/43509657873/artifacts/14078590116",
+      "transport_zip_bytes": 1843292,
+      "transport_zip_sha256": "14eabaea9f93bbc24d527455e5abbfeadd55efc2467b1ff18d5a27a6268d72ab",
+      "expires_at": "2026-11-20T21:20:33Z",
+      "downloaded_hash_verification": "PASS",
+      "matching_source_verification": "PASS",
+      "private_file_exclusion": "PASS",
+      "package_manifest": {
+        "schema_revision": 1,
+        "product": "Numera Core Browser development CLI",
+        "channel": "development-control-plane",
+        "version": "0.1.0-dev.1",
+        "source_commit": "344fbb49b30dea922578ccdef1fb8ec1ef76f1a3",
+        "runner_target": "macos-15",
+        "native_system": "Darwin",
+        "native_machine": "arm64",
+        "executable": "numera-core",
+        "executable_sha256": "a619c4fd0226778a798c2dd3c8023eeedf10535f1f0ece9a18a742610b97b243",
+        "complete_source": {
+          "file": "complete-source.zip",
+          "sha256": "39c5a286f0189154d8233319addc3ce567d672aaf5a8908c6528090eef863dc1",
+          "scope": "Complete first-party repository tree; independent third-party source locations and notices are in licenses/dependencies.json"
+        },
+        "engine_ready": false,
+        "browser_gui": false,
+        "archive_signature": "none",
+        "publisher_signing": "NOT_CONFIGURED",
+        "platform_signing": "NOT_EVALUATED",
+        "clean_machine_installation": "NOT_RUN",
+        "native_staged_doctor": "PASS"
+      }
+    },
+    {
+      "id": 14078330671,
+      "name": "development-cli-windows-2025",
+      "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/43509657873/artifacts/14078330671",
+      "transport_zip_bytes": 1374320,
+      "transport_zip_sha256": "17a720f30c2a4798dd038d427e4db5a50ef4ebdee90441eb5af727b251af038d",
+      "expires_at": "2026-11-20T21:20:59Z",
+      "downloaded_hash_verification": "PASS",
+      "matching_source_verification": "PASS",
+      "private_file_exclusion": "PASS",
+      "package_manifest": {
+        "schema_revision": 1,
+        "product": "Numera Core Browser development CLI",
+        "channel": "development-control-plane",
+        "version": "0.1.0-dev.1",
+        "source_commit": "344fbb49b30dea922578ccdef1fb8ec1ef76f1a3",
+        "runner_target": "windows-2025",
+        "native_system": "Windows",
+        "native_machine": "AMD64",
+        "executable": "numera-core.exe",
+        "executable_sha256": "551e0bf5e6a9666def56853e680c313744334a2e79a2a380161f74115998a359",
+        "complete_source": {
+          "file": "complete-source.zip",
+          "sha256": "39c5a286f0189154d8233319addc3ce567d672aaf5a8908c6528090eef863dc1",
+          "scope": "Complete first-party repository tree; independent third-party source locations and notices are in licenses/dependencies.json"
+        },
+        "engine_ready": false,
+        "browser_gui": false,
+        "archive_signature": "none",
+        "publisher_signing": "NOT_CONFIGURED",
+        "platform_signing": "NOT_EVALUATED",
+        "clean_machine_installation": "NOT_RUN",
+        "native_staged_doctor": "PASS"
+      }
+    },
+    {
+      "id": 14077896976,
+      "name": "development-cli-ubuntu-24.04",
+      "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/43509657873/artifacts/14077896976",
+      "transport_zip_bytes": 6271227,
+      "transport_zip_sha256": "0e969a8adae457fa50fd7d7da5841d03a2912e1a64d7afa033947a2195ba6d44",
+      "expires_at": "2026-11-20T21:20:25Z",
+      "downloaded_hash_verification": "PASS",
+      "matching_source_verification": "PASS",
+      "private_file_exclusion": "PASS",
+      "package_manifest": {
+        "schema_revision": 1,
+        "product": "Numera Core Browser development CLI",
+        "channel": "development-control-plane",
+        "version": "0.1.0-dev.1",
+        "source_commit": "344fbb49b30dea922578ccdef1fb8ec1ef76f1a3",
+        "runner_target": "ubuntu-24.04",
+        "native_system": "Linux",
+        "native_machine": "x86_64",
+        "executable": "numera-core",
+        "executable_sha256": "a31e576a711efd4b0f77bd0f285a4b2964774f7ab8e571fc0840faa48188c3a5",
+        "complete_source": {
+          "file": "complete-source.zip",
+          "sha256": "39c5a286f0189154d8233319addc3ce567d672aaf5a8908c6528090eef863dc1",
+          "scope": "Complete first-party repository tree; independent third-party source locations and notices are in licenses/dependencies.json"
+        },
+        "engine_ready": false,
+        "browser_gui": false,
+        "archive_signature": "none",
+        "publisher_signing": "NOT_CONFIGURED",
+        "platform_signing": "NOT_EVALUATED",
+        "clean_machine_installation": "NOT_RUN",
+        "native_staged_doctor": "PASS"
+      }
+    },
+    {
+      "id": 14076404225,
+      "name": "development-cli-macos-15-intel",
+      "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/43509657873/artifacts/14076404225",
+      "transport_zip_bytes": 1793194,
+      "transport_zip_sha256": "8dee3e94609030badafb61d89d5b62f0fa310f717169e4fb405b3fea7e850497",
+      "expires_at": "2026-11-20T21:21:05Z",
+      "downloaded_hash_verification": "PASS",
+      "matching_source_verification": "PASS",
+      "private_file_exclusion": "PASS",
+      "package_manifest": {
+        "schema_revision": 1,
+        "product": "Numera Core Browser development CLI",
+        "channel": "development-control-plane",
+        "version": "0.1.0-dev.1",
+        "source_commit": "344fbb49b30dea922578ccdef1fb8ec1ef76f1a3",
+        "runner_target": "macos-15-intel",
+        "native_system": "Darwin",
+        "native_machine": "x86_64",
+        "executable": "numera-core",
+        "executable_sha256": "f903cafeeb41e011128851a97676a6f5dfbd5c3cf665b39ef5a77c84d9b9854e",
+        "complete_source": {
+          "file": "complete-source.zip",
+          "sha256": "39c5a286f0189154d8233319addc3ce567d672aaf5a8908c6528090eef863dc1",
+          "scope": "Complete first-party repository tree; independent third-party source locations and notices are in licenses/dependencies.json"
+        },
+        "engine_ready": false,
+        "browser_gui": false,
+        "archive_signature": "none",
+        "publisher_signing": "NOT_CONFIGURED",
+        "platform_signing": "NOT_EVALUATED",
+        "clean_machine_installation": "NOT_RUN",
+        "native_staged_doctor": "PASS"
+      }
+    }
+  ],
+  "downloaded_linux_execution": "PASS: actual downloaded tar extracted with executable permissions and run with empty PATH; GitHub token variables removed.",
+  "foreign_archive_execution": "PASS on their corresponding native CI runners; not executed on the local Linux verifier.",
+  "complete_source_sha256": "39c5a286f0189154d8233319addc3ce567d672aaf5a8908c6528090eef863dc1",
+  "security_runs": [
+    {
+      "id": 43509657626,
+      "name": "Gitleaks full history and scanner controls",
+      "conclusion": "success",
+      "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/43509657626"
+    },
+    {
+      "id": 43509658061,
+      "name": "CodeQL",
+      "conclusion": "success",
+      "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/43509658061"
+    }
+  ],
+  "limitations": [
+    "CI artifacts expire after seven days and may require a GitHub login to download.",
+    "The archive has no publisher signature or trusted update metadata.",
+    "A successful staged executable on a CI image does not prove a clean installation on all end-user machines.",
+    "The source engine run 43498547353 is a separate experiment at b9fcb722a5ea5fa85e458c47c5fe24968ba7c609."
+  ]
+}
