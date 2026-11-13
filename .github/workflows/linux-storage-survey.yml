@@ -30,13 +30,18 @@ jobs:
           sdk = Path('/usr/local/lib/android/sdk')
           optional_sdk = {'path': str(sdk), 'exists': sdk.is_dir(),
               'symlink': sdk.is_symlink(), 'resolved_path': str(sdk.resolve()),
-              'android_home': os.environ.get('ANDROID_HOME'), 'measured_bytes': None}
+              'android_home': os.environ.get('ANDROID_HOME'), 'measured_bytes': None,
+              'measurement_result': 'NOT_PRESENT'}
           if sdk.is_dir() and not sdk.is_symlink():
-              result = subprocess.run(['du', '-sx', '--block-size=1', str(sdk)],
-                  capture_output=True, text=True, timeout=45)
-              optional_sdk['du_exit'] = result.returncode
-              if result.returncode == 0:
-                  optional_sdk['measured_bytes'] = int(result.stdout.split()[0])
+              try:
+                  result = subprocess.run(['du', '-sx', '--block-size=1', str(sdk)],
+                      capture_output=True, text=True, timeout=120)
+                  optional_sdk['du_exit'] = result.returncode
+                  optional_sdk['measurement_result'] = 'PASS' if result.returncode == 0 else 'BLOCKED'
+                  if result.returncode == 0:
+                      optional_sdk['measured_bytes'] = int(result.stdout.split()[0])
+              except subprocess.TimeoutExpired:
+                  optional_sdk['measurement_result'] = 'TIMEOUT'
           report = {'schema_revision': 1, 'source_commit': os.environ['GITHUB_SHA'],
               'run_id': os.environ['GITHUB_RUN_ID'], 'image_version': os.environ.get('ImageVersion'),
               'measurements': measurements, 'optional_preinstalled_android_sdk': optional_sdk,
@@ -46,8 +51,11 @@ jobs:
           output.mkdir(parents=True, exist_ok=False)
           (output / 'report.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
           print(json.dumps(report, indent=2))
+          if optional_sdk['measurement_result'] in {'TIMEOUT', 'BLOCKED'}:
+              raise SystemExit(1)
           PY
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
         with:
           name: linux-storage-survey
           path: build/linux-storage-survey/report.json
