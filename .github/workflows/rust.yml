@@ -2,9 +2,9 @@ name: Rust and NCB-1 control plane
 on:
   push:
     branches: [main, 'implementation/**']
-    paths: ['crates/**', 'Cargo.*', 'rust-toolchain.toml', 'contracts/**', 'scripts/Build.ps1', 'scripts/Check-PowerShell.ps1', 'scripts/export-contracts.py', 'scripts/check-contracts.py', 'scripts/licenses.py', 'scripts/security-audit.py', 'scripts/logging_util.py', 'licenses/**', 'requirements-dev.txt', '.github/workflows/rust.yml']
+    paths: ['crates/**', 'Cargo.*', 'rust-toolchain.toml', 'contracts/**', 'scripts/Build.ps1', 'scripts/Check-PowerShell.ps1', 'scripts/export-contracts.py', 'scripts/check-contracts.py', 'scripts/licenses.py', 'scripts/security-audit.py', 'scripts/logging_util.py', 'scripts/package-cli.py', 'scripts/verify-cli-package.py', 'licenses/**', 'requirements-dev.txt', '.github/workflows/rust.yml']
   pull_request:
-    paths: ['crates/**', 'Cargo.*', 'rust-toolchain.toml', 'contracts/**', 'scripts/Build.ps1', 'scripts/Check-PowerShell.ps1', 'scripts/export-contracts.py', 'scripts/check-contracts.py', 'scripts/licenses.py', 'scripts/security-audit.py', 'scripts/logging_util.py', 'licenses/**', 'requirements-dev.txt', '.github/workflows/rust.yml']
+    paths: ['crates/**', 'Cargo.*', 'rust-toolchain.toml', 'contracts/**', 'scripts/Build.ps1', 'scripts/Check-PowerShell.ps1', 'scripts/export-contracts.py', 'scripts/check-contracts.py', 'scripts/licenses.py', 'scripts/security-audit.py', 'scripts/logging_util.py', 'scripts/package-cli.py', 'scripts/verify-cli-package.py', 'licenses/**', 'requirements-dev.txt', '.github/workflows/rust.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -56,6 +56,21 @@ jobs:
           exit $LASTEXITCODE
       - name: License inventory and complete dependency notices
         run: python scripts/licenses.py --check
+      - name: Stage tested development CLI and matching complete source
+        shell: pwsh
+        env:
+          PACKAGE_TARGET: ${{ matrix.os }}
+        run: |
+          $Binary = if ($IsWindows) { 'target/debug/numera-core.exe' } else { 'target/debug/numera-core' }
+          python scripts/verify-cli-package.py --binary $Binary --output build/development-cli --target $env:PACKAGE_TARGET
+          exit $LASTEXITCODE
+      - name: Preserve development CLI; no engine or browser release
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: development-cli-${{ matrix.os }}
+          path: build/development-cli.tar.gz
+          retention-days: 7
+          if-no-files-found: error
   dependency-security:
     runs-on: ubuntu-24.04
     timeout-minutes: 5

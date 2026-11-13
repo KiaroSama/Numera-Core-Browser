@@ -27,6 +27,8 @@ The compiled CLI requires no Node.js, Python, display server or manager installa
 
 ## Source layout
 
+Successful native CI jobs produce `development-cli-*` artifacts with a `development-cli.tar.gz` bundle containing the tested CLI, notices and matching `complete-source.zip`. After extracting the artifact ZIP, extract the tar bundle with `tar -xzf development-cli.tar.gz`. In its `development-cli` directory run `./numera-core --json doctor` (PowerShell: `.\numera-core.exe --json doctor`). These unsigned development archives contain the control plane; browser/GUI and clean-machine installation acceptance remain open.
+
 | Path | Implemented responsibility |
 | --- | --- |
 | `crates/core-contracts` | Typed NCB-1 messages, strict JSON, schemas and NDJSON bounds |
