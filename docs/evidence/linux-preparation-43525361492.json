@@ -1,0 +1,14 @@
+{
+  "schema_revision": 1,
+  "run_id": "43525361492",
+  "source_commit": "8338a207fa0d173ffa13d00b0e53ed34de697ad7",
+  "result": "PASS",
+  "free_before_bytes": 91529449472,
+  "removed_path": "/usr/local/lib/android/sdk",
+  "engine_acceptance": "NOT_RUN",
+  "attempted_removal_path": "/usr/local/lib/android/sdk",
+  "free_after_bytes": 103368474624,
+  "timestamp": "2026-11-13T23:13:24.091397+00:00",
+  "severity": "INFO",
+  "component": "ephemeral-linux-builder"
+}

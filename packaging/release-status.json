@@ -15,7 +15,7 @@
   },
   "repository_published": true,
   "blockers": [
-    "Owned engine cold source-build acceptance unresolved: optimized run reached its 330-minute compile-link budget; separate debug source run 43498547353 is pending",
+    "Owned engine cold source-build acceptance unresolved; optimized Windows run timed out, and corrected development Windows/macOS Intel/Linux source experiments are pending",
     "No real browser/native automation acceptance",
     "No signed updater or paired manager smoke suite"
   ],
@@ -33,5 +33,25 @@
     "browser_included": false,
     "clean_machine_installation": "NOT_RUN",
     "retention_days": 7
-  }
+  },
+  "native_source_experiments": [
+    {
+      "target": "windows-2025-vs2026",
+      "run_id": 43498547353,
+      "source_commit": "b9fcb722a5ea5fa85e458c47c5fe24968ba7c609",
+      "status": "in_progress"
+    },
+    {
+      "target": "macos-15-intel",
+      "run_id": 43521894011,
+      "source_commit": "83e237cd989a6a3d73cd70b6458aaf191e5d4234",
+      "status": "in_progress"
+    },
+    {
+      "target": "ubuntu-24.04",
+      "run_id": 43525736057,
+      "source_commit": "8338a207fa0d173ffa13d00b0e53ed34de697ad7",
+      "status": "in_progress"
+    }
+  ]
 }
