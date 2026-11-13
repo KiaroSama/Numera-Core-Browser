@@ -60,12 +60,10 @@ try {
         if ($LASTEXITCODE -ne 0 -or -not (Test-Path $MacSdkPath -PathType Container)) { throw 'Selected macOS SDK is unavailable' }
         @{developer_dir=$MacDeveloper;xcode_version=$XcodeVersion;sdk_version=$MacSdk;sdk_path=$MacSdkPath;official_sdk_equivalence=$false;release_ready=$false} |
             ConvertTo-Json | Set-Content (Join-Path $SourceRoot 'mac-toolchain.json') -Encoding utf8NoBOM
-    } elseif ($Phase -eq 'Prerequisites') {
-        throw 'Prerequisite-only verification supports Windows and macOS'
     }
     Stage 'build-tool-acquisition'
     if (Test-Path $Depot) { throw 'Cold spike requires a fresh task-owned source directory' }
-    Log 'INFO' 'Acquiring pinned upstream build tools and full Chromium source dependencies'
+    Log 'INFO' 'Acquiring pinned upstream build tools'
     Native -Command 'git' -Arguments @('init', $Depot)
     Native -Command 'git' -Arguments @('-C', $Depot, 'remote', 'add', 'origin', $Lock.depot_tools_url)
     Native -Command 'git' -Arguments @('-C', $Depot, 'fetch', '--depth=1', 'origin', $Lock.depot_tools_revision)
@@ -127,6 +125,10 @@ try {
                 Native -Command 'git' -Arguments @('apply', '--check', $PatchPath)
                 Native -Command 'git' -Arguments @('apply', $PatchPath)
             }
+            if ($IsLinux -and $Phase -eq 'Build') {
+                Stage 'linux-build-dependencies'
+                Native -Command 'sudo' -Arguments @('-n', '--', 'python3', 'build/install-build-deps.py', '--no-prompt', '--no-android', '--no-arm', '--no-chromeos-fonts', '--no-backwards-compatible', '--no-syms')
+            }
             if ($Phase -eq 'Build') {
                 Stage 'gn-generation'
                 $Cpu = if ($env:RUNNER_ARCH -eq 'ARM64') { 'arm64' } else { 'x64' }
@@ -142,6 +144,7 @@ try {
                 Stage 'compile-link'
                 $Targets = @('-C', 'out/Numera', '-j', $Parallelism.ToString(), 'chrome')
                 if ($BuildDriver) { $Targets += 'chromedriver' }
+                if ($IsLinux) { $Targets += 'chrome_sandbox' }
                 Native -Command 'autoninja' -Arguments $Targets
                 Stage 'compile-complete'
                 Log 'INFO' 'Compilation completed; native regression, source packaging and release approval are still required'

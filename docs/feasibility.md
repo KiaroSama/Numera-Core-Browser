@@ -15,7 +15,7 @@ During this initial spike, source acquisition remained incomplete on Windows and
 
 Official GitHub documentation retrieved on 2026-11-10 lists 14 GB SSD for standard public runners and a 6-hour job limit. Current Chromium Windows prerequisites require at least 100 GB free NTFS space; current source paths must avoid spaces. These are a documented concern, not proof of the actual disk available on an unmeasured runner.
 
-The prepared workflow uses only standard `ubuntu-24.04`, `windows-2025-vs2026`, `macos-15` ARM64 and `macos-15-intel` jobs. It measures actual image/tools/disk before/after task-owned scratch preparation. It does not delete installed runner SDKs or unrelated system data. It initially uses a conservative 100 GB source-build safety budget based on the documented Windows minimum; per-platform minimums and toolchains still require validation.
+The initial feasibility workflow uses only standard `ubuntu-24.04`, `windows-2025-vs2026`, `macos-15` ARM64 and `macos-15-intel` jobs. It measures actual image/tools/disk before/after task-owned scratch preparation. It does not delete installed runner SDKs or unrelated system data. It initially uses a conservative 100 GB source-build safety budget based on the documented Windows minimum; per-platform minimums and toolchains still require validation.
 
 If that budget is available, the bounded native recipe acquires pinned depot_tools and Chromium plus full source dependencies, checks the pinned revision and patch hashes, generates a reduced-symbol release build, and attempts the `chrome` target at parallelism 2. No browser objects, stock binaries, CEF packages, hidden remote execution or warm caches are used. A five-minute spike budget or 20 GB free-disk guard stops the owned source-tool process tree and preserves the exact attempted stage. Null measurements remain unmeasured. A successful compilation alone still cannot pass native acceptance/package/release gates.
 
@@ -45,6 +45,14 @@ The corrected candidate runs pinned `ensure_bootstrap` before source acquisition
 
 A later read-only Linux [storage survey 43516545652](https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/43516545652), at `8d28b54d626314f76277f2fc04bba1b596706c83`, checked the workspace, runner temporary directory, `/mnt` and `/tmp`. All shared one device with about 91.53 GB free; adding those path readings would count the same capacity repeatedly. [Downloaded, digest-verified evidence](evidence/linux-storage-43516545652.json) retains the values. No independent scratch volume was found, so this observation does not resolve the configured 100 GB Linux preflight. No installed toolchain or SDK was removed.
 
+[Mac prerequisite run 43521377600](https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/43521377600) passed in 45.214 seconds with Xcode 26.3 build 17C529, SDK 26.2 and pinned bootstrap Python 3.11.8. [Its raw report](evidence/mac-prerequisites-43521377600.json) and [verified toolchain/log provenance](evidence/mac-prerequisites-43521377600-provenance.json) keep source compilation and renderer fixtures at NOT_RUN. A corrected full cold [Mac attempt 43521894011](https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/43521894011) is pending at source `83e237cd989a6a3d73cd70b6458aaf191e5d4234`.
+
+A subsequent bounded read-only [Linux SDK survey 43523209888](https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/43523209888) measured 11,838,996,480 bytes in the preinstalled Android SDK. [Verified evidence](evidence/linux-sdk-43523209888.json) confirms the exact non-symlink path and Android environment identity. The first 45-second traversal timed out; the corrected 120-second bounded measurement passed.
+
+The Linux candidate prepares only a fresh public hosted job: if free capacity is below 100 GB, it verifies and removes that exact unused Android SDK on the same volume, records capacity before/after and retains the 100 GB preflight. The SDK is unnecessary for the selected native desktop Linux target. Local machines and Windows/macOS builds do not run this preparation. Four actual-workflow safeguard fixtures reject a private/other repository or changed SDK identity, and skip native operations when capacity is already sufficient. Native preparation is not proven until its hosted run passes.
+
+For the Linux renderer fixture, the recipe builds the upstream `chrome_sandbox` target from the same pinned checkout, validates a task-scoped root-owned mode 4755 installation by hash and supplies its path only to the controlled browser child. This follows upstream's SUID developer route, retaining Ubuntu's namespace restriction and Chromium's sandbox controls. It does not certify the complete browser security, GUI, automation or production packaging gates.
+
 The [bounded checkpoint research fixture](research/checkpoint-probe.md) passed partial compilation/resumption across two fresh Linux jobs with a pinned toolchain container, correct header invalidation and content-corruption rejection. This is an authored tiny C fixture. It does not prove a full Chromium split build, Windows resumption, intermediate storage size/allowance or final-link fit; the engine gate stays open.
 
 Sources:
@@ -52,3 +60,6 @@ Sources:
 - https://docs.github.com/en/actions/reference/runners/github-hosted-runners
 - https://docs.github.com/en/actions/reference/limits
 - https://chromium.googlesource.com/chromium/src/+/main/docs/windows_build_instructions.md
+
+- https://chromium.googlesource.com/chromium/src/+/4b3d0dabb8250b6f152d2d85d79e7706e309d087/docs/security/apparmor-userns-restrictions.md
+- https://chromium.googlesource.com/chromium/src/+/4b3d0dabb8250b6f152d2d85d79e7706e309d087/sandbox/linux/BUILD.gn

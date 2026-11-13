@@ -1,0 +1,58 @@
+{
+  "run_id": 43523209888,
+  "artifact_id": 14083871985,
+  "transport_zip_sha256": "875901421536f5eb250f7371ad96e5dd487bf890c43284c3a5e2b3e123deebb1",
+  "download_verification": "PASS",
+  "report": {
+    "schema_revision": 1,
+    "source_commit": "a8a50b8c017cbc0ff2c0285255eb4f6a4242b609",
+    "run_id": "43523209888",
+    "image_version": "20261111.370.1",
+    "measurements": [
+      {
+        "candidate": "GITHUB_WORKSPACE",
+        "path": "/home/runner/work/Numera-Core-Browser/Numera-Core-Browser",
+        "device_id": 66305,
+        "total_bytes": 154894188544,
+        "free_bytes": 91530575872,
+        "write_access_reported": true
+      },
+      {
+        "candidate": "RUNNER_TEMP",
+        "path": "/home/runner/work/_temp",
+        "device_id": 66305,
+        "total_bytes": 154894188544,
+        "free_bytes": 91530575872,
+        "write_access_reported": true
+      },
+      {
+        "candidate": "/mnt",
+        "path": "/mnt",
+        "device_id": 66305,
+        "total_bytes": 154894188544,
+        "free_bytes": 91530575872,
+        "write_access_reported": false
+      },
+      {
+        "candidate": "/tmp",
+        "path": "/tmp",
+        "device_id": 66305,
+        "total_bytes": 154894188544,
+        "free_bytes": 91530575872,
+        "write_access_reported": true
+      }
+    ],
+    "optional_preinstalled_android_sdk": {
+      "path": "/usr/local/lib/android/sdk",
+      "exists": true,
+      "symlink": false,
+      "resolved_path": "/usr/local/lib/android/sdk",
+      "android_home": "/usr/local/lib/android/sdk",
+      "measured_bytes": 11838996480,
+      "measurement_result": "PASS",
+      "du_exit": 0
+    },
+    "engine_acceptance": "NOT_RUN",
+    "note": "Read-only filesystem observations. Repeated device IDs share capacity; this is not proof of combined build fit or permission to clean installed tools."
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "run_id": 43521377600,
+  "artifact_id": 14082529210,
+  "transport_zip_sha256": "a4d390ad43b38c34e4764ed307249357078507f89273432afcd7a6b1fa761f54",
+  "download_verification": "PASS",
+  "native_log_sha256": "52b2f2ef24d99a87f3bcff302e97f25e6899b71eddf1de836e8d6ec70d8f984f",
+  "toolchain": {
+    "official_sdk_equivalence": false,
+    "sdk_version": "26.2",
+    "sdk_path": "/Applications/Xcode_26.3.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+    "xcode_version": "Xcode 26.3\nBuild version 17C529",
+    "release_ready": false,
+    "developer_dir": "/Applications/Xcode_26.3.app/Contents/Developer"
+  },
+  "observed_python": "3.11.8",
+  "source_and_renderer": "NOT_RUN"
+}

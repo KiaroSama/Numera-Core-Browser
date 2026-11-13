@@ -217,7 +217,7 @@ def main():
         'requested_parallelism': args.parallelism, 'parallelism': parallelism,
         'memory_available_initial_bytes': available_memory,
         'parallelism_policy': 'At most available CPUs, requested ceiling and 3 GiB of initially available memory per local compiler; this is a conservative recipe, not a universal engine resource minimum',
-        'native_source_targets': [] if args.prerequisites_only else ['chrome', 'chromedriver'],
+        'native_source_targets': [] if args.prerequisites_only else ['chrome', 'chromedriver'] + (['chrome_sandbox'] if platform.system() == 'Linux' else []),
         'prerequisites_only': args.prerequisites_only,
         'disk_total_bytes': initial_disk.total, 'disk_free_initial_bytes': initial_disk.free,
         'disk_free_bytes': initial_disk.free, 'minimum_free_disk_bytes': initial_disk.free,
@@ -292,9 +292,25 @@ def main():
             return 0
         report['source_build'] = 'PASS'
         record_stage(report, 'controlled-renderer-fixture')
-        binary = scratch / 'checkout/src/out/Numera' / ('chrome.exe' if os.name == 'nt' else 'Chromium.app/Contents/MacOS/Chromium')
+        native_output = scratch / 'checkout/src/out/Numera'
+        executable = {'Windows': 'chrome.exe', 'Darwin': 'Chromium.app/Contents/MacOS/Chromium', 'Linux': 'chrome'}[platform.system()]
+        binary = native_output / executable
         report['binary_sha256'] = sha256(binary)
         report['binary_bytes'] = binary.stat().st_size
+        if platform.system() == 'Linux':
+            # Build the helper from this same pinned source; retain Ubuntu's
+            # namespace restriction and Chromium's default sandbox controls.
+            source_helper = native_output / 'chrome_sandbox'
+            helper = scratch / 'numera-source-sandbox'
+            if source_helper.is_symlink() or not source_helper.is_file() or helper.exists() or helper.is_symlink():
+                raise RuntimeError('Owned sandbox helper source/destination check failed')
+            subprocess.run(['sudo', '-n', '--', 'install', '-o', 'root', '-g', 'root', '-m', '4755', '--', str(source_helper), str(helper)],
+                           env=environment, check=True, timeout=30)
+            if helper.stat().st_uid != 0 or helper.stat().st_mode & 0o7777 != 0o4755 or sha256(helper) != sha256(source_helper):
+                raise RuntimeError('Owned sandbox helper installation verification failed')
+            environment['CHROME_DEVEL_SANDBOX'] = str(helper)
+            report['linux_sandbox_helper'] = {'source_target': 'chrome_sandbox', 'sha256': sha256(helper),
+                'owner_uid': 0, 'mode': '4755', 'scope': 'Owned-source SUID developer fixture; no global AppArmor/sysctl or browser sandbox disabling'}
         smoke(binary.resolve(), scratch, output, environment)
         report['renderer_fixture'] = 'PASS'
         report['result'] = 'PASS'

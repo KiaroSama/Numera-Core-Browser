@@ -5,7 +5,7 @@ on:
       target:
         description: Standard public hosted target
         type: choice
-        options: [windows-2025-vs2026, macos-15-intel]
+        options: [windows-2025-vs2026, macos-15-intel, ubuntu-24.04]
         default: windows-2025-vs2026
       budget_minutes:
         description: Bounded cold acquisition and compilation budget (10-330)
@@ -20,7 +20,7 @@ on:
         type: boolean
         default: true
       prerequisites_only:
-        description: Verify Windows SDK or Mac tool/Python prerequisites without engine source
+        description: Verify native build prerequisites without engine source
         type: boolean
         default: false
       parallelism:
@@ -45,6 +45,51 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
+      - name: Validate Linux preparation safeguards
+        if: inputs.target == 'ubuntu-24.04'
+        run: python3 -m unittest discover -s scripts/tests -p test_linux_preparation.py -v
+      - name: Prepare capacity on this disposable Linux runner only
+        if: inputs.target == 'ubuntu-24.04'
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import datetime, json, os, shutil, subprocess
+          from pathlib import Path
+          output = Path('build/engine-evidence')
+          output.mkdir(parents=True, exist_ok=True)
+          report = {'schema_revision': 1, 'run_id': os.environ['GITHUB_RUN_ID'],
+              'source_commit': os.environ['GITHUB_SHA'], 'result': 'BLOCKED',
+              'free_before_bytes': shutil.disk_usage('.').free,
+              'removed_path': None, 'engine_acceptance': 'NOT_RUN'}
+          try:
+              event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text(encoding='utf-8'))
+              if (os.environ.get('GITHUB_ACTIONS') != 'true'
+                  or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted'
+                  or os.environ.get('GITHUB_REPOSITORY') != 'KiaroSama/Numera-Core-Browser'
+                  or event['repository']['private'] is not False):
+                  raise RuntimeError('Preparation is restricted to the authorized public hosted job')
+              if report['free_before_bytes'] < 100_000_000_000:
+                  sdk = Path('/usr/local/lib/android/sdk')
+                  if (os.environ.get('ANDROID_HOME') != str(sdk) or not sdk.is_dir()
+                      or sdk.is_symlink() or sdk.resolve() != sdk or os.path.ismount(sdk)
+                      or sdk.stat().st_dev != Path('.').stat().st_dev
+                      or not (sdk / 'cmdline-tools').is_dir() or not (sdk / 'licenses').is_dir()):
+                      raise RuntimeError('Known unused preinstalled Android SDK could not be verified')
+                  report['attempted_removal_path'] = str(sdk)
+                  subprocess.run(['sudo', '-n', '--', 'rm', '-rf', '--one-file-system', '--', str(sdk)],
+                      check=True, timeout=240)
+                  report['removed_path'] = str(sdk)
+              if shutil.disk_usage('.').free < 100_000_000_000:
+                  raise RuntimeError('100 GB source preflight remains unmet after bounded preparation')
+              report['result'] = 'PASS'
+          finally:
+              report['free_after_bytes'] = shutil.disk_usage('.').free
+              report['timestamp'] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+              report['severity'] = 'INFO' if report['result'] == 'PASS' else 'ERROR'
+              report['component'] = 'ephemeral-linux-builder'
+              (output / 'linux-preparation.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
+              print(json.dumps(report))
+          PY
       - name: Install pinned build-only telemetry dependency
         run: python -m pip install --disable-pip-version-check -r requirements-engine-build.txt
       - name: Validate PowerShell and source-build evidence regressions
@@ -54,7 +99,7 @@ jobs:
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           python -m unittest discover -s scripts/tests -p test_engine_build.py -v
           exit $LASTEXITCODE
-      - name: Cold source acquisition, compilation and real renderer fixture
+      - name: Run selected native source or prerequisite experiment
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
