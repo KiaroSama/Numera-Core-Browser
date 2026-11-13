@@ -103,7 +103,7 @@ jobs:
               if not summary_path:
                   return
               lines = ["## Gitleaks", "", f"Scanner: **{VERSION}**", "", f"Scope: **{scope}**", ""]
-              lines.extend(["Rules: Pinned built-in Gitleaks rules with standard exclusions. Full history describes revision coverage, not universal byte or credential coverage.", ""])
+              lines.extend(["Rules: Pinned built-in Gitleaks rules with standard exclusions and two verified public contract-checksum lines. No commit is excluded. Full history describes revision coverage, not universal byte or credential coverage.", ""])
               if not findings:
                   lines.append("No matching secrets were found in the scanned Git history.")
               else:
@@ -119,6 +119,77 @@ jobs:
                       lines.extend(["", f"Showing 200 of {len(findings)} findings. Repeat the same version locally for the complete report."])
               with open(summary_path, "a", encoding="utf-8") as output:
                   output.write("\n".join(lines) + "\n")
+
+
+          def scanner_config(git_directory):
+              # These public digests are reproducible from immutable Git blobs.
+              # Match the entire line AND exact path for generic-api-key only;
+              # never skip a commit or accept repository suppression files.
+              revision = "7237e7ef222c8d6e072c99b937fed280c9cb64f2"
+              checksums = [
+                  ("df19315c7a5ab7a3cf94a5290cbc6a051162acbb4ec98a3d00c70474ed6b91ea", "fixtures/negative-duplicate-key.ndjson"),
+                  ("c238c6cd6815b81e2dc304d722b380701a14589c456438fb5d305e6acd0449a0", "v1/theme.tokens.json"),
+              ]
+              patterns = []
+              for digest, name in checksums:
+                  blob = subprocess.run(["git", "-C", str(git_directory), "show", revision + ":contracts/" + name],
+                                        capture_output=True, timeout=15)
+                  require(blob.returncode == 0 and hashlib.sha256(blob.stdout).hexdigest() == digest,
+                          "A historical public contract checksum could not be verified.")
+                  patterns.append(r'^\s*"' + re.escape(name) + r'"\s*:\s*"' + digest + r'"\s*,?\s*$')
+              return (
+                  "[extend]\nuseDefault = true\n\n[[allowlists]]\n"
+                  'description = "Verified public contract checksum lines"\n'
+                  'targetRules = ["generic-api-key"]\ncondition = "AND"\n'
+                  "paths = ['''^contracts/v1/manifest\\.json$''']\n"
+                  'regexTarget = "line"\nregexes = [\n'
+                  + "\n".join("'''" + pattern + "'''," for pattern in patterns) + "\n]\n"
+              )
+
+
+          def verify_config_controls(binary, config_path, temporary):
+              digest = "df19315c7a5ab7a3cf94a5290cbc6a051162acbb4ec98a3d00c70474ed6b91ea"
+              other_digest = "c238c6cd6815b81e2dc304d722b380701a14589c456438fb5d305e6acd0449a0"
+              known_line = '    "fixtures/negative-duplicate-key.ndjson": "' + digest + '",\n'
+              cases = [
+                  ("public-checksum", "contracts/v1/manifest.json", known_line, 0),
+                  ("second-public-checksum", "contracts/v1/manifest.json",
+                   '    "v1/theme.tokens.json": "' + other_digest + '",\n', 0),
+                  ("other-path", "other.json", known_line, 2),
+                  ("other-field", "contracts/v1/manifest.json", '    "api_key": "' + digest + '",\n', 2),
+                  ("other-value", "contracts/v1/manifest.json",
+                   known_line.replace(digest, other_digest), 2),
+                  ("coexisting-field", "contracts/v1/manifest.json",
+                   known_line + '    "api_key": "' + digest + '",\n', 2),
+                  ("trailing-content", "contracts/v1/manifest.json", known_line.rstrip("\n") + " extra content\n", 2),
+              ]
+              for name, relative, text, expected in cases:
+                  root = temporary / ("control-" + name)
+                  root.mkdir()
+                  target = root / relative
+                  target.parent.mkdir(parents=True, exist_ok=True)
+                  target.write_text(text, encoding="utf-8")
+                  git = ["git", "-C", str(root), "-c", "core.hooksPath=/dev/null",
+                         "-c", "commit.gpgsign=false", "-c", "user.name=Numera scan fixture",
+                         "-c", "user.email=fixture@example.invalid"]
+                  for arguments in (["init", "--quiet"], ["add", "."], ["commit", "--quiet", "-m", "Synthetic scanner control"]):
+                      child = subprocess.run([*git, *arguments], capture_output=True, timeout=15)
+                      require(child.returncode == 0, "A synthetic scanner control could not be prepared.")
+                  report = temporary / (name + ".json")
+                  child = subprocess.run([
+                      str(binary), "git", str(root / ".git"), "--config", str(config_path),
+                      "--gitleaks-ignore-path", str(temporary), "--ignore-gitleaks-allow",
+                      "--redact=100", "--no-banner", "--no-color", "--log-level=error", "--exit-code=2",
+                      "--report-format=json", "--report-path", str(report),
+                      "--log-opts=--full-history --no-ext-diff --no-textconv --all",
+                  ], capture_output=True, timeout=30)
+                  require(child.returncode == expected and not child.stdout.strip() and not child.stderr.strip(),
+                          "A public-checksum scanner control failed; no clean result was recorded.")
+                  require(report.is_file(), "A scanner control report is missing.")
+                  findings = json.loads(report.read_text(encoding="utf-8"))
+                  require(len(findings) == (0 if expected == 0 else 1),
+                          "A scanner control produced an unexpected finding count.")
+              log("INFO", f"All {len(cases)} public-checksum scope controls passed.")
 
 
           def main():
@@ -145,9 +216,10 @@ jobs:
                   require(version.returncode == 0 and version.stdout.strip() == VERSION, "The Gitleaks executable version could not be verified.")
                   log("INFO", "Verified the scanner version and download checksum.")
 
-                  # Use the pinned built-in rules, without repository-controlled suppression files.
+                  # Keep built-in rules and independently verified exact-line exceptions.
                   config_path = temporary / "scanner.toml"
-                  config_path.write_text("[extend]\nuseDefault = true\n", encoding="utf-8")
+                  config_path.write_text(scanner_config(git_directory), encoding="utf-8")
+                  verify_config_controls(binary, config_path, temporary)
                   log_options = "--full-history --diff-filter=uxdb --no-ext-diff --no-textconv --ignore-submodules=all -m"
                   scope = "All fetched branches and tags, including full history and merge diffs"
                   if event_name == "pull_request":
