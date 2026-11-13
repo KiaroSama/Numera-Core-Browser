@@ -1,0 +1,51 @@
+{
+  "schema_revision": 1,
+  "run_id": 43516545652,
+  "run_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/43516545652",
+  "artifact_id": 14079724822,
+  "artifact_transport_sha256": "5b641e9f8bfe9f0fb16a6d023e800c08b313fe3744105f5a964e475d6106cff0",
+  "independent_download_verification": "PASS",
+  "report": {
+    "schema_revision": 1,
+    "source_commit": "8d28b54d626314f76277f2fc04bba1b596706c83",
+    "run_id": "43516545652",
+    "image_version": "20261111.370.1",
+    "measurements": [
+      {
+        "candidate": "GITHUB_WORKSPACE",
+        "path": "/home/runner/work/Numera-Core-Browser/Numera-Core-Browser",
+        "device_id": 2049,
+        "total_bytes": 154894188544,
+        "free_bytes": 91530653696,
+        "write_access_reported": true
+      },
+      {
+        "candidate": "RUNNER_TEMP",
+        "path": "/home/runner/work/_temp",
+        "device_id": 2049,
+        "total_bytes": 154894188544,
+        "free_bytes": 91530653696,
+        "write_access_reported": true
+      },
+      {
+        "candidate": "/mnt",
+        "path": "/mnt",
+        "device_id": 2049,
+        "total_bytes": 154894188544,
+        "free_bytes": 91530653696,
+        "write_access_reported": false
+      },
+      {
+        "candidate": "/tmp",
+        "path": "/tmp",
+        "device_id": 2049,
+        "total_bytes": 154894188544,
+        "free_bytes": 91530653696,
+        "write_access_reported": true
+      }
+    ],
+    "engine_acceptance": "NOT_RUN",
+    "note": "Read-only filesystem observations. Repeated device IDs share capacity; this is not proof of combined build fit or permission to clean installed tools."
+  },
+  "conclusion": "All four observed paths share device2049 and about91.53GB free; they cannot be summed as independent storage. The existing100GB source preflight remains unmet on this runner. This does not prove that every reduced build configuration is impossible."
+}
