@@ -315,7 +315,7 @@ def main():
             report['stage'] = (scratch / 'phase.txt').read_text(encoding='utf-8-sig').strip()
         record_stage(report, report['stage'])
         report['native_action_progress'] = read_progress(output / 'native-build.log')
-        for name in ['phase.txt', 'phases.ndjson', 'gn-args.txt', 'windows-sdk.json', 'windows-sdk.log']:
+        for name in ['phase.txt', 'phases.ndjson', 'gn-args.txt', 'windows-sdk.json', 'windows-sdk.log', 'mac-toolchain.json']:
             if (scratch / name).is_file():
                 shutil.copyfile(scratch / name, output / name)
         report['sampled_volume_delta_bytes'] = initial_disk.free - report['minimum_free_disk_bytes']

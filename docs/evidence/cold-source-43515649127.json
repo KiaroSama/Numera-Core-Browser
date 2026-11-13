@@ -1,0 +1,87 @@
+{
+  "schema_revision": 1,
+  "timestamp": "2026-11-13T22:33:47.566683+00:00",
+  "commit": "9167829bc14220ae228141b99e8200d139eaedd3",
+  "run_id": "43515649127",
+  "run_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/43515649127",
+  "runner_os": "Darwin",
+  "runner_arch": "X64",
+  "runner_image_version": "20260824.0482.1",
+  "psutil_version": "7.2.2",
+  "cpu_count": 4,
+  "physical_memory_bytes": 15032385536,
+  "budget_minutes": 330,
+  "component_build": true,
+  "debug_build": true,
+  "native_action_progress": null,
+  "requested_parallelism": 4,
+  "parallelism": 3,
+  "memory_available_initial_bytes": 10689605632,
+  "parallelism_policy": "At most available CPUs, requested ceiling and 3 GiB of initially available memory per local compiler; this is a conservative recipe, not a universal engine resource minimum",
+  "native_source_targets": [
+    "chrome",
+    "chromedriver"
+  ],
+  "prerequisites_only": false,
+  "disk_total_bytes": 348622118912,
+  "disk_free_initial_bytes": 115927568384,
+  "disk_free_bytes": 79700692992,
+  "minimum_free_disk_bytes": 79673720832,
+  "elapsed_seconds": 1880.318,
+  "peak_tree_rss_bytes": 1886859264,
+  "peak_tree_process_count": 10,
+  "stage": "gn-generation",
+  "result": "BLOCKED",
+  "release_ready": false,
+  "cold_cache": true,
+  "precompiled_engine_objects_reused": false,
+  "source_build": "NOT_RUN",
+  "renderer_fixture": "NOT_RUN",
+  "automation_suites": "NOT_RUN",
+  "source_lock": {
+    "schema_revision": 1,
+    "family": "chromium",
+    "package_id": "numera-chromium",
+    "upstream_url": "https://chromium.googlesource.com/chromium/src.git",
+    "upstream_version": "157.0.8103.79",
+    "upstream_revision": "6dc9bc3bdaea5c35ed6d41fceab2f7a3a2227c4f",
+    "depot_tools_url": "https://chromium.googlesource.com/chromium/tools/depot_tools.git",
+    "depot_tools_revision": "c4cdaeebba9b9ed92d041997317ffdbd042158ac",
+    "patches": [
+      {
+        "path": "upstream/chromium/patches/0001-product-name.patch",
+        "sha256": "5e7e0c640b0f2289636183a6151ceeb5583e9065f8d07d22fd7a06ed77dbd3f5",
+        "license": "BSD-3-Clause",
+        "reason": "Identify the first source build as Numera Core Browser while retaining Chromium browser chrome. This is branding only, not identity control or automation compatibility.",
+        "regression_test": "scripts/check-brand-patch.py",
+        "rebase_or_remove_when": "Rebase on each upstream pin update; remove if upstream replaces these product-name messages."
+      }
+    ],
+    "status": "candidate-not-built",
+    "approved": false,
+    "build_mode": "development",
+    "target": "chrome",
+    "platform_pins": {
+      "windows": {
+        "version": "157.0.8103.79",
+        "revision": "6dc9bc3bdaea5c35ed6d41fceab2f7a3a2227c4f",
+        "branding_source_sha256": "a8fb46cd865b6b7fbf829da098e98c6833b74bdcf2522c78183c30dde2cef942"
+      },
+      "linux": {
+        "version": "157.0.8103.78",
+        "revision": "4b3d0dabb8250b6f152d2d85d79e7706e309d087",
+        "branding_source_sha256": "a8fb46cd865b6b7fbf829da098e98c6833b74bdcf2522c78183c30dde2cef942"
+      },
+      "macos": {
+        "version": "157.0.8103.79",
+        "revision": "6dc9bc3bdaea5c35ed6d41fceab2f7a3a2227c4f",
+        "branding_source_sha256": "a8fb46cd865b6b7fbf829da098e98c6833b74bdcf2522c78183c30dde2cef942"
+      }
+    }
+  },
+  "native_exit_code": 1,
+  "error_type": "RuntimeError",
+  "reason": "Pinned native source-build recipe failed; inspect retained native-build.log",
+  "sampled_volume_delta_bytes": 36253847552,
+  "measurement_note": "RSS sums sampled process-tree resident memory; shared pages may be double-counted. Volume delta is not exact engine disk allocation."
+}

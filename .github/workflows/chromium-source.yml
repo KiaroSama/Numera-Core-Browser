@@ -20,7 +20,7 @@ on:
         type: boolean
         default: true
       prerequisites_only:
-        description: Verify/install the Windows SDK without downloading engine source
+        description: Verify Windows SDK or Mac tool/Python prerequisites without engine source
         type: boolean
         default: false
       parallelism:

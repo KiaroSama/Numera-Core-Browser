@@ -1,0 +1,10 @@
+{
+  "run_id": 43515649127,
+  "artifact_id": 14082048047,
+  "transport_zip_sha256": "61b7b8efa2340b6cd61c27a9073bb5216def26d6e89f38124ae0c2e3a8a66c04",
+  "independent_download_verification": "PASS",
+  "native_log_sha256": "aa34ad43a53613d3d2e086b640851a0404fe6a1245b67dd2b1a4676ceba4933b",
+  "observed_failure": "GN launcher required missing depot_tools/python3_bin_reldir.txt; source/dependency acquisition and branding completed, native compilation did not start.",
+  "correction": "Run the exact pinned POSIX ensure_bootstrap helper and interpreter/unchanged-revision probes before source acquisition. Validate Mac prerequisites separately.",
+  "sdk_scope": "Xcode26.3/SDK26.2 are preinstalled development candidates; not the official Intel SDK26.5 reference or production acceptance."
+}

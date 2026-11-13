@@ -41,10 +41,27 @@ try {
         Stage 'windows-sdk-preparation'
         & (Join-Path $PSScriptRoot 'Install-WindowsSdk.ps1') -EvidenceRoot $SourceRoot
     }
-    if ($Phase -eq 'Prerequisites') {
-        if (-not $IsWindows) { throw 'SDK-only verification is Windows-specific' }
+    if ($Phase -eq 'Prerequisites' -and $IsWindows) {
         Stage 'prerequisites-complete'
         exit 0
+    }
+    if ($IsMacOS) {
+        Stage 'mac-toolchain-preparation'
+        # Use the reviewed newest preinstalled Intel-host Xcode in this image.
+        # DEVELOPER_DIR affects this process only, not global xcode-select.
+        $MacDeveloper = '/Applications/Xcode_26.3.app/Contents/Developer'
+        if (-not (Test-Path $MacDeveloper -PathType Container)) { throw 'Reviewed Intel-host Xcode 26.3 is not installed' }
+        $env:DEVELOPER_DIR = $MacDeveloper
+        $XcodeVersion = (& xcodebuild -version) -join "`n"
+        if ($LASTEXITCODE -ne 0 -or $XcodeVersion -notmatch '(?m)^Xcode 26\.3$') { throw 'Reviewed Xcode version check failed' }
+        $MacSdk = (& xcrun --sdk macosx --show-sdk-version).Trim()
+        if ($LASTEXITCODE -ne 0 -or $MacSdk -ne '26.2') { throw 'Reviewed macOS SDK 26.2 check failed' }
+        $MacSdkPath = (& xcrun --sdk macosx --show-sdk-path).Trim()
+        if ($LASTEXITCODE -ne 0 -or -not (Test-Path $MacSdkPath -PathType Container)) { throw 'Selected macOS SDK is unavailable' }
+        @{developer_dir=$MacDeveloper;xcode_version=$XcodeVersion;sdk_version=$MacSdk;sdk_path=$MacSdkPath;official_sdk_equivalence=$false;release_ready=$false} |
+            ConvertTo-Json | Set-Content (Join-Path $SourceRoot 'mac-toolchain.json') -Encoding utf8NoBOM
+    } elseif ($Phase -eq 'Prerequisites') {
+        throw 'Prerequisite-only verification supports Windows and macOS'
     }
     Stage 'build-tool-acquisition'
     if (Test-Path $Depot) { throw 'Cold spike requires a fresh task-owned source directory' }
@@ -77,9 +94,22 @@ try {
             throw 'Pinned Windows Python bootstrap did not create its launcher marker'
         }
         Native -Command 'cmd.exe' -Arguments @('/d', '/c', ((Join-Path $Depot 'python-bin/python3.bat') + ' --version'))
+    } else {
+        Stage 'pinned-python-bootstrap'
+        # The pinned helper downloads tools without updating the repository.
+        # DEPOT_TOOLS_UPDATE=0 otherwise skips this POSIX Python bootstrap.
+        Native -Command 'bash' -Arguments @((Join-Path $Depot 'ensure_bootstrap'))
+        if (-not (Test-Path (Join-Path $Depot 'python3_bin_reldir.txt') -PathType Leaf)) {
+            throw 'Pinned POSIX Python bootstrap did not create its launcher marker'
+        }
+        Native -Command (Join-Path $Depot 'python-bin/python3') -Arguments @('--version')
     }
     $DepotRevision = (& git -C $Depot rev-parse HEAD).Trim()
     if ($LASTEXITCODE -ne 0 -or $DepotRevision -ne $Lock.depot_tools_revision) { throw 'Build-tool revision changed during bootstrap' }
+    if ($Phase -eq 'Prerequisites') {
+        Stage 'prerequisites-complete'
+        exit 0
+    }
     New-Item -ItemType Directory -Path $Checkout -Force | Out-Null
     Push-Location $Checkout
     try {
