@@ -3,6 +3,8 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+env:
+  PROBE_TOOLCHAIN_IMAGE: python@sha256:934f4289019d6c3dc94d5e6341ff3a70c82f19bb118756eb03bdd700fe4b5c98
 concurrency:
   group: siso-checkpoint-probe-${{ github.ref }}
   cancel-in-progress: false
@@ -10,6 +12,8 @@ jobs:
   seed:
     if: github.repository == 'KiaroSama/Numera-Core-Browser' && github.event.repository.private == false
     runs-on: ubuntu-24.04
+    container:
+      image: python@sha256:934f4289019d6c3dc94d5e6341ff3a70c82f19bb118756eb03bdd700fe4b5c98
     timeout-minutes: 10
     outputs:
       checkpoint_sha: ${{ steps.probe.outputs.checkpoint_sha }}
@@ -34,12 +38,15 @@ jobs:
           name: tiny-siso-seed-evidence
           path: |
             build/siso-probe/report.json
+            build/siso-probe/context.json
             build/siso-probe/*.log
           retention-days: 7
           if-no-files-found: error
   resume:
     needs: seed
     runs-on: ubuntu-24.04
+    container:
+      image: python@sha256:934f4289019d6c3dc94d5e6341ff3a70c82f19bb118756eb03bdd700fe4b5c98
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -62,6 +69,7 @@ jobs:
           name: tiny-siso-resume-evidence
           path: |
             build/siso-probe/report.json
+            build/siso-probe/context.json
             build/siso-probe/*.log
           retention-days: 7
           if-no-files-found: error

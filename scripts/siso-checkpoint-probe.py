@@ -18,6 +18,7 @@ from logging_util import log
 REVISION = 'b521b230cb7c56c821235e498285cf8e548a73ee'
 ZIP_SHA = '3eec3371462bbc77e5f02edb41524b34d8ab3c2e020af74dcf5ae85e732bd928'
 BINARY_SHA = '8df1ad4f15ad38ba5232bb91d54426ab84893ce9e28fd63fe64bf44fb1cb8036'
+TOOLCHAIN_IMAGE = 'python@sha256:934f4289019d6c3dc94d5e6341ff3a70c82f19bb118756eb03bdd700fe4b5c98'
 DELIVERY = {'complete-source.zip', 'LICENSE'}
 STATE = {'a.o', '.siso_deps', '.siso_fs_state', '.siso_config', '.siso_filegroups', '.ninja_log'} | DELIVERY
 
@@ -66,6 +67,9 @@ def main():
                'build.ninja': f'rule cc\n  command = {compiler} -MMD -MF $out.d -c $in -o $out\n  depfile = $out.d\n  deps = gcc\nrule link\n  command = {compiler} $in -o $out\nbuild a.o: cc a.c\nbuild main.o: cc main.c\nbuild sample: link a.o main.o\ndefault sample\n'}
     for name, text in sources.items():
         (root / name).write_text(text, encoding='utf-8')
+    container = os.environ.get('PROBE_TOOLCHAIN_IMAGE')
+    if container is not None and container != TOOLCHAIN_IMAGE:
+        raise RuntimeError('Unexpected research toolchain image')
     subprocess.run(['git', 'archive', '--format=zip', '--output', str(root / 'complete-source.zip'), 'HEAD'], check=True)
     with zipfile.ZipFile(root / 'complete-source.zip') as archive:
         if archive.read('scripts/siso-checkpoint-probe.py') != Path(__file__).read_bytes():
@@ -76,9 +80,11 @@ def main():
     context = {'source_commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
                'probe_script_sha256': digest(Path(__file__).read_bytes()),
                'run_id': os.environ.get('GITHUB_RUN_ID'), 'run_attempt': os.environ.get('GITHUB_RUN_ATTEMPT'),
-               'runner_image': os.environ.get('ImageVersion'), 'workspace': str(root),
+               'runner_image': os.environ.get('ImageVersion') if container is None else None,
+               'toolchain_container': container, 'workspace': str(root),
                'siso_sha256': BINARY_SHA, 'compiler': str(compiler),
                'compiler_sha256': digest(compiler.read_bytes())}
+    (output / 'context.json').write_text(json.dumps(context, indent=2) + '\n', encoding='utf-8')
     results = []
 
     def build(label, target, expected_steps, expected_exit=None):
@@ -122,8 +128,11 @@ def main():
             if any(not m.isfile() or m.size > 1024 * 1024 for m in members):
                 raise RuntimeError('Unsafe checkpoint member')
             manifest = json.loads(archive.extractfile('manifest.json').read())
-            if manifest['context'] != context or set(manifest['inputs']) != set(sources) or set(manifest['outputs']) != STATE:
-                raise RuntimeError('Checkpoint provenance/context changed; resume is blocked')
+            changed = sorted(key for key in manifest['context'].keys() | context.keys()
+                             if key not in manifest['context'] or key not in context
+                             or manifest['context'][key] != context[key])
+            if changed or set(manifest['inputs']) != set(sources) or set(manifest['outputs']) != STATE:
+                raise RuntimeError('Checkpoint provenance/context changed; resume is blocked: ' + ', '.join(changed))
             if not matches(root, manifest['inputs']):
                 raise RuntimeError('Fresh source input changed; resume is blocked')
             if not matches(root, {name: manifest['outputs'][name] for name in DELIVERY}):
@@ -157,7 +166,7 @@ def main():
             results.append({'case': 'same-size-mtime-corruption-' + name, 'result': 'REJECTED'})
     report = {'schema_revision': 1, 'phase': args.phase, 'context': context, 'results': results,
               'execution_context': 'github-actions' if os.environ.get('GITHUB_ACTIONS') == 'true' else 'local-simulation',
-              'job': os.environ.get('GITHUB_JOB'),
+              'job': os.environ.get('GITHUB_JOB'), 'host_runner_image': os.environ.get('ImageVersion'),
               'checkpoint_sha256': digest((args.checkpoint if args.phase == 'resume' else output / 'checkpoint.tar.gz').read_bytes()),
               'engine_source_acceptance': 'NOT_RUN',
               'limits': 'Tiny authored Linux C fixture only. Full Chromium outputs, transitive toolchain/SDK provenance, Windows resume, storage allowance and final-link fit remain unproven.'}
