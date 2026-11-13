@@ -47,6 +47,9 @@ def main():
     output.mkdir(parents=True, exist_ok=False)
     root = output / 'workspace'
     root.mkdir()
+    # Container jobs mount the runner-owned checkout under a different UID.
+    # Trust only this authorized checkout for these two Git invocations.
+    git = ['git', '-c', 'safe.directory=' + str(Path.cwd().resolve())]
     environment = {k: v for k, v in os.environ.items() if k not in {'GH_TOKEN', 'GITHUB_TOKEN'}}
     url = 'https://chrome-infra-packages.appspot.com/dl/build/siso/linux-amd64/+/git_revision:' + REVISION
     with urllib.request.urlopen(url, timeout=30) as response:
@@ -70,14 +73,14 @@ def main():
     container = os.environ.get('PROBE_TOOLCHAIN_IMAGE')
     if container is not None and container != TOOLCHAIN_IMAGE:
         raise RuntimeError('Unexpected research toolchain image')
-    subprocess.run(['git', 'archive', '--format=zip', '--output', str(root / 'complete-source.zip'), 'HEAD'], check=True)
+    subprocess.run([*git, 'archive', '--format=zip', '--output', str(root / 'complete-source.zip'), 'HEAD'], check=True)
     with zipfile.ZipFile(root / 'complete-source.zip') as archive:
         if archive.read('scripts/siso-checkpoint-probe.py') != Path(__file__).read_bytes():
             raise RuntimeError('Research script must match the complete committed source')
         if any(name.split('/')[0] in {'.ai', '.codex', '.agents'} for name in archive.namelist()):
             raise RuntimeError('Private assistant files cannot be distributed')
         (root / 'LICENSE').write_bytes(archive.read('LICENSE'))
-    context = {'source_commit': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+    context = {'source_commit': subprocess.check_output([*git, 'rev-parse', 'HEAD'], text=True).strip(),
                'probe_script_sha256': digest(Path(__file__).read_bytes()),
                'run_id': os.environ.get('GITHUB_RUN_ID'), 'run_attempt': os.environ.get('GITHUB_RUN_ATTEMPT'),
                'runner_image': os.environ.get('ImageVersion') if container is None else None,
