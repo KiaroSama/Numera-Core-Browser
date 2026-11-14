@@ -47,10 +47,10 @@ try {
     }
     if ($IsMacOS) {
         Stage 'mac-toolchain-preparation'
-        # Use the reviewed newest preinstalled Intel-host Xcode in this image.
+        # Use the reviewed preinstalled development Xcode in the measured images.
         # DEVELOPER_DIR affects this process only, not global xcode-select.
         $MacDeveloper = '/Applications/Xcode_26.3.app/Contents/Developer'
-        if (-not (Test-Path $MacDeveloper -PathType Container)) { throw 'Reviewed Intel-host Xcode 26.3 is not installed' }
+        if (-not (Test-Path $MacDeveloper -PathType Container)) { throw 'Reviewed preinstalled Xcode 26.3 is not installed' }
         $env:DEVELOPER_DIR = $MacDeveloper
         $XcodeVersion = (& xcodebuild -version) -join "`n"
         if ($LASTEXITCODE -ne 0 -or $XcodeVersion -notmatch '(?m)^Xcode 26\.3$') { throw 'Reviewed Xcode version check failed' }

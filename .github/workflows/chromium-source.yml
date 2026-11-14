@@ -5,7 +5,7 @@ on:
       target:
         description: Standard public hosted target
         type: choice
-        options: [windows-2025-vs2026, macos-15-intel, ubuntu-24.04]
+        options: [windows-2025-vs2026, macos-15-intel, ubuntu-24.04, macos-15]
         default: windows-2025-vs2026
       budget_minutes:
         description: Bounded cold acquisition and compilation budget (10-330)
@@ -45,6 +45,20 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
+      - name: Validate macOS ARM preparation safeguards
+        if: inputs.target == 'macos-15'
+        timeout-minutes: 2
+        run: python -m unittest discover -s scripts/tests -p test_macos_preparation.py -v
+      - name: Prepare capacity on this disposable macOS ARM runner only
+        if: inputs.target == 'macos-15'
+        timeout-minutes: 8
+        env:
+          DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+        run: |
+          # Keep later steps and post-job tools on the protected installation.
+          # This changes only this job's environment, not global xcode-select.
+          printf '%s\n' 'DEVELOPER_DIR=/Applications/Xcode_26.3.app/Contents/Developer' >> "$GITHUB_ENV"
+          python scripts/prepare_macos_arm.py --output build/engine-evidence
       - name: Validate Linux preparation safeguards
         if: inputs.target == 'ubuntu-24.04'
         run: python3 -m unittest discover -s scripts/tests -p test_linux_preparation.py -v
