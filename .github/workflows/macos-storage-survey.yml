@@ -1,0 +1,91 @@
+name: macOS ARM hosted storage survey
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  survey:
+    if: github.repository == 'KiaroSama/Numera-Core-Browser' && github.event.repository.private == false
+    runs-on: macos-15
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Measure capacity and preinstalled SDKs without modifying them
+        run: |
+          python3 - <<'PY'
+          import concurrent.futures, datetime, json, os, platform, shutil, subprocess
+          from pathlib import Path
+          output = Path('build/macos-storage-survey')
+          output.mkdir(parents=True, exist_ok=False)
+          report = {'schema_revision': 1, 'source_commit': os.environ['GITHUB_SHA'],
+              'run_id': os.environ['GITHUB_RUN_ID'], 'image_version': os.environ.get('ImageVersion'),
+              'runner_arch': os.environ['RUNNER_ARCH'], 'cpu_count': os.cpu_count(),
+              'platform': platform.platform(), 'result': 'RUNNING', 'engine_acceptance': 'NOT_RUN',
+              'volumes': [], 'preinstalled_sdks': [],
+              'note': 'Read-only observations. Shared devices and APFS clones/snapshots make directory sizes nonadditive; only native before/after capacity could prove reclaimed space. No cleanup or source build runs.'}
+          def command(arguments, timeout):
+              result = subprocess.run(arguments, capture_output=True, text=True, timeout=timeout)
+              return {'exit_code': result.returncode, 'stdout': result.stdout.strip()}
+          def measure(path):
+              item = {'path': str(path), 'symlink': path.is_symlink(),
+                  'resolved_path': str(path.resolve()), 'result': 'SKIPPED_SYMLINK'}
+              if not path.is_symlink():
+                  try:
+                      item['device_id'] = path.stat().st_dev
+                      measured = command(['du', '-s', '-k', '-x', str(path)], 120)
+                      item['du_exit_code'] = measured['exit_code']
+                      item['result'] = 'PASS' if measured['exit_code'] == 0 else 'BLOCKED'
+                      if measured['exit_code'] == 0:
+                          item['du_reported_bytes'] = int(measured['stdout'].split()[0]) * 1024
+                  except Exception as error:
+                      item['result'] = 'BLOCKED'
+                      item['error_type'] = type(error).__name__
+              return item
+          try:
+              if os.environ['RUNNER_ARCH'] != 'ARM64' or platform.system() != 'Darwin':
+                  raise RuntimeError('Expected the standard macOS ARM runner')
+              for name in ['GITHUB_WORKSPACE', 'RUNNER_TEMP', '/tmp']:
+                  path = Path(os.environ[name] if name in os.environ else name)
+                  usage = shutil.disk_usage(path)
+                  report['volumes'].append({'candidate': name, 'path': str(path.resolve()),
+                      'device_id': path.stat().st_dev, 'total_bytes': usage.total, 'free_bytes': usage.free})
+              report['physical_memory'] = command(['sysctl', '-n', 'hw.memsize'], 5)
+              report['active_developer_directory'] = command(['xcode-select', '-p'], 5)
+              report['default_xcode_version'] = command(['xcodebuild', '-version'], 20)
+              report['android_home'] = os.environ.get('ANDROID_HOME')
+              candidates = sorted(Path('/Applications').glob('Xcode*.app'))
+              android = Path('/Users/runner/Library/Android/sdk')
+              if android.is_dir():
+                  candidates.append(android)
+              report['candidate_count'] = len(candidates)
+              report['candidate_limit'] = 8
+              report['candidate_list_truncated'] = len(candidates) > 8
+              candidates = candidates[:8]
+              with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+                  for item in pool.map(measure, candidates):
+                      report['preinstalled_sdks'].append(item)
+              required = ['physical_memory', 'active_developer_directory', 'default_xcode_version']
+              complete = (bool(candidates) and not report['candidate_list_truncated']
+                  and all(report[name]['exit_code'] == 0 for name in required)
+                  and all(item['result'] != 'BLOCKED' for item in report['preinstalled_sdks'])
+                  and any(item['result'] == 'PASS' for item in report['preinstalled_sdks']))
+              report['result'] = 'PASS' if complete else 'BLOCKED'
+          except Exception as error:
+              report['result'] = 'BLOCKED'
+              report['error_type'] = type(error).__name__
+          finally:
+              report['timestamp'] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+              (output / 'report.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
+              print(json.dumps(report, indent=2))
+          if report['result'] != 'PASS':
+              raise SystemExit(1)
+          PY
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: macos-arm-storage-survey
+          path: build/macos-storage-survey/report.json
+          retention-days: 7
+          if-no-files-found: error
