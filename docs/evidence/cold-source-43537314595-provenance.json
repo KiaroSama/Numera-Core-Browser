@@ -1,0 +1,37 @@
+{
+  "run_id": 43537314595,
+  "job_id": 132269338192,
+  "source_commit": "fe9aa1219708ed0ef36c349670e65ef8ffa28a9a",
+  "artifact_id": 14102777686,
+  "transport_zip_sha256": "66abe39277a615bb39a43f6aaf16597f61e7aeee76b3c21643b7d1a4abd49db2",
+  "independent_download_verification": "PASS",
+  "native_log_sha256": "fb9b76fda054ce632cdf2d5d3b059141290b7984336438188238bdfc3f13ac15",
+  "observed_failure": "The corrected controller exhausted its 330-minute cold-build budget at compile-link. Complete Chrome/ChromeDriver compilation and fixtures did not finish.",
+  "last_observed_successful_action": "[19176/76440] 4h57m02.66s F CXX obj/third_party/blink/public/mojom/mojom_core_shared_cpp_sources/frame.mojom-shared.o",
+  "native_log_diagnostics": {
+    "failed_prefix_lines": 0,
+    "fatal_error_diagnostics": 0,
+    "scope": "Counts describe the retained log, not proof that the complete build or browser passed."
+  },
+  "counter_scope": "19177/76440 is the final observed native action counter. Actions include generation, compilation and linking; it is not a count of browser features, a completion estimate or acceptance.",
+  "telemetry_recovery": {
+    "observed_at": "2026-11-14T06:04:52.928878+00:00",
+    "severity": "WARNING",
+    "message": "Live check output unavailable; local evidence continues",
+    "error_type": "URLError",
+    "continued_until_budget_stop_at": "2026-11-14T06:36:31.554759+00:00",
+    "scope": "The actual Actions job log verifies that the corrected fallback handled a live publication outage and retained the local evidence."
+  },
+  "resource_scope": {
+    "elapsed_seconds": 19806.744,
+    "free_bytes": 63675658240,
+    "peak_sampled_build_tree_rss_bytes": 4774772736,
+    "effective_compiler_ceiling": 3,
+    "note": "Sampled process-tree RSS can count shared pages repeatedly; this is not browser runtime memory."
+  },
+  "source_build": "BLOCKED",
+  "renderer_fixture": "NOT_RUN",
+  "automation_suites": "NOT_RUN",
+  "release_ready": false,
+  "limits": "The measured bounded development recipe did not finish. No universal six-hour impossibility, official-SDK equivalence or full Chromium checkpoint/final-link result is claimed."
+}

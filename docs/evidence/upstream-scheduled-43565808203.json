@@ -1,0 +1,40 @@
+{
+  "schema_revision": 1,
+  "run_id": 43565808203,
+  "event": "schedule",
+  "source_commit": "b3d27a73bbb20b61a08713d120fbb65c35bca30c",
+  "conclusion": "success",
+  "observed_at": "2026-11-14T06:22:18.574269+00:00",
+  "candidate_review": {
+    "pull_request": 10,
+    "head_sha": "d63a82e2bb5585947ec5d40fd0c51b9f988a6ff2",
+    "changed_paths": [
+      "upstream/candidates.json"
+    ],
+    "additions": 2,
+    "deletions": 2,
+    "changes": [
+      "Observation timestamp refreshed",
+      "Deferred WebKit revision advanced to 73dc6d0454c27ccdd2e4c7eeef656987c90ca0c8"
+    ],
+    "official_webkit_commit": "https://api.github.com/repos/WebKit/WebKit/git/commits/73dc6d0454c27ccdd2e4c7eeef656987c90ca0c8",
+    "official_sources_verified": true,
+    "gitleaks_run_id": 43566016630,
+    "gitleaks_conclusion": "success",
+    "codeql_languages_passed": [
+      "actions",
+      "python",
+      "rust"
+    ],
+    "merge_sha": "efbf4dc4295f1773c748738140aaaf52cda89b39",
+    "merge_method": "merge"
+  },
+  "scope": {
+    "chromium_pins_changed": false,
+    "client_versions_changed": false,
+    "approved_engine_locks_changed": false,
+    "client_compatibility": "NOT_RUN",
+    "trusted_release": false,
+    "browser_built_or_published_by_watcher": false
+  }
+}

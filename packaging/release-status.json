@@ -15,7 +15,7 @@
   },
   "repository_published": true,
   "blockers": [
-    "Owned engine cold source-build acceptance unresolved; optimized/development Windows and development Linux recipes timed out, and corrected macOS Intel/ARM experiments are pending",
+    "Owned engine cold source-build acceptance unresolved; optimized/development Windows, development Linux and corrected Intel Mac recipes timed out; ARM Mac experiment is pending",
     "No real browser/native automation acceptance",
     "No signed updater or paired manager smoke suite"
   ],
@@ -66,8 +66,11 @@
       "target": "macos-15-intel",
       "run_id": 43537314595,
       "source_commit": "fe9aa1219708ed0ef36c349670e65ef8ffa28a9a",
-      "status": "in_progress",
-      "retry_of": 43521894011
+      "status": "completed",
+      "retry_of": 43521894011,
+      "conclusion": "failure",
+      "failure_class": "bounded-build-time-budget",
+      "evidence": "docs/evidence/cold-source-43537314595-provenance.json"
     },
     {
       "target": "macos-15",
@@ -78,5 +81,5 @@
       "prerequisite_evidence": "docs/evidence/macos-arm-prerequisites-43546626004-provenance.json"
     }
   ],
-  "source_experiment_status_observed_at": "2026-11-14T04:52:22.719263+00:00"
+  "source_experiment_status_observed_at": "2026-11-14T06:45:42.667434+00:00"
 }
