@@ -1,0 +1,115 @@
+{
+  "run_id": 43541247139,
+  "artifact_id": 14091763932,
+  "transport_zip_sha256": "597b8dbc10299dda9258111ee60a6e696135fb8d12e28709a62d18120c0a6243",
+  "independent_download_verification": "PASS",
+  "native_report": {
+    "schema_revision": 1,
+    "source_commit": "3590742a1529f3f9e7a0df7812ad3b7d9ed61827",
+    "run_id": "43541247139",
+    "image_version": "20261104.0514.1",
+    "runner_arch": "ARM64",
+    "cpu_count": 3,
+    "platform": "macOS-15.8.2-arm64-arm-64bit-Mach-O",
+    "result": "BLOCKED",
+    "engine_acceptance": "NOT_RUN",
+    "volumes": [
+      {
+        "candidate": "GITHUB_WORKSPACE",
+        "path": "/Users/runner/work/Numera-Core-Browser/Numera-Core-Browser",
+        "device_id": 16777226,
+        "total_bytes": 343073095680,
+        "free_bytes": 49317109760
+      },
+      {
+        "candidate": "RUNNER_TEMP",
+        "path": "/Users/runner/work/_temp",
+        "device_id": 16777226,
+        "total_bytes": 343073095680,
+        "free_bytes": 49317109760
+      },
+      {
+        "candidate": "/tmp",
+        "path": "/private/tmp",
+        "device_id": 16777226,
+        "total_bytes": 343073095680,
+        "free_bytes": 49317109760
+      }
+    ],
+    "preinstalled_sdks": [
+      {
+        "path": "/Applications/Xcode.app",
+        "symlink": true,
+        "resolved_path": "/Applications/Xcode_16.4.app",
+        "result": "SKIPPED_SYMLINK"
+      },
+      {
+        "path": "/Applications/Xcode_16.0.0.app",
+        "symlink": true,
+        "resolved_path": "/Applications/Xcode_16.app",
+        "result": "SKIPPED_SYMLINK"
+      },
+      {
+        "path": "/Applications/Xcode_16.0.app",
+        "symlink": true,
+        "resolved_path": "/Applications/Xcode_16.app",
+        "result": "SKIPPED_SYMLINK"
+      },
+      {
+        "path": "/Applications/Xcode_16.1.0.app",
+        "symlink": true,
+        "resolved_path": "/Applications/Xcode_16.1.app",
+        "result": "SKIPPED_SYMLINK"
+      },
+      {
+        "path": "/Applications/Xcode_16.1.app",
+        "symlink": false,
+        "resolved_path": "/Applications/Xcode_16.1.app",
+        "result": "PASS",
+        "device_id": 16777226,
+        "du_exit_code": 0,
+        "du_reported_bytes": 4668477440
+      },
+      {
+        "path": "/Applications/Xcode_16.2.0.app",
+        "symlink": true,
+        "resolved_path": "/Applications/Xcode_16.2.app",
+        "result": "SKIPPED_SYMLINK"
+      },
+      {
+        "path": "/Applications/Xcode_16.2.app",
+        "symlink": false,
+        "resolved_path": "/Applications/Xcode_16.2.app",
+        "result": "PASS",
+        "device_id": 16777226,
+        "du_exit_code": 0,
+        "du_reported_bytes": 4762992640
+      },
+      {
+        "path": "/Applications/Xcode_16.3.0.app",
+        "symlink": true,
+        "resolved_path": "/Applications/Xcode_16.3.app",
+        "result": "SKIPPED_SYMLINK"
+      }
+    ],
+    "note": "Read-only observations. Shared devices and APFS clones/snapshots make directory sizes nonadditive; only native before/after capacity could prove reclaimed space. No cleanup or source build runs.",
+    "physical_memory": {
+      "exit_code": 0,
+      "stdout": "7516192768"
+    },
+    "active_developer_directory": {
+      "exit_code": 0,
+      "stdout": "/Applications/Xcode_16.4.app/Contents/Developer"
+    },
+    "default_xcode_version": {
+      "exit_code": 0,
+      "stdout": "Xcode 16.4\nBuild version 16F6"
+    },
+    "android_home": "/Users/runner/Library/Android/sdk",
+    "candidate_count": 21,
+    "candidate_limit": 8,
+    "candidate_list_truncated": true,
+    "timestamp": "2026-11-14T01:41:48.048100+00:00"
+  },
+  "diagnosis": "The initial eight-entry bound included Xcode aliases. It correctly reported truncation/BLOCKED and was corrected before further investigation."
+}

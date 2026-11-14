@@ -15,7 +15,7 @@
   },
   "repository_published": true,
   "blockers": [
-    "Owned engine cold source-build acceptance unresolved; optimized Windows run timed out, and corrected development Windows/macOS Intel/Linux source experiments are pending",
+    "Owned engine cold source-build acceptance unresolved; optimized and development Windows recipes timed out, corrected macOS Intel/Linux experiments are pending, and macOS ARM capacity remains unprepared",
     "No real browser/native automation acceptance",
     "No signed updater or paired manager smoke suite"
   ],
@@ -39,7 +39,10 @@
       "target": "windows-2025-vs2026",
       "run_id": 43498547353,
       "source_commit": "b9fcb722a5ea5fa85e458c47c5fe24968ba7c609",
-      "status": "in_progress"
+      "status": "completed",
+      "conclusion": "failure",
+      "failure_class": "bounded-build-time-budget",
+      "evidence": "docs/evidence/cold-source-43498547353-provenance.json"
     },
     {
       "target": "macos-15-intel",
@@ -60,8 +63,9 @@
       "target": "macos-15-intel",
       "run_id": 43537314595,
       "source_commit": "fe9aa1219708ed0ef36c349670e65ef8ffa28a9a",
-      "status": "queued",
+      "status": "in_progress",
       "retry_of": 43521894011
     }
-  ]
+  ],
+  "source_experiment_status_observed_at": "2026-11-14T01:57:21.150Z"
 }

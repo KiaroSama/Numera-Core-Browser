@@ -1,0 +1,15 @@
+{
+  "run_id": 43498547353,
+  "source_commit": "b9fcb722a5ea5fa85e458c47c5fe24968ba7c609",
+  "artifact_id": 14092352585,
+  "transport_zip_sha256": "b0870beeea3b2e43999484c7b2c0d382fabe3c3e56d6508a2055c7191c3472be",
+  "independent_download_verification": "PASS",
+  "native_log_sha256": "cf78e9c2451313aaf8e4b92dd128d44a9b388f14e80bb6aa181db32e92429aa0",
+  "observed_failure": "The 330-minute controller budget expired at compile-link. Native source acquisition, dependency preparation, branding and GN had passed; 23839/75879 native actions were observed before termination.",
+  "scope": "This bounded development recipe did not finish. The report retains 114919821312 free bytes and 7473668096 peak sampled build-tree RSS. It does not prove a universal resource minimum or that every permitted six-hour configuration fails.",
+  "native_log_review": "No FAILED:, fatal error:, Build Failure: or error C<number> line was found. Final completed compiler actions were predominantly V8. Scheduler S/F timestamps include queueing and are not individual compiler CPU measurements.",
+  "source_build": "BLOCKED",
+  "renderer_fixture": "NOT_RUN",
+  "automation_suites": "NOT_RUN",
+  "release_ready": false
+}
