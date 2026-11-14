@@ -1,0 +1,25 @@
+{
+  "run_id": 43525736057,
+  "source_commit": "8338a207fa0d173ffa13d00b0e53ed34de697ad7",
+  "artifact_id": 14099340851,
+  "transport_zip_sha256": "7cab05dd8496632c55320d0185f611392a9517537a0aa916cbf0fe6db789ea1f",
+  "independent_download_verification": "PASS",
+  "native_log_sha256": "37545a0a911bac6116eb057a28caa8fa915b9db40efec8ebf8d432ae2e57319b",
+  "observed_failure": "The controller exhausted its 330-minute cold-build budget at compile-link. Source/dependencies, native dependency installation, branding and GN passed; complete Chrome/ChromeDriver compilation and fixtures did not.",
+  "native_final_summary": "5h15m00.51s Build Failure: 33201 done, 54 failed, 39009 remaining - 1.76/s",
+  "last_observed_successful_action": "[33146/72210] 5h14m59.48s F CXX obj/third_party/blink/renderer/bindings/modules/v8/v8/v8_idb_version_change_event.o",
+  "shutdown_diagnostics": "The retained log reports interrupt by signal and spawn helper: EOF at termination. It contains 55 FAILED: lines and zero fatal error: diagnostics. The native final summary reports 54 failed actions. These shutdown results do not establish an independent C++ compiler error.",
+  "counter_scope": "33201/72210 is the final observed native handled-action counter, including interrupted/failed actions; it is not 33201 successfully compiled files or browser acceptance.",
+  "resource_scope": {
+    "elapsed_seconds": 19801.884,
+    "free_bytes": 54259884032,
+    "peak_sampled_build_tree_rss_bytes": 9699958784,
+    "note": "Sampled process-tree RSS can count shared pages repeatedly; this is not browser runtime memory."
+  },
+  "source_build": "BLOCKED",
+  "renderer_fixture": "NOT_RUN",
+  "owned_linux_suid_fixture": "NOT_RUN",
+  "automation_suites": "NOT_RUN",
+  "release_ready": false,
+  "limits": "This measured bounded development recipe did not finish. No universal six-hour impossibility or full Chromium checkpoint/final-link result is claimed."
+}
