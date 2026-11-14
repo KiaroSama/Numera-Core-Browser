@@ -1,0 +1,33 @@
+{
+  "run_id": 43546626004,
+  "job_id": 132299380011,
+  "source_commit": "241927c7706acfd68a151fe28ef888ea42393238",
+  "artifact_id": 14094413665,
+  "transport_zip_sha256": "ff772944ccf429d376b79b92ce5121ad3becc443823f30026d8f257f5775864a",
+  "independent_download_verification": "PASS",
+  "native_log_sha256": "56b1bd332e05abc905674359ac3cebb86e031f5e52dac57234c7b088c95dcaa2",
+  "reported_pinned_python_versions": [
+    "3.11.8"
+  ],
+  "native_preparation_guard_tests": 13,
+  "native_controller_tests": 8,
+  "powershell_ast": "PASS",
+  "native_prerequisite_result": "PREREQUISITES_PASS",
+  "measured_free_before_bytes": 49302450176,
+  "measured_free_after_bytes": 102644805632,
+  "measured_volume_increase_bytes": 53342355456,
+  "preserved_xcode": "26.3",
+  "selected_sdk": "26.2",
+  "official_sdk_equivalence": false,
+  "effective_local_compiler_ceiling": 1,
+  "prerequisite_elapsed_seconds": 24.055,
+  "source_build": "NOT_RUN",
+  "renderer_fixture": "NOT_RUN",
+  "release_ready": false,
+  "full_cold_followup": {
+    "run_id": 43547653312,
+    "source_commit": "241927c7706acfd68a151fe28ef888ea42393238",
+    "status_at_dispatch": "queued"
+  },
+  "scope": "Only exact verified unused assets were removed on the disposable public ARM job. Actual volume capacity is measured; directory sizes were not added to claim reclaimed space. This proves prerequisites, not engine compilation, native renderer behavior or release acceptance."
+}

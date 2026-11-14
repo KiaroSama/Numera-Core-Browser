@@ -1,0 +1,56 @@
+{
+  "schema_revision": 1,
+  "run_id": "43546626004",
+  "source_commit": "241927c7706acfd68a151fe28ef888ea42393238",
+  "result": "PASS",
+  "stage": "capacity-check",
+  "free_before_bytes": 49302450176,
+  "free_after_bytes": 102644805632,
+  "removed_paths": [
+    "/Applications/Xcode_16.app",
+    "/Applications/Xcode_16.1.app",
+    "/Applications/Xcode_16.2.app",
+    "/Applications/Xcode_16.3.app",
+    "/Applications/Xcode_16.4.app",
+    "/Applications/Xcode_26.0.1.app",
+    "/Applications/Xcode_26.1.1.app",
+    "/Applications/Xcode_26.2.app",
+    "/Users/runner/Library/Android/sdk"
+  ],
+  "source_build": "NOT_RUN",
+  "renderer_fixture": "NOT_RUN",
+  "release_ready": false,
+  "protected_xcode_info_sha256": "efa845c252a042614fd125371903f6cace479d39cb0a6127d5598c8c2ff505bd",
+  "unused_xcode_info_sha256": {
+    "/Applications/Xcode_16.app": "06272793e80715d2a9b91512520423d108b2853b5179640815d9fe467586b6c6",
+    "/Applications/Xcode_16.1.app": "1b0d7f735ac0d35ea9eb65c44b43da1c1c80d56199e1fbdb99700b86fdfeb911",
+    "/Applications/Xcode_16.2.app": "2a4f71634d5707a647a8518816d4354e85e44365fa0e6fd755d12084b5c32da7",
+    "/Applications/Xcode_16.3.app": "78b8c121e8ee92cb046cc0d0bd49a5b80fb01b1f7950773bb2d2e4b4bee80b4e",
+    "/Applications/Xcode_16.4.app": "cd2c5ad123051dfbbfc316a048bb376b253af190bd10ae37c797d3e5c165cad8",
+    "/Applications/Xcode_26.0.1.app": "8003b2997fc856cffff5df7327902418d3e2d9bc36c26a22d884ba598fe1dea8",
+    "/Applications/Xcode_26.1.1.app": "1694f417597d29a2a29719d124bf5d878980471a07a11080d821f26830acee23",
+    "/Applications/Xcode_26.2.app": "c633f1876dba2c38d77905a789417f3bbc4ac7973137a6aaa2f03f8312641c29"
+  },
+  "selected_toolchain": {
+    "developer_dir": "/Applications/Xcode_26.3.app/Contents/Developer",
+    "xcode_version": "Xcode 26.3\nBuild version 17C529",
+    "sdk_version": "26.2",
+    "official_sdk_equivalence": false
+  },
+  "attempted_paths": [
+    "/Applications/Xcode_16.app",
+    "/Applications/Xcode_16.1.app",
+    "/Applications/Xcode_16.2.app",
+    "/Applications/Xcode_16.3.app",
+    "/Applications/Xcode_16.4.app",
+    "/Applications/Xcode_26.0.1.app",
+    "/Applications/Xcode_26.1.1.app",
+    "/Applications/Xcode_26.2.app",
+    "/Users/runner/Library/Android/sdk"
+  ],
+  "deletion_deadline_seconds": 330,
+  "deletion_deadline_monotonic_seconds": 497.570326541,
+  "deadline_interpreter": "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+  "timestamp": "2026-11-14T02:36:37.701236+00:00",
+  "note": "Disposable hosted builder preparation only; actual before/after capacity is measured, not inferred by adding APFS directory sizes. No global xcode-select change."
+}

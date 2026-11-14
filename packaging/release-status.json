@@ -15,7 +15,7 @@
   },
   "repository_published": true,
   "blockers": [
-    "Owned engine cold source-build acceptance unresolved; optimized and development Windows recipes timed out, corrected macOS Intel/Linux experiments are pending, and macOS ARM capacity remains unprepared",
+    "Owned engine cold source-build acceptance unresolved; optimized and development Windows recipes timed out, and corrected Linux/macOS Intel/macOS ARM experiments are pending",
     "No real browser/native automation acceptance",
     "No signed updater or paired manager smoke suite"
   ],
@@ -65,7 +65,15 @@
       "source_commit": "fe9aa1219708ed0ef36c349670e65ef8ffa28a9a",
       "status": "in_progress",
       "retry_of": 43521894011
+    },
+    {
+      "target": "macos-15",
+      "architecture": "ARM64",
+      "run_id": 43547653312,
+      "source_commit": "241927c7706acfd68a151fe28ef888ea42393238",
+      "status": "queued",
+      "prerequisite_evidence": "docs/evidence/macos-arm-prerequisites-43546626004-provenance.json"
     }
   ],
-  "source_experiment_status_observed_at": "2026-11-14T01:57:21.150Z"
+  "source_experiment_status_observed_at": "2026-11-14T02:45:44.839718+00:00"
 }
