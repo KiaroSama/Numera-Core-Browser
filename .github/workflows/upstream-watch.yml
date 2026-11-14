@@ -30,6 +30,7 @@ jobs:
       - name: Read official version feeds
         env:
           REFRESH_OBSERVATION: ${{ inputs.refresh_observation }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           if [ "$REFRESH_OBSERVATION" = true ]; then
             python3 scripts/upstream.py --refresh-observation

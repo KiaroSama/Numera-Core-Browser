@@ -4,13 +4,35 @@ import argparse
 from logging_util import log
 import datetime
 import json
+import os
 from pathlib import Path
+import urllib.parse
 import urllib.request
+
+
+def github_origin(url):
+    parts = urllib.parse.urlsplit(url)
+    return (parts.scheme == 'https' and parts.hostname == 'api.github.com'
+            and parts.port in {None, 443} and parts.username is None and parts.password is None)
+
+
+class GitHubMetadataRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, request, file, code, message, headers, new_url):
+        if not github_origin(new_url):
+            raise RuntimeError('GitHub metadata redirect left the permitted HTTPS origin')
+        return super().redirect_request(request, file, code, message, headers, new_url)
 
 
 def get(url):
     request = urllib.request.Request(url, headers={"User-Agent": "Numera-Core-Browser-upstream-watcher"})
-    with urllib.request.urlopen(request, timeout=30) as response:
+    if github_origin(url):
+        token = os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN')
+        if token:
+            request.add_header('Authorization', 'Bearer ' + token)
+        reader = urllib.request.build_opener(GitHubMetadataRedirect()).open
+    else:
+        reader = urllib.request.urlopen
+    with reader(request, timeout=30) as response:
         body = response.read(4 * 1024 * 1024)
     return json.loads(body)
 
