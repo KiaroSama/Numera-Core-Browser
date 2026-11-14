@@ -1,0 +1,17 @@
+{
+  "run_id": 43546060224,
+  "job_id": 132297548633,
+  "source_commit": "a23634720875c824ae9feeb9e39f08cb2f62e705",
+  "job_log_sha256": "4da3ebbe230c6b043a5138a58e85508ffcf1df0e95f9f250969fcfd4ef93e6c1",
+  "result": "BLOCKED",
+  "stage": "preparation-safeguard-tests",
+  "native_tests": 13,
+  "native_test_failures": 3,
+  "reason": "The test fixture used a noncanonical macOS temporary directory alias; directory identity guards rejected it before any native operation. Reproduced the same three failures with an owned temporary-directory symlink on Linux. Canonicalizing only the fixture root passed all13 tests. Production identity guards were not weakened.",
+  "sdk_removal": "NOT_RUN",
+  "pinned_bootstrap": "NOT_RUN",
+  "source_build": "NOT_RUN",
+  "renderer_fixture": "NOT_RUN",
+  "release_ready": false,
+  "native_deadline_fixture_scope": "Both actual owned nonprivileged Unix deadline fixtures passed on macOS; no privileged deletion ran."
+}

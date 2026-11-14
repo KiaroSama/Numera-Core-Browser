@@ -22,7 +22,9 @@ class MacPreparation(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
-        self.root = Path(self.temp.name)
+        # macOS temporary roots may use /var -> /private/var. Fixtures need
+        # canonical operands just like the reviewed production SDK paths.
+        self.root = Path(self.temp.name).resolve()
         self.apps = self.root / 'Applications'
         self.sdk = self.root / 'Android/sdk'
         for name in ['cmdline-tools', 'licenses']:
@@ -116,7 +118,7 @@ class MacPreparation(unittest.TestCase):
     def test_enough_capacity_skips_every_native_operation(self):
         self.free = 105_000_000_000
         result = self.run_preparation()
-        self.assertEqual(result['result'], 'PASS')
+        self.assertEqual(result['result'], 'PASS', result)
         self.assertEqual(result['removed_paths'], [])
         self.assertEqual(self.commands, [])
 
@@ -130,7 +132,7 @@ class MacPreparation(unittest.TestCase):
 
     def test_actual_owned_fixture_cleanup_preserves_selected_xcode(self):
         result = self.run_preparation()
-        self.assertEqual(result['result'], 'PASS')
+        self.assertEqual(result['result'], 'PASS', result)
         self.assertEqual(len(result['removed_paths']), 9)
         self.assertEqual(result['free_after_bytes'], self.free_after)
         self.assertTrue(self.protected.is_dir())
