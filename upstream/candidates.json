@@ -1,6 +1,6 @@
 {
   "schema_revision": 1,
-  "observed_at": "2026-11-13T19:40:00.994953+00:00",
+  "observed_at": "2026-11-14T03:00:26.690907+00:00",
   "status": "unreviewed-candidate",
   "trusted_release": false,
   "versions": {
@@ -23,8 +23,8 @@
     },
     "automation_clients": {
       "playwright": {
-        "tag": "v1.65.0",
-        "published_at": "2026-11-05T18:25:45Z",
+        "tag": "v1.65.1",
+        "published_at": "2026-11-13T21:46:58Z",
         "source": "https://api.github.com/repos/microsoft/playwright/releases/latest",
         "compatibility": "NOT_RUN; not an engine protocol version lock"
       },
@@ -48,7 +48,7 @@
       "scope": "deferred"
     },
     "webkit": {
-      "revision": "6401216c41a1d644e6af63672ea1de7accd37e25",
+      "revision": "1148772d12dafa884c58e98159282686b855dc72",
       "source": "https://api.github.com/repos/WebKit/WebKit/commits/main",
       "scope": "deferred",
       "note": "Not a universal Safari release version"
