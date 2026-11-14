@@ -1,13 +1,16 @@
 name: macOS ARM hosted storage survey
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [.github/workflows/macos-storage-survey.yml]
 permissions:
   contents: read
 jobs:
   survey:
     if: github.repository == 'KiaroSama/Numera-Core-Browser' && github.event.repository.private == false
     runs-on: macos-15
-    timeout-minutes: 7
+    timeout-minutes: 9
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -43,6 +46,13 @@ jobs:
                       item['result'] = 'BLOCKED'
                       item['error_type'] = type(error).__name__
               return item
+          def select_candidates(applications, android):
+              entries = sorted(applications.glob('Xcode*.app'))
+              if android.is_dir():
+                  entries.append(android)
+              aliases = [measure(path) for path in entries if path.is_symlink()]
+              unique = [path for path in entries if not path.is_symlink()]
+              return unique, aliases
           try:
               if os.environ['RUNNER_ARCH'] != 'ARM64' or platform.system() != 'Darwin':
                   raise RuntimeError('Expected the standard macOS ARM runner')
@@ -55,14 +65,13 @@ jobs:
               report['active_developer_directory'] = command(['xcode-select', '-p'], 5)
               report['default_xcode_version'] = command(['xcodebuild', '-version'], 20)
               report['android_home'] = os.environ.get('ANDROID_HOME')
-              candidates = sorted(Path('/Applications').glob('Xcode*.app'))
               android = Path('/Users/runner/Library/Android/sdk')
-              if android.is_dir():
-                  candidates.append(android)
+              candidates, aliases = select_candidates(Path('/Applications'), android)
+              report['sdk_aliases'] = aliases
               report['candidate_count'] = len(candidates)
-              report['candidate_limit'] = 8
-              report['candidate_list_truncated'] = len(candidates) > 8
-              candidates = candidates[:8]
+              report['candidate_limit'] = 12
+              report['candidate_list_truncated'] = len(candidates) > 12
+              candidates = candidates[:12]
               with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
                   for item in pool.map(measure, candidates):
                       report['preinstalled_sdks'].append(item)
