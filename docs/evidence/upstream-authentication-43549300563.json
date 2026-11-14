@@ -1,0 +1,53 @@
+{
+  "schema_revision": 1,
+  "failure": {
+    "run_id": 43547806484,
+    "job_id": 132303087155,
+    "source_commit": "241927c7706acfd68a151fe28ef888ea42393238",
+    "stage": "Read official version feeds",
+    "http_status": 403,
+    "message": "rate limit exceeded",
+    "source": "https://api.github.com/repos/WebKit/WebKit/commits/main",
+    "diagnosis": "The old reader sent unauthenticated GitHub API requests from a shared hosted IP. No candidate PR was published by this failed run.",
+    "decoded_job_log_sha256": "a952f6c88d896e9f81f07eb179fd9ebae8f2421b1e49db161df0baa846f3ced5"
+  },
+  "correction_commit": "e7da65ce6bcb969d7dbbbbd3720d926ce26fc8cd",
+  "credential_scope": "The reader receives the workflow token at its own step and sends it only to the exact HTTPS GitHub API origin. Foreign/plaintext/lookalike requests receive no token; cross-origin redirects are refused. The existing PR publication step separately retains its workflow credential.",
+  "verification": {
+    "run_id": 43549300563,
+    "job_id": 132307808062,
+    "source_commit": "e7da65ce6bcb969d7dbbbbd3720d926ce26fc8cd",
+    "conclusion": "success",
+    "hosted_script_tests": 32,
+    "credential_routing_tests": 6,
+    "decoded_job_log_sha256": "ad2ce4254ac225cef509058c17df0457cf804ebe46ecefbb1fb15bb03d1cede9"
+  },
+  "candidate_review": {
+    "pull_request": 9,
+    "head_sha": "34c29363ef060b0d4fab6767aebe0bde2ed9b3bc",
+    "changed_paths": [
+      "upstream/candidates.json"
+    ],
+    "observed_at": "2026-11-14T03:00:26.690907+00:00",
+    "playwright_tag": "v1.65.1",
+    "playwright_official_release": "https://github.com/microsoft/playwright/releases/tag/v1.65.1",
+    "playwright_published_at": "2026-11-13T21:46:58Z",
+    "deferred_webkit_revision": "1148772d12dafa884c58e98159282686b855dc72",
+    "official_sources_verified": true,
+    "gitleaks_run_id": 43549328737,
+    "gitleaks_conclusion": "success",
+    "codeql_languages_passed": [
+      "actions",
+      "python",
+      "rust"
+    ],
+    "merge_sha": "a01f6e9531857fcc1e1feac1c7ef560d7eb78ce1",
+    "merge_method": "merge"
+  },
+  "scope": {
+    "approved_engine_locks_changed": false,
+    "client_compatibility": "NOT_RUN",
+    "trusted_release": false,
+    "browser_built_or_published_by_watcher": false
+  }
+}
