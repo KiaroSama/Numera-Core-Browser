@@ -1,0 +1,16 @@
+{
+  "run_id": 43521894011,
+  "source_commit": "83e237cd989a6a3d73cd70b6458aaf191e5d4234",
+  "artifact_id": 14089746755,
+  "transport_zip_sha256": "6b5d8046d3df6f6d4c6c35aedb90fe0703c9689a324eb51067b24a9ec1b6561d",
+  "independent_download_verification": "PASS",
+  "native_log_sha256": "00f7ad50674e9217c39d8eacc4d11600c41258fe26ef3ae5d3a2625d2e0d174c",
+  "observed_failure": "A transient check publication URLError entered the controller logging fallback. Its invalid WARN severity raised AssertionError and stopped the owned build tree at compile-link; no native compiler exit code was retained.",
+  "scope": "This is an orchestration failure after 6913.982 seconds and 7903/84338 observed actions, not a proven compiler, SDK, memory, disk or budget-limit failure. Renderer and automation fixtures did not run.",
+  "correction_commit": "fe9aa1219708ed0ef36c349670e65ef8ffa28a9a",
+  "correction": "publish_check catches telemetry errors, retains only the exception type and logs valid WARNING without changing build/release gates. A regression test uses the actual logger and a simulated API failure.",
+  "retry_run_id": 43537314595,
+  "retry_source_commit": "fe9aa1219708ed0ef36c349670e65ef8ffa28a9a",
+  "retry_status_at_observation": "queued",
+  "sdk_scope": "Xcode26.3/SDK26.2 remain development candidates; successful compilation and runtime fixtures are still required."
+}

@@ -45,13 +45,23 @@
       "target": "macos-15-intel",
       "run_id": 43521894011,
       "source_commit": "83e237cd989a6a3d73cd70b6458aaf191e5d4234",
-      "status": "in_progress"
+      "status": "completed",
+      "conclusion": "failure",
+      "failure_class": "orchestration-telemetry-logger",
+      "evidence": "docs/evidence/cold-source-43521894011-provenance.json"
     },
     {
       "target": "ubuntu-24.04",
       "run_id": 43525736057,
       "source_commit": "8338a207fa0d173ffa13d00b0e53ed34de697ad7",
       "status": "in_progress"
+    },
+    {
+      "target": "macos-15-intel",
+      "run_id": 43537314595,
+      "source_commit": "fe9aa1219708ed0ef36c349670e65ef8ffa28a9a",
+      "status": "queued",
+      "retry_of": 43521894011
     }
   ]
 }
