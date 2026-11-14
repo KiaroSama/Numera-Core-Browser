@@ -1,9 +1,12 @@
 import importlib.util
+import contextlib
+import io
+import json
 from pathlib import Path
 import sys
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
@@ -51,6 +54,20 @@ class BuildProgress(unittest.TestCase):
 
 
 class TelemetryIsolation(unittest.TestCase):
+    def test_api_outage_keeps_source_gate_running_and_logs_a_valid_warning(self):
+        report = {'result': 'RUNNING', 'source_build': 'RUNNING', 'release_ready': False}
+        check = Mock()
+        check.update.side_effect = TimeoutError('synthetic-unlogged-value')
+        captured = io.StringIO()
+        with contextlib.redirect_stderr(captured):
+            self.assertFalse(module.publish_check(report, check))
+        self.assertEqual(report['result'], 'RUNNING')
+        self.assertEqual(report['source_build'], 'RUNNING')
+        self.assertFalse(report['release_ready'])
+        self.assertEqual(report['telemetry_publish_error_type'], 'TimeoutError')
+        self.assertEqual(json.loads(captured.getvalue())['severity'], 'WARNING')
+        self.assertNotIn('synthetic-unlogged-value', captured.getvalue())
+
     def test_updates_only_own_job_output_and_leaves_conclusion_to_actions(self):
         calls = []
 

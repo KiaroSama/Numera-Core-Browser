@@ -155,6 +155,16 @@ class CheckRun:
                      {'output': {'title': report['stage'], 'summary': summary}})
 
 
+def publish_check(report, checks):
+    try:
+        checks.update(report)
+        return True
+    except Exception as error:
+        report['telemetry_publish_error_type'] = type(error).__name__
+        log('Live check output unavailable; local evidence continues', severity='WARNING', component='engine-build')
+        return False
+
+
 def smoke(binary, scratch, output, environment):
     profile = scratch / 'fixture-profile'
     fixture = (Path('tests/fixtures/engine-smoke.html').resolve()).as_uri()
@@ -271,13 +281,8 @@ def main():
                 if elapsed >= next_publish:
                     report['timestamp'] = now()
                     write_json(output / 'report.json', report)
-                    try:
-                        checks.update(report)
-                    except Exception as error:
-                        # A telemetry API outage must not abort expensive source
-                        # compilation. Local reports and the native log persist.
-                        report['telemetry_publish_error_type'] = type(error).__name__
-                        log('Live check output unavailable; local evidence continues', severity='WARN', component='engine-build')
+                    # A telemetry outage must not abort source compilation.
+                    publish_check(report, checks)
                     progress = report['native_action_progress']
                     counter = f", actions {progress['completed']}/{progress['total']}" if progress else ', actions unmeasured'
                     log(f"{report['stage']}: {elapsed:.0f}s, {report['disk_free_bytes']/1e9:.2f} GB free, compiler ceiling {parallelism}{counter}", component='engine-build')
