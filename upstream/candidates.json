@@ -1,23 +1,23 @@
 {
   "schema_revision": 1,
-  "observed_at": "2026-11-17T07:53:21.059979+00:00",
+  "observed_at": "2026-11-17T20:54:24.411065+00:00",
   "status": "unreviewed-candidate",
   "trusted_release": false,
   "versions": {
     "chromium": {
       "win": {
-        "version": "157.0.8103.79",
-        "serving_start": "2026-11-11T19:50:36.096729Z",
+        "version": "158.0.8127.37",
+        "serving_start": "2026-11-17T19:07:25.418313Z",
         "source": "https://versionhistory.googleapis.com/v1/chrome/platforms/win/channels/stable/versions/all/releases?filter=endtime=none"
       },
       "linux": {
-        "version": "157.0.8103.78",
-        "serving_start": "2026-11-11T21:45:02.774509Z",
+        "version": "158.0.8127.36",
+        "serving_start": "2026-11-17T18:56:40.005685Z",
         "source": "https://versionhistory.googleapis.com/v1/chrome/platforms/linux/channels/stable/versions/all/releases?filter=endtime=none"
       },
       "mac": {
-        "version": "157.0.8103.79",
-        "serving_start": "2026-11-11T19:51:01.554717Z",
+        "version": "158.0.8127.37",
+        "serving_start": "2026-11-17T19:07:20.796603Z",
         "source": "https://versionhistory.googleapis.com/v1/chrome/platforms/mac/channels/stable/versions/all/releases?filter=endtime=none"
       }
     },
@@ -29,26 +29,26 @@
         "compatibility": "NOT_RUN; not an engine protocol version lock"
       },
       "puppeteer": {
-        "tag": "puppeteer-v25.17.0",
-        "published_at": "2026-11-10T14:02:45Z",
+        "tag": "puppeteer-v25.18.1",
+        "published_at": "2026-11-17T16:21:18Z",
         "source": "https://api.github.com/repos/puppeteer/puppeteer/releases?per_page=50",
         "compatibility": "NOT_RUN; not an engine protocol version lock"
       },
       "selenium": {
-        "tag": "selenium-4.52.0",
-        "published_at": "2026-10-29T13:16:00Z",
+        "tag": "selenium-4.53.0",
+        "published_at": "2026-11-17T18:23:19Z",
         "source": "https://api.github.com/repos/SeleniumHQ/selenium/releases/latest",
         "compatibility": "NOT_RUN; not an engine protocol version lock"
       }
     },
     "gecko": {
-      "stable": "160.0",
+      "stable": "160.0.1",
       "esr": "153.7.0esr",
       "source": "https://product-details.mozilla.org/1.0/firefox_versions.json",
       "scope": "deferred"
     },
     "webkit": {
-      "revision": "ee926d463f4de736e2c89eb220da942f83ef2ef8",
+      "revision": "4d5ef7381c54a44dbb34a72c870568dce795a5fc",
       "source": "https://api.github.com/repos/WebKit/WebKit/commits/main",
       "scope": "deferred",
       "note": "Not a universal Safari release version"
