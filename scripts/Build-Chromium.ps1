@@ -4,11 +4,12 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$SourceRoot,
-    [ValidateSet('Prerequisites', 'Acquire', 'Build')][string]$Phase = 'Acquire',
+    [ValidateSet('Prerequisites', 'Acquire', 'Generate', 'Build')][string]$Phase = 'Acquire',
     [ValidateRange(1,4)][int]$Parallelism = 2,
     [switch]$ComponentBuild,
     [switch]$DebugBuild,
-    [switch]$BuildDriver
+    [switch]$BuildDriver,
+    [switch]$CompilerCacheProbe
 )
 $ErrorActionPreference = 'Stop'
 function Log([string]$Level, [string]$Message) {
@@ -25,6 +26,7 @@ function Stage([string]$Name) {
     Log 'INFO' ('Build phase: ' + $Name)
 }
 try {
+    if ($CompilerCacheProbe -and $Phase -ne 'Generate') { throw 'Compiler cache probe is restricted to graph generation' }
     if ($env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:GITHUB_REPOSITORY -ne 'KiaroSama/Numera-Core-Browser') {
         throw 'Engine compilation requires the authorized public GitHub-hosted repository runner'
     }
@@ -111,21 +113,26 @@ try {
                 Native -Command 'git' -Arguments @('apply', '--check', $PatchPath)
                 Native -Command 'git' -Arguments @('apply', $PatchPath)
             }
-            if ($IsLinux -and $Phase -eq 'Build') {
+            if ($IsLinux -and $Phase -in @('Generate', 'Build')) {
                 Stage 'linux-build-dependencies'
                 Native -Command 'sudo' -Arguments @('-n', '--', 'python3', 'build/install-build-deps.py', '--no-prompt', '--no-android', '--no-arm', '--no-chromeos-fonts', '--no-backwards-compatible', '--no-syms')
             }
-            if ($Phase -eq 'Build') {
+            if ($Phase -in @('Generate', 'Build')) {
                 Stage 'gn-generation'
                 $Component = if ($ComponentBuild) { 'true' } else { 'false' }
                 $Debug = if ($DebugBuild) { 'true' } else { 'false' }
                 $GnArgs = 'is_debug=' + $Debug + ' is_component_build=' + $Component + ' symbol_level=0 blink_symbol_level=0 v8_symbol_level=0 use_remoteexec=false is_official_build=false is_chrome_branded=false proprietary_codecs=false ffmpeg_branding="Chromium" target_cpu="x64"'
+                if ($CompilerCacheProbe) { $GnArgs += ' use_siso=false cc_wrapper="sccache"' }
                 Set-Content (Join-Path $SourceRoot 'gn-args.txt') $GnArgs -Encoding utf8NoBOM
                 # Windows .bat launchers consume quotes inside --args. A native
                 # args.gn file preserves GN string literals on every platform.
                 New-Item -ItemType Directory -Path 'out/Numera' -Force | Out-Null
                 Set-Content 'out/Numera/args.gn' $GnArgs -Encoding utf8NoBOM
                 Native -Command 'gn' -Arguments @('gen', 'out/Numera')
+                if ($Phase -eq 'Generate') {
+                    Stage 'generate-complete'
+                    exit 0
+                }
                 Stage 'compile-link'
                 $Targets = @('-C', 'out/Numera', '-j', $Parallelism.ToString(), 'chrome')
                 if ($BuildDriver) { $Targets += 'chromedriver' }

@@ -1,0 +1,73 @@
+name: Chromium compiler cache probe
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Native standard public runner to test
+        type: choice
+        options: [ubuntu-24.04, windows-2025-vs2026]
+        default: ubuntu-24.04
+permissions:
+  contents: read
+concurrency:
+  group: chromium-cache-probe-${{ inputs.target }}
+  cancel-in-progress: false
+jobs:
+  seed:
+    if: >-
+      github.repository == 'KiaroSama/Numera-Core-Browser' && github.event.repository.private == false &&
+      github.ref == 'refs/heads/main' && (inputs.target == 'ubuntu-24.04' || inputs.target == 'windows-2025-vs2026')
+    runs-on: ${{ inputs.target }}
+    timeout-minutes: 55
+    outputs:
+      checkpoint_sha: ${{ steps.seed.outputs.checkpoint_sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install pinned telemetry dependency
+        run: python -m pip install --disable-pip-version-check -r requirements-engine-build.txt
+      - name: Compile the real Chromium object into an empty local cache
+        id: seed
+        run: python scripts/chromium-compiler-cache-probe.py seed
+      - name: Save one bounded cache entry scoped to this attempt
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: build/chromium-cache-transfer/seed.tar
+          key: chromium-local-probe-${{ github.run_id }}-${{ github.run_attempt }}-${{ inputs.target }}
+      - name: Preserve diagnostics only
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: chromium-cache-seed-${{ inputs.target }}
+          path: build/chromium-cache-evidence
+          retention-days: 7
+          if-no-files-found: error
+  resume:
+    needs: seed
+    runs-on: ${{ inputs.target }}
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install pinned telemetry dependency
+        run: python -m pip install --disable-pip-version-check -r requirements-engine-build.txt
+      - name: Fetch the exact cache entry from this attempt
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: build/chromium-cache-transfer/seed.tar
+          key: chromium-local-probe-${{ github.run_id }}-${{ github.run_attempt }}-${{ inputs.target }}
+          fail-on-cache-miss: true
+      - name: Recreate the object and verify real source invalidation
+        env:
+          EXPECTED_CHECKPOINT_SHA: ${{ needs.seed.outputs.checkpoint_sha }}
+        run: python scripts/chromium-compiler-cache-probe.py resume
+      - name: Preserve diagnostics only
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: chromium-cache-resume-${{ inputs.target }}
+          path: build/chromium-cache-evidence
+          retention-days: 7
+          if-no-files-found: error
