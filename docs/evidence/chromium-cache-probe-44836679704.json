@@ -1,0 +1,51 @@
+{
+  "run_id": 44836679704,
+  "artifact_id": 14680115768,
+  "verified_transport_digest": "sha256:bce7afccd67156d209c943f41d01667e0947e34033bb742c128bd36be4ce4283",
+  "report": {
+    "phase": "seed",
+    "runner": "Linux",
+    "source_commit": "0ca5d2e7bb3e9772dc89fc98f3a853548c1106c0",
+    "result": "BLOCKED",
+    "engine_source_acceptance": "NOT_RUN",
+    "release_ready": false,
+    "context": {
+      "run_id": "44836679704",
+      "run_attempt": "1",
+      "runner_image": "20261116.133.1",
+      "host": "Linux",
+      "head": "0ca5d2e7bb3e9772dc89fc98f3a853548c1106c0",
+      "scratch": "/home/runner/work/_temp/numera-compiler-cache-probe",
+      "target": "obj/base/base/logging.o",
+      "lock_sha256": "a0899efb63de8badf27b640b9bfba4f702aaaa74cd2381c19f7fd6c5ac81bf12",
+      "gn_args_sha256": "20ad60940bfb4c225f35521b19e886f08fe7c00fd2bd68b2dbf620d17c9735cb",
+      "sccache_sha256": "0b44834be857e21b026f7db49a7762023fedb5eb5ed60725a66f698d8d79a34b",
+      "ninja_sha256": "607e668f90dd6cd82e1a42ae572647ad1b1fd43063964295b9547836d8c15d99",
+      "clang_sha256": "8091a95554f24a2affa32c80e884c3d36960c5d971560d3410391ffc36af19a7",
+      "command_sha256": "40738f2ab19a1c46afa368b79b04d0b6054e62e5cabdd7a3013ddb145b6e4b25",
+      "input_sha256": "4d69842dafef18f5409b5f88a5716f84f7009b0ed1ea34a21eb4aa7559d7b696"
+    },
+    "error_type": "RuntimeError",
+    "diagnostic": "Cold Chromium compilation did not populate an initially empty cache"
+  },
+  "cold": {
+    "compile_requests": 437,
+    "cache_hits": {
+      "counts": {},
+      "adv_counts": {}
+    },
+    "cache_misses": {
+      "counts": {},
+      "adv_counts": {}
+    },
+    "cache_writes": 0,
+    "non_cacheable_compilations": 0,
+    "not_cached": {
+      "-fmodules": 369,
+      "Can't handle UnknownFlag arguments with -Xclang": 68
+    }
+  },
+  "native_object_compiled": true,
+  "cold_ninja_final_action": "[649/649] CXX obj/base/base/logging.o",
+  "cache_continuation": "NOT_RUN"
+}

@@ -9,7 +9,8 @@ param(
     [switch]$ComponentBuild,
     [switch]$DebugBuild,
     [switch]$BuildDriver,
-    [switch]$CompilerCacheProbe
+    [switch]$CompilerCacheProbe,
+    [ValidateSet('sccache', 'ccache')][string]$ProbeCacheTool = 'sccache'
 )
 $ErrorActionPreference = 'Stop'
 function Log([string]$Level, [string]$Message) {
@@ -122,7 +123,10 @@ try {
                 $Component = if ($ComponentBuild) { 'true' } else { 'false' }
                 $Debug = if ($DebugBuild) { 'true' } else { 'false' }
                 $GnArgs = 'is_debug=' + $Debug + ' is_component_build=' + $Component + ' symbol_level=0 blink_symbol_level=0 v8_symbol_level=0 use_remoteexec=false is_official_build=false is_chrome_branded=false proprietary_codecs=false ffmpeg_branding="Chromium" target_cpu="x64"'
-                if ($CompilerCacheProbe) { $GnArgs += ' use_siso=false cc_wrapper="sccache"' }
+                if ($CompilerCacheProbe) {
+                    $GnArgs += ' use_siso=false cc_wrapper="' + $ProbeCacheTool + '"'
+                    if ($ProbeCacheTool -eq 'ccache') { $GnArgs += ' use_clang_modules=false' }
+                }
                 Set-Content (Join-Path $SourceRoot 'gn-args.txt') $GnArgs -Encoding utf8NoBOM
                 # Windows .bat launchers consume quotes inside --args. A native
                 # args.gn file preserves GN string literals on every platform.

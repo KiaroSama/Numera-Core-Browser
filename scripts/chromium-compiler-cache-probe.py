@@ -22,8 +22,8 @@ REPOSITORY = 'KiaroSama/Numera-Core-Browser'
 ARCHIVE_LIMIT = 32 * 1024 * 1024
 RELEASES = {
     'Linux': (
-        ('mozilla/sccache', 'v0.19.0', 'sccache-v0.19.0-x86_64-unknown-linux-musl.tar.gz',
-         'aa73c7270c997894038c0d8f0d297865f57569e1687883322bc431713d4bb9dd', 9879308, 'sccache'),
+        ('ccache/ccache', 'v4.14.3', 'ccache-4.14.3-linux-x86_64-musl-static.tar.gz',
+         'e4583fd653b794a480b9915358679a75cdd7a7010dd865eaf4cbdc61e665a3f0', 2122678, 'ccache'),
         ('ninja-build/ninja', 'v1.13.2', 'ninja-linux.zip',
          '5749cbc4e668273514150a80e387a957f933c6ed3f5f11e03fb30955e2bbead6', 134040, 'ninja'),
     ),
@@ -58,11 +58,11 @@ def install_tool(directory, release):
     return path
 
 
-def compile_graph(root, environment, output):
+def compile_graph(root, environment, output, cache_tool='sccache'):
     if shutil.disk_usage(root.parent).free < 80_000_000_000:
         raise RuntimeError('Real-graph probe requires at least 80 GB free before acquisition')
     command = ['pwsh', '-NoProfile', '-File', 'scripts/Build-Chromium.ps1', '-SourceRoot', str(root),
-               '-Phase', 'Generate', '-CompilerCacheProbe', '-ComponentBuild', '-DebugBuild']
+               '-Phase', 'Generate', '-CompilerCacheProbe', '-ProbeCacheTool', cache_tool, '-ComponentBuild', '-DebugBuild']
     with (output / 'graph.log').open('wb') as log_file:
         child = subprocess.Popen(command, env=environment, stdout=log_file, stderr=subprocess.STDOUT)
         deadline = time.monotonic() + 40 * 60
@@ -89,7 +89,7 @@ def pack_cache(root, archive, context, object_hash):
     entries = sorted(root.rglob('*'))
     if any(p.is_symlink() or not (p.is_dir() or p.is_file()) for p in entries):
         raise RuntimeError('Unexpected link or special file in local compiler cache')
-    files = [p for p in entries if p.is_file() and p.name != 'CACHEDIR.TAG']
+    files = [p for p in entries if p.is_file() and p.name not in {'CACHEDIR.TAG', '.cleaned', 'stats'}]
     if not files or len(files) > 512 or sum(p.stat().st_size for p in files) >= ARCHIVE_LIMIT - 1024 * 1024:
         raise RuntimeError('Compiler cache is empty or exceeds the bounded probe allowance')
     manifest = {'context': context, 'object_sha256': object_hash,
@@ -144,10 +144,32 @@ def count(statistics, metric):
     return sum(value['counts'].values()) if isinstance(value, dict) else value
 
 
-def native_object(ninja, cache, environment, source, target, output, phase):
+def ccache_target_results(path, target):
+    """Attribute cache hits to the requested object rather than a prerequisite."""
+    callers = set()
+    results = {}
+    with path.open(encoding='utf-8', errors='replace') as stream:
+        for line in stream:
+            row = re.match(r'^\[[^\]]*\s(\d+)\s*\] (.*)$', line.rstrip())
+            if not row:
+                continue
+            pid, part = row.groups()
+            if part.startswith('Object file: ') and part.removeprefix('Object file: ').replace('\\', '/') == target:
+                callers.add(pid)
+            elif part.startswith('Result: '):
+                results.setdefault(pid, []).append(part.removeprefix('Result: '))
+    if len(callers) != 1:
+        raise RuntimeError('The requested object did not have an unambiguous ccache invocation')
+    return results.get(callers.pop(), [])
+
+
+def native_object(ninja, cache, environment, source, target, output, phase, cache_tool='sccache'):
     obj = source / 'out/Numera' / target
     obj.unlink(missing_ok=True)
     subprocess.run([str(cache), '--zero-stats'], env=environment, timeout=20, check=True, stdout=subprocess.DEVNULL)
+    cache_log = Path(environment['CCACHE_DIR']).parent / f'{phase}-ccache.log' if cache_tool == 'ccache' else None
+    if cache_log is not None:
+        environment = dict(environment, CCACHE_LOGFILE=str(cache_log))
     with (output / f'{phase}.log').open('wb') as stream:
         command = [str(ninja), '-C', 'out/Numera', '-j', '4', target]
         child = subprocess.Popen(command, cwd=source, env=environment, stdout=stream, stderr=subprocess.STDOUT)
@@ -160,7 +182,12 @@ def native_object(ninja, cache, environment, source, target, output, phase):
                 stop_tree(child)
         if exit_code != 0:
             raise RuntimeError(f'{phase} object build failed; inspect {phase}.log')
-    values = stats(cache, environment)
+    if cache_log is None:
+        values = stats(cache, environment)
+    else:
+        values = json.loads(subprocess.check_output([str(cache), '--print-stats', '--format=json'], env=environment, timeout=20))
+        values['target_results'] = ccache_target_results(cache_log, target)
+        cache_log.unlink()
     write_json(output / f'{phase}-statistics.json', values)
     return sha256(obj), values
 
@@ -185,22 +212,31 @@ def main():
     cache.mkdir()
     report = {'phase': args.phase, 'runner': host, 'source_commit': os.environ['GITHUB_SHA'],
               'result': 'BLOCKED', 'engine_source_acceptance': 'NOT_RUN', 'release_ready': False}
-    environment = {k: v for k, v in os.environ.items() if not k.upper().startswith('SCCACHE_') and k not in
+    environment = {k: v for k, v in os.environ.items() if not k.upper().startswith(('CCACHE_', 'SCCACHE_')) and k not in
                    {'GH_TOKEN', 'GITHUB_TOKEN', 'ACTIONS_RUNTIME_TOKEN', 'ACTIONS_ID_TOKEN_REQUEST_TOKEN'}}
-    environment.update(SCCACHE_DIR=str(cache), SCCACHE_CACHE_SIZE='24M', SCCACHE_IDLE_TIMEOUT='1200',
-                       SCCACHE_SERVER_PORT='4234', DEPOT_TOOLS_UPDATE='0', DEPOT_TOOLS_WIN_TOOLCHAIN='0')
+    environment.update(DEPOT_TOOLS_UPDATE='0', DEPOT_TOOLS_WIN_TOOLCHAIN='0')
     environment['PATH'] = os.pathsep.join((str(tools), str(root / 'depot_tools'), environment['PATH']))
     wrapper = None
+    server_started = False
     try:
         wrapper, ninja = [install_tool(tools, spec) for spec in RELEASES[host]]
+        cache_tool = wrapper.stem
+        config = tools / 'local-cache.conf'
+        if cache_tool == 'ccache':
+            config.write_text('direct_mode = false\ncompiler_check = content\nmax_size = 24M\n', encoding='utf-8')
+            environment.update(CCACHE_DIR=str(cache), CCACHE_CONFIGPATH=str(config))
+        else:
+            config.write_text('', encoding='utf-8')
+            environment.update(SCCACHE_CONF=str(config), SCCACHE_DIR=str(cache), SCCACHE_CACHE_SIZE='24M',
+                               SCCACHE_IDLE_TIMEOUT='1200', SCCACHE_SERVER_PORT='4234', SCCACHE_DIRECT='false')
         log('Acquiring pinned Chromium source and generating the native graph', component='compiler-cache-probe')
-        compile_graph(root, environment, output)
+        compile_graph(root, environment, output, cache_tool)
         source = root / 'checkout/src'
         gn_dir = source / 'out/Numera'
         target = 'obj/base/base/logging.obj' if host == 'Windows' else 'obj/base/base/logging.o'
         commands = subprocess.check_output([str(ninja), '-C', 'out/Numera', '-t', 'commands', target],
                                            cwd=source, env=environment, timeout=30)
-        if b'sccache ' not in commands.splitlines()[-1]:
+        if not re.search(rb'(?<![A-Za-z0-9_])' + cache_tool.encode('ascii') + rb' ', commands.splitlines()[-1]):
             raise RuntimeError('The actual GN compile command did not use the pinned local compiler wrapper')
         clang = source / ('third_party/llvm-build/Release+Asserts/bin/clang-cl.exe' if host == 'Windows'
                           else 'third_party/llvm-build/Release+Asserts/bin/clang')
@@ -208,7 +244,8 @@ def main():
         context = {'run_id': os.environ['GITHUB_RUN_ID'], 'run_attempt': os.environ['GITHUB_RUN_ATTEMPT'],
                    'runner_image': os.environ['ImageVersion'], 'host': host, 'head': os.environ['GITHUB_SHA'],
                    'scratch': str(root), 'target': target, 'lock_sha256': sha256(lock), 'gn_args_sha256': sha256(gn_dir / 'args.gn'),
-                   'sccache_sha256': sha256(wrapper), 'ninja_sha256': sha256(ninja), 'clang_sha256': sha256(clang),
+                   'cache_tool': cache_tool, 'cache_tool_sha256': sha256(wrapper), 'cache_config_sha256': sha256(config),
+                   'ninja_sha256': sha256(ninja), 'clang_sha256': sha256(clang),
                    'command_sha256': hashlib.sha256(commands.splitlines()[-1]).hexdigest(),
                    'input_sha256': sha256(source / 'base/logging.cc')}
         if host == 'Windows':
@@ -219,29 +256,46 @@ def main():
             if (gn_dir / target).exists():
                 raise RuntimeError('Fresh runner unexpectedly contains the compiled probe object')
             seed_hash = restore_cache(cache, transfer, os.environ.get('EXPECTED_CHECKPOINT_SHA'), context)
-        subprocess.run([str(wrapper), '--start-server'], env=environment, check=True, timeout=20)
+        if cache_tool == 'sccache':
+            subprocess.run([str(wrapper), '--start-server'], env=environment, check=True, timeout=20)
+            server_started = True
         if args.phase == 'seed':
-            digest, cold = native_object(ninja, wrapper, environment, source, target, output, 'cold')
-            if count(cold, 'cache_hits') != 0 or not 0 < cold['compile_requests'] == count(cold, 'cache_misses') == cold['cache_writes']:
+            digest, cold = native_object(ninja, wrapper, environment, source, target, output, 'cold', cache_tool)
+            if cache_tool == 'ccache':
+                cached = {'cache_miss', 'local_storage_write'} <= set(cold['target_results'])
+            else:
+                cached = count(cold, 'cache_hits') == 0 and 0 < cold['compile_requests'] == count(cold, 'cache_misses') == cold['cache_writes']
+            if not cached:
                 raise RuntimeError('Cold Chromium compilation did not populate an initially empty cache')
-            subprocess.run([str(wrapper), '--stop-server'], env=environment, timeout=20, check=True)
-            wrapper = None
+            if server_started:
+                subprocess.run([str(wrapper), '--stop-server'], env=environment, timeout=20, check=True)
+                server_started = False
             transfer.parent.mkdir(parents=True, exist_ok=False)
             pack_cache(cache, transfer, context, digest)
             report.update(checkpoint_bytes=transfer.stat().st_size, checkpoint_sha256=sha256(transfer), object_sha256=digest)
             with Path(os.environ['GITHUB_OUTPUT']).open('a', encoding='utf-8') as exported:
                 exported.write('checkpoint_sha=' + report['checkpoint_sha256'] + '\n')
         else:
-            digest, warm = native_object(ninja, wrapper, environment, source, target, output, 'restored')
-            hits = count(warm, 'cache_hits')
-            if not 0 < hits == warm['compile_requests'] or count(warm, 'cache_misses') != 0 or warm['cache_writes'] != 0 or digest != seed_hash:
+            digest, warm = native_object(ninja, wrapper, environment, source, target, output, 'restored', cache_tool)
+            if cache_tool == 'ccache':
+                hits = int('preprocessed_cache_hit' in warm['target_results'])
+                cached = hits == 1 and 'local_storage_hit' in warm['target_results']
+            else:
+                hits = count(warm, 'cache_hits')
+                cached = 0 < hits == warm['compile_requests'] and count(warm, 'cache_misses') == warm['cache_writes'] == 0
+            if not cached or digest != seed_hash:
                 raise RuntimeError('Different runner did not reuse the seed object')
             input_file = source / 'base/logging.cc'
             with input_file.open('ab') as edited:
                 edited.write(b'\nextern "C" int NumeraCacheProbeValue();\nextern "C" int NumeraCacheProbeValue() { return 17; }\n')
-            changed, edited = native_object(ninja, wrapper, environment, source, target, output, 'changed-source')
-            misses = count(edited, 'cache_misses')
-            if misses != 1 or edited['compile_requests'] != 1 or count(edited, 'cache_hits') != 0 or changed == digest:
+            changed, edited = native_object(ninja, wrapper, environment, source, target, output, 'changed-source', cache_tool)
+            if cache_tool == 'ccache':
+                misses = int('cache_miss' in edited['target_results'])
+                invalidated = misses == 1 and 'preprocessed_cache_hit' not in edited['target_results']
+            else:
+                misses = count(edited, 'cache_misses')
+                invalidated = misses == edited['compile_requests'] == 1 and count(edited, 'cache_hits') == 0
+            if not invalidated or changed == digest:
                 raise RuntimeError('A changed Chromium input failed to invalidate the cached output')
             report.update(object_sha256=digest, changed_object_sha256=changed, restored_cache_hits=hits,
                           changed_source_cache_misses=misses)
@@ -254,7 +308,7 @@ def main():
         raise
     finally:
         try:
-            if wrapper is not None:
+            if server_started:
                 subprocess.run([str(wrapper), '--stop-server'], env=environment, timeout=20, check=False,
                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         finally:
