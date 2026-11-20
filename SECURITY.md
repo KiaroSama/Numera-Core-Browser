@@ -8,4 +8,4 @@ Gitleaks scans full fetched history on the default branch and introduced history
 
 Threats still requiring real-engine acceptance include malicious web pages/extensions reaching local control, compromised update metadata or archives, profile grant races, stale/reused PIDs, escaped descendants, proxy leaks, browser database upgrades and untrusted PR artifacts. Native browser sandbox/security regression suites, browser/native fuzz campaigns and signed update rollback remain release gates.
 
-Do not put credentials, cookies, browsing content or credential-bearing URLs in issues or diagnostics. Use GitHub's private vulnerability reporting if enabled. There is no claimed commercial signing/notarization or signed update root in this repository.
+Do not put credentials, cookies, browsing content or credential-bearing URLs in issues or diagnostics. Use GitHub's private vulnerability reporting if enabled. There is no claimed commercial signing or signed update root in this repository.

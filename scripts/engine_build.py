@@ -205,6 +205,9 @@ def main():
         parser.error('Budget must be between 10 and 330 minutes')
     if os.environ.get('GITHUB_ACTIONS') != 'true' or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted' or os.environ.get('GITHUB_REPOSITORY') != 'KiaroSama/Numera-Core-Browser':
         parser.error('Engine builds require the authorized public GitHub-hosted repository')
+    host = platform.system()
+    if host not in {'Windows', 'Linux'} or os.environ.get('RUNNER_ARCH') != 'X64':
+        parser.error('Engine builds require a Windows or Linux x86-64 runner')
     import psutil
     available_memory = psutil.virtual_memory().available
     # Use the available free-runner CPUs while reserving at least 3 GiB of
@@ -219,7 +222,7 @@ def main():
     initial_disk = shutil.disk_usage(scratch)
     report = {'schema_revision': 1, 'timestamp': now(), 'commit': os.environ['GITHUB_SHA'],
         'run_id': os.environ['GITHUB_RUN_ID'], 'run_url': f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}",
-        'runner_os': platform.system(), 'runner_arch': os.environ['RUNNER_ARCH'],
+        'runner_os': host, 'runner_arch': os.environ['RUNNER_ARCH'],
         'runner_image_version': os.environ.get('ImageVersion'), 'psutil_version': psutil.__version__,
         'cpu_count': os.cpu_count(), 'physical_memory_bytes': psutil.virtual_memory().total,
         'budget_minutes': args.budget_minutes, 'component_build': args.component_build,
@@ -227,7 +230,7 @@ def main():
         'requested_parallelism': args.parallelism, 'parallelism': parallelism,
         'memory_available_initial_bytes': available_memory,
         'parallelism_policy': 'At most available CPUs, requested ceiling and 3 GiB of initially available memory per local compiler; this is a conservative recipe, not a universal engine resource minimum',
-        'native_source_targets': [] if args.prerequisites_only else ['chrome', 'chromedriver'] + (['chrome_sandbox'] if platform.system() == 'Linux' else []),
+        'native_source_targets': [] if args.prerequisites_only else ['chrome', 'chromedriver'] + (['chrome_sandbox'] if host == 'Linux' else []),
         'prerequisites_only': args.prerequisites_only,
         'disk_total_bytes': initial_disk.total, 'disk_free_initial_bytes': initial_disk.free,
         'disk_free_bytes': initial_disk.free, 'minimum_free_disk_bytes': initial_disk.free,
@@ -298,11 +301,11 @@ def main():
         report['source_build'] = 'PASS'
         record_stage(report, 'controlled-renderer-fixture')
         native_output = scratch / 'checkout/src/out/Numera'
-        executable = {'Windows': 'chrome.exe', 'Darwin': 'Chromium.app/Contents/MacOS/Chromium', 'Linux': 'chrome'}[platform.system()]
+        executable = 'chrome.exe' if host == 'Windows' else 'chrome'
         binary = native_output / executable
         report['binary_sha256'] = sha256(binary)
         report['binary_bytes'] = binary.stat().st_size
-        if platform.system() == 'Linux':
+        if host == 'Linux':
             # Build the helper from this same pinned source; retain Ubuntu's
             # namespace restriction and Chromium's default sandbox controls.
             source_helper = native_output / 'chrome_sandbox'
@@ -336,7 +339,7 @@ def main():
             report['stage'] = (scratch / 'phase.txt').read_text(encoding='utf-8-sig').strip()
         record_stage(report, report['stage'])
         report['native_action_progress'] = read_progress(output / 'native-build.log')
-        for name in ['phase.txt', 'phases.ndjson', 'gn-args.txt', 'windows-sdk.json', 'windows-sdk.log', 'mac-toolchain.json']:
+        for name in ['phase.txt', 'phases.ndjson', 'gn-args.txt', 'windows-sdk.json', 'windows-sdk.log']:
             if (scratch / name).is_file():
                 shutil.copyfile(scratch / name, output / name)
         report['sampled_volume_delta_bytes'] = initial_disk.free - report['minimum_free_disk_bytes']

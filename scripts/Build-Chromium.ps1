@@ -31,7 +31,9 @@ try {
     if ($SourceRoot -match '\s' -or -not [IO.Path]::IsPathFullyQualified($SourceRoot)) { throw 'Provide an absolute scratch source path without spaces' }
     $RepositoryRoot = Split-Path $PSScriptRoot -Parent
     $Lock = Get-Content (Join-Path $RepositoryRoot 'upstream/chromium/lock.json') -Raw | ConvertFrom-Json
-    $HostPlatform = if ($IsWindows) { 'windows' } elseif ($IsMacOS) { 'macos' } else { 'linux' }
+    $HostPlatform = if ($IsWindows) { 'windows' } elseif ($IsLinux) { 'linux' }
+    else { throw 'Chromium source builds are supported on Windows and Linux only' }
+    if ($env:RUNNER_ARCH -ne 'X64') { throw 'Chromium source builds require an x86-64 runner' }
     $SourcePin = $Lock.platform_pins.$HostPlatform
     if (-not $SourcePin) { throw 'No reviewed source pin for host platform' }
     $Depot = Join-Path $SourceRoot 'depot_tools'
@@ -44,22 +46,6 @@ try {
     if ($Phase -eq 'Prerequisites' -and $IsWindows) {
         Stage 'prerequisites-complete'
         exit 0
-    }
-    if ($IsMacOS) {
-        Stage 'mac-toolchain-preparation'
-        # Use the reviewed preinstalled development Xcode in the measured images.
-        # DEVELOPER_DIR affects this process only, not global xcode-select.
-        $MacDeveloper = '/Applications/Xcode_26.3.app/Contents/Developer'
-        if (-not (Test-Path $MacDeveloper -PathType Container)) { throw 'Reviewed preinstalled Xcode 26.3 is not installed' }
-        $env:DEVELOPER_DIR = $MacDeveloper
-        $XcodeVersion = (& xcodebuild -version) -join "`n"
-        if ($LASTEXITCODE -ne 0 -or $XcodeVersion -notmatch '(?m)^Xcode 26\.3$') { throw 'Reviewed Xcode version check failed' }
-        $MacSdk = (& xcrun --sdk macosx --show-sdk-version).Trim()
-        if ($LASTEXITCODE -ne 0 -or $MacSdk -ne '26.2') { throw 'Reviewed macOS SDK 26.2 check failed' }
-        $MacSdkPath = (& xcrun --sdk macosx --show-sdk-path).Trim()
-        if ($LASTEXITCODE -ne 0 -or -not (Test-Path $MacSdkPath -PathType Container)) { throw 'Selected macOS SDK is unavailable' }
-        @{developer_dir=$MacDeveloper;xcode_version=$XcodeVersion;sdk_version=$MacSdk;sdk_path=$MacSdkPath;official_sdk_equivalence=$false;release_ready=$false} |
-            ConvertTo-Json | Set-Content (Join-Path $SourceRoot 'mac-toolchain.json') -Encoding utf8NoBOM
     }
     Stage 'build-tool-acquisition'
     if (Test-Path $Depot) { throw 'Cold spike requires a fresh task-owned source directory' }
@@ -131,10 +117,9 @@ try {
             }
             if ($Phase -eq 'Build') {
                 Stage 'gn-generation'
-                $Cpu = if ($env:RUNNER_ARCH -eq 'ARM64') { 'arm64' } else { 'x64' }
                 $Component = if ($ComponentBuild) { 'true' } else { 'false' }
                 $Debug = if ($DebugBuild) { 'true' } else { 'false' }
-                $GnArgs = 'is_debug=' + $Debug + ' is_component_build=' + $Component + ' symbol_level=0 blink_symbol_level=0 v8_symbol_level=0 use_remoteexec=false is_official_build=false is_chrome_branded=false proprietary_codecs=false ffmpeg_branding="Chromium" target_cpu="' + $Cpu + '"'
+                $GnArgs = 'is_debug=' + $Debug + ' is_component_build=' + $Component + ' symbol_level=0 blink_symbol_level=0 v8_symbol_level=0 use_remoteexec=false is_official_build=false is_chrome_branded=false proprietary_codecs=false ffmpeg_branding="Chromium" target_cpu="x64"'
                 Set-Content (Join-Path $SourceRoot 'gn-args.txt') $GnArgs -Encoding utf8NoBOM
                 # Windows .bat launchers consume quotes inside --args. A native
                 # args.gn file preserves GN string literals on every platform.

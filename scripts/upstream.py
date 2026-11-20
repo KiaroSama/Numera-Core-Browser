@@ -43,7 +43,7 @@ def main():
     parser.add_argument("--refresh-observation", action="store_true", help="Refresh a real feed observation even if versions are unchanged; useful for verifying draft PR permissions")
     args = parser.parse_args()
     chromium = {}
-    for platform in ("win", "linux", "mac"):
+    for platform in ("win", "linux"):
         url = f"https://versionhistory.googleapis.com/v1/chrome/platforms/{platform}/channels/stable/versions/all/releases?filter=endtime=none"
         releases = get(url)["releases"]
         approved_rollouts = [r for r in releases if r.get("pinnable") is True and r.get("fraction", 0) >= 1]

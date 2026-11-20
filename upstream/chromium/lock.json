@@ -31,11 +31,6 @@
       "version": "157.0.8103.78",
       "revision": "4b3d0dabb8250b6f152d2d85d79e7706e309d087",
       "branding_source_sha256": "a8fb46cd865b6b7fbf829da098e98c6833b74bdcf2522c78183c30dde2cef942"
-    },
-    "macos": {
-      "version": "157.0.8103.79",
-      "revision": "6dc9bc3bdaea5c35ed6d41fceab2f7a3a2227c4f",
-      "branding_source_sha256": "a8fb46cd865b6b7fbf829da098e98c6833b74bdcf2522c78183c30dde2cef942"
     }
   }
 }

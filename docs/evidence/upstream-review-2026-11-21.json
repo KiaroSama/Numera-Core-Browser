@@ -1,0 +1,82 @@
+{
+  "schema_revision": 1,
+  "observation": {
+    "schema_revision": 1,
+    "observed_at": "2026-11-20T22:58:29.374693+00:00",
+    "status": "unreviewed-candidate",
+    "trusted_release": false,
+    "versions": {
+      "chromium": {
+        "win": {
+          "version": "158.0.8127.37",
+          "serving_start": "2026-11-17T19:07:25.418313Z",
+          "source": "https://versionhistory.googleapis.com/v1/chrome/platforms/win/channels/stable/versions/all/releases?filter=endtime=none"
+        },
+        "linux": {
+          "version": "158.0.8127.36",
+          "serving_start": "2026-11-17T18:56:40.005685Z",
+          "source": "https://versionhistory.googleapis.com/v1/chrome/platforms/linux/channels/stable/versions/all/releases?filter=endtime=none"
+        }
+      },
+      "automation_clients": {
+        "playwright": {
+          "tag": "v1.65.1",
+          "published_at": "2026-11-13T21:46:58Z",
+          "source": "https://api.github.com/repos/microsoft/playwright/releases/latest",
+          "compatibility": "NOT_RUN; not an engine protocol version lock"
+        },
+        "puppeteer": {
+          "tag": "puppeteer-v25.18.1",
+          "published_at": "2026-11-17T16:21:18Z",
+          "source": "https://api.github.com/repos/puppeteer/puppeteer/releases?per_page=50",
+          "compatibility": "NOT_RUN; not an engine protocol version lock"
+        },
+        "selenium": {
+          "tag": "selenium-4.53.0",
+          "published_at": "2026-11-17T18:23:19Z",
+          "source": "https://api.github.com/repos/SeleniumHQ/selenium/releases/latest",
+          "compatibility": "NOT_RUN; not an engine protocol version lock"
+        }
+      },
+      "gecko": {
+        "stable": "160.0.1",
+        "esr": "153.7.0esr",
+        "source": "https://product-details.mozilla.org/1.0/firefox_versions.json",
+        "scope": "deferred"
+      },
+      "webkit": {
+        "revision": "aa9b09cf670187495dc2426b0c06e5f3c86e52d7",
+        "source": "https://api.github.com/repos/WebKit/WebKit/commits/main",
+        "scope": "deferred",
+        "note": "Not a universal Safari release version"
+      }
+    }
+  },
+  "candidate_review": {
+    "workflow_run": 44809712624,
+    "pull_request": 11,
+    "reviewed_head": "dacd6c2a8e1b13daa90a720402b586d6afae5867",
+    "gitleaks_run": 44809792175,
+    "gitleaks_conclusion": "success",
+    "merge_commit": "8acaa94948d7d74b17490931396a8367eac2d5cd"
+  },
+  "chromium_active_target_tag_checks": [
+    {
+      "version": "158.0.8127.37",
+      "revision": "b8c2be851f62f6a394ec57955d7f31335d7cb6d4",
+      "tag_url": "https://chromium.googlesource.com/chromium/src/+/refs/tags/158.0.8127.37",
+      "branding_source_sha256": "c75030548d52a2fdaab334ef10f1ce1e13dcc6ac1e53267a1fc2cea756aa011e",
+      "original_patch_applies": true
+    },
+    {
+      "version": "158.0.8127.36",
+      "revision": "14d6f648e8cd7ad750a4044200ce94d3321be260",
+      "tag_url": "https://chromium.googlesource.com/chromium/src/+/refs/tags/158.0.8127.36",
+      "branding_source_sha256": "c75030548d52a2fdaab334ef10f1ce1e13dcc6ac1e53267a1fc2cea756aa011e",
+      "original_patch_applies": true
+    }
+  ],
+  "source_build": "NOT_RUN",
+  "client_compatibility": "NOT_RUN",
+  "engine_approved": false
+}

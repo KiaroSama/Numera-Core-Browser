@@ -10,12 +10,11 @@
   "signing": {
     "application_update": "NOT_RUN",
     "github_attestation": "NOT_RUN",
-    "windows_authenticode": "NOT_RUN",
-    "apple_notarization": "NOT_RUN"
+    "windows_authenticode": "NOT_RUN"
   },
   "repository_published": true,
   "blockers": [
-    "Owned engine cold source-build acceptance unresolved; optimized/development Windows, development Linux and corrected Intel Mac recipes timed out; ARM Mac experiment is pending",
+    "The measured Windows and Linux cold source builds reached their compilation budget before completing the owned engine",
     "No real browser/native automation acceptance",
     "No signed updater or paired manager smoke suite"
   ],
@@ -25,14 +24,13 @@
     "channel": "unsigned-development-control-plane",
     "targets": [
       "windows-x86_64",
-      "linux-x86_64",
-      "macos-aarch64",
-      "macos-x86_64"
+      "linux-x86_64"
     ],
     "evidence": "docs/evidence/development-cli-43509657873.json",
     "browser_included": false,
     "clean_machine_installation": "NOT_RUN",
-    "retention_days": 7
+    "retention_days": 7,
+    "artifact_status": "Historical native verification. See the Windows and Linux Rust CI workflow for current development artifacts."
   },
   "native_source_experiments": [
     {
@@ -45,15 +43,6 @@
       "evidence": "docs/evidence/cold-source-43498547353-provenance.json"
     },
     {
-      "target": "macos-15-intel",
-      "run_id": 43521894011,
-      "source_commit": "83e237cd989a6a3d73cd70b6458aaf191e5d4234",
-      "status": "completed",
-      "conclusion": "failure",
-      "failure_class": "orchestration-telemetry-logger",
-      "evidence": "docs/evidence/cold-source-43521894011-provenance.json"
-    },
-    {
       "target": "ubuntu-24.04",
       "run_id": 43525736057,
       "source_commit": "8338a207fa0d173ffa13d00b0e53ed34de697ad7",
@@ -61,25 +50,11 @@
       "conclusion": "failure",
       "failure_class": "bounded-build-time-budget",
       "evidence": "docs/evidence/cold-source-43525736057-provenance.json"
-    },
-    {
-      "target": "macos-15-intel",
-      "run_id": 43537314595,
-      "source_commit": "fe9aa1219708ed0ef36c349670e65ef8ffa28a9a",
-      "status": "completed",
-      "retry_of": 43521894011,
-      "conclusion": "failure",
-      "failure_class": "bounded-build-time-budget",
-      "evidence": "docs/evidence/cold-source-43537314595-provenance.json"
-    },
-    {
-      "target": "macos-15",
-      "architecture": "ARM64",
-      "run_id": 43547653312,
-      "source_commit": "241927c7706acfd68a151fe28ef888ea42393238",
-      "status": "in_progress",
-      "prerequisite_evidence": "docs/evidence/macos-arm-prerequisites-43546626004-provenance.json"
     }
   ],
-  "source_experiment_status_observed_at": "2026-11-14T06:45:42.667434+00:00"
+  "source_experiment_status_observed_at": "2026-11-20T23:02:38.121622+00:00",
+  "active_targets": [
+    "windows-x86_64",
+    "linux-x86_64"
+  ]
 }

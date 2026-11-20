@@ -1,0 +1,32 @@
+{
+  "schema_revision": 1,
+  "run_id": 43547653312,
+  "job_id": 132302608819,
+  "source_commit": "241927c7706acfd68a151fe28ef888ea42393238",
+  "target": "macos-15 ARM64",
+  "status": "completed",
+  "conclusion": "failure",
+  "scope": "Historical experiment. The target has since been removed from active build and release support.",
+  "artifact_id": 14106861426,
+  "transport_zip_sha256": "4e4186c25a41e1406281a8a595da9068f5289d64f6740174fe9a6ff81af4c014",
+  "independent_download_verification": "PASS",
+  "native_log_sha256": "55bf4f879d00f35b131e277d845486b8cd7c63c5688da0afb58f28642f78ecfe",
+  "capacity_before_preparation_bytes": 49221726208,
+  "capacity_after_preparation_bytes": 102591242240,
+  "elapsed_seconds": 19801.962,
+  "free_bytes_at_stop": 50184048640,
+  "peak_sampled_build_tree_rss_bytes": 3145318400,
+  "effective_compiler_ceiling": 1,
+  "failure_class": "bounded-build-time-budget",
+  "native_action_progress": {
+    "completed": 22340,
+    "total": 78117
+  },
+  "native_final_summary": "5h12m20.55s Build Failure: 22340 done, 0 failed, 55777 remaining - 1.19/s",
+  "native_failed_prefix_count": 0,
+  "native_fatal_diagnostic_count": 0,
+  "source_build": "BLOCKED",
+  "renderer_fixture": "NOT_RUN",
+  "automation_suites": "NOT_RUN",
+  "release_ready": false
+}

@@ -24,11 +24,16 @@ def sha256(path):
 
 
 def main():
+    hosts = {'windows-2025': 'Windows', 'ubuntu-24.04': 'Linux'}
     parser = argparse.ArgumentParser()
     parser.add_argument('--binary', required=True)
     parser.add_argument('--output', required=True)
-    parser.add_argument('--target', required=True)
+    parser.add_argument('--target', required=True, choices=hosts)
     args = parser.parse_args()
+    native_system = platform.system()
+    native_machine = platform.machine()
+    if hosts[args.target] != native_system or native_machine.lower() not in {'amd64', 'x86_64'}:
+        parser.error('Package target must match the native Windows or Linux x86-64 host')
     repo = Path.cwd().resolve()
     binary = Path(args.binary).resolve(strict=True)
     if not binary.is_file() or not binary.is_relative_to(repo / 'target'):
@@ -69,9 +74,9 @@ def main():
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(archive.read(name))
     # Run from the staged directory with no client/toolchain PATH. This proves
-    # native execution here, not clean-machine CRT/notarization acceptance.
+    # Verify native execution with the dependencies already installed on this runner.
     environment = dict(os.environ, PATH='')
-    for key in ['DISPLAY', 'WAYLAND_DISPLAY', 'LD_LIBRARY_PATH', 'DYLD_LIBRARY_PATH']:
+    for key in ['DISPLAY', 'WAYLAND_DISPLAY', 'LD_LIBRARY_PATH']:
         environment.pop(key, None)
     result = subprocess.run([str(staged), '--json', 'doctor'], cwd=output,
                             env=environment, capture_output=True, timeout=15)
@@ -83,8 +88,8 @@ def main():
     version = json.loads(subprocess.check_output([str(staged), '--version'], cwd=output, timeout=15))
     manifest = {'schema_revision': 1, 'product': 'Numera Core Browser development CLI',
         'channel': 'development-control-plane', 'version': version['version'],
-        'source_commit': commit, 'runner_target': args.target, 'native_system': platform.system(),
-        'native_machine': platform.machine(), 'executable': staged.name, 'executable_sha256': sha256(staged),
+        'source_commit': commit, 'runner_target': args.target, 'native_system': native_system,
+        'native_machine': native_machine, 'executable': staged.name, 'executable_sha256': sha256(staged),
         'complete_source': {'file': source.name, 'sha256': sha256(source),
             'scope': 'Complete first-party repository tree; independent third-party source locations and notices are in licenses/dependencies.json'},
         'engine_ready': False, 'browser_gui': False, 'archive_signature': 'none',

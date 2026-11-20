@@ -14,11 +14,6 @@
         "version": "158.0.8127.36",
         "serving_start": "2026-11-17T18:56:40.005685Z",
         "source": "https://versionhistory.googleapis.com/v1/chrome/platforms/linux/channels/stable/versions/all/releases?filter=endtime=none"
-      },
-      "mac": {
-        "version": "158.0.8127.37",
-        "serving_start": "2026-11-17T19:07:20.796603Z",
-        "source": "https://versionhistory.googleapis.com/v1/chrome/platforms/mac/channels/stable/versions/all/releases?filter=endtime=none"
       }
     },
     "automation_clients": {

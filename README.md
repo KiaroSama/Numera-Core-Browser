@@ -4,7 +4,7 @@
 
 An independent browser runtime for [Numera Browser](https://github.com/KiaroSama/Numera-Browser), following the GoLogin/Orbita product boundary: the manager owns profiles; Core owns the browser runtime. The initial delivery targets an owned Chromium source build and retained browser chrome, with a shared Rust control plane.
 
-**Development status: the Rust control plane passed native CI on Windows, Linux and both macOS architectures. Owned Chromium build acceptance remains unresolved; no browser GUI or integration-ready release is available.** A passing Rust check never implies a passing browser-source build. See [implementation report](docs/implementation-report.md), [hosted evidence](docs/evidence/hosted-verification.json), [scope](docs/scope.md), and the [original handoff](docs/original-build-specification.md).
+**Development status: Windows and Linux x86-64 are the active targets. The Rust control plane has passed native CI on both. The Chromium source build and browser release are still blocked.** A passing Rust check never implies a passing browser-source build. See [implementation report](docs/implementation-report.md), [hosted evidence](docs/evidence/hosted-verification.json), [scope](docs/scope.md), and the [original handoff](docs/original-build-specification.md).
 
 This is source-available, noncommercial software under the exact [Noncommercial Network Share-Alike License 1.0](LICENSE). Third-party material retains its own terms. It is not described as OSI-approved open source.
 
@@ -27,7 +27,7 @@ The compiled CLI requires no Node.js, Python, display server or manager installa
 
 Successful native CI jobs produce `development-cli-*` artifacts with a `development-cli.tar.gz` bundle containing the tested CLI, notices and matching `complete-source.zip`. After extracting the artifact ZIP, extract the tar bundle with `tar -xzf development-cli.tar.gz`. In its `development-cli` directory run `./numera-core --json doctor` (PowerShell: `.\numera-core.exe --json doctor`). These unsigned development archives contain the control plane; browser/GUI and clean-machine installation acceptance remain open.
 
-[Verified development downloads](https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/43509657873) are available for Windows x86-64, Linux x86-64, macOS ARM64 and macOS Intel. Select the matching `development-cli-*` artifact on that run; GitHub may require login. The seven-day artifacts expire on 2026-11-20 UTC. [Recorded hashes and native execution evidence](docs/evidence/development-cli-43509657873.json) bind them to source `344fbb49b30dea922578ccdef1fb8ec1ef76f1a3`; later source changes are not included in those archives.
+For Windows or Linux x86-64, select the corresponding `development-cli-*` artifact on a recent successful Windows and Linux native CI run. GitHub may require login, and each archive expires seven days after its run. Check the source commit in `development-manifest.json`. [Native CI runs](https://github.com/KiaroSama/Numera-Core-Browser/actions/workflows/rust.yml)
 
 ## Source layout
 

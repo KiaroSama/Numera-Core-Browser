@@ -45,9 +45,7 @@
   ],
   "native_targets": [
     {"os": "windows", "arch": "x86_64", "status": "NOT_RUN"},
-    {"os": "linux", "arch": "x86_64", "status": "NOT_RUN"},
-    {"os": "macos", "arch": "aarch64", "status": "NOT_RUN"},
-    {"os": "macos", "arch": "x86_64", "status": "NOT_RUN"}
+    {"os": "linux", "arch": "x86_64", "status": "NOT_RUN"}
   ],
   "note": "Control-plane Linux tests are recorded separately. A schema, listening socket or downloaded stock browser cannot pass these engine gates."
 }
