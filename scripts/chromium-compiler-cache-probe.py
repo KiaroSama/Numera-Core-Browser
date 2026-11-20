@@ -68,16 +68,19 @@ def compile_graph(root, environment, output):
         deadline = time.monotonic() + 40 * 60
         phase = root / 'phase.txt'
         previous = ''
-        while child.poll() is None:
-            if time.monotonic() >= deadline or shutil.disk_usage(root.parent).free < 25_000_000_000:
+        try:
+            while child.poll() is None:
+                if time.monotonic() >= deadline or shutil.disk_usage(root.parent).free < 25_000_000_000:
+                    raise RuntimeError('Real-graph probe reached its acquisition time or disk guard')
+                if phase.is_file():
+                    current = phase.read_text(encoding='utf-8-sig').strip()
+                    if current != previous and re.fullmatch(r'[a-z-]+', current):
+                        log(f'Graph preparation: {current}', component='compiler-cache-probe')
+                        previous = current
+                time.sleep(2)
+        finally:
+            if child.poll() is None:
                 stop_tree(child)
-                raise RuntimeError('Real-graph probe reached its acquisition time or disk guard')
-            if phase.is_file():
-                current = phase.read_text(encoding='utf-8-sig').strip()
-                if current != previous and re.fullmatch(r'[a-z-]+', current):
-                    log(f'Graph preparation: {current}', component='compiler-cache-probe')
-                    previous = current
-            time.sleep(2)
     if child.returncode != 0:
         raise RuntimeError('Pinned Chromium graph preparation failed; inspect graph.log')
 
@@ -151,8 +154,10 @@ def native_object(ninja, cache, environment, source, target, output, phase):
         try:
             exit_code = child.wait(timeout=600)
         except subprocess.TimeoutExpired:
-            stop_tree(child)
             raise RuntimeError(f'{phase} object build timed out') from None
+        finally:
+            if child.poll() is None:
+                stop_tree(child)
         if exit_code != 0:
             raise RuntimeError(f'{phase} object build failed; inspect {phase}.log')
     values = stats(cache, environment)

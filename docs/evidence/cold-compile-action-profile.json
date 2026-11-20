@@ -1,0 +1,82 @@
+{
+  "schema_revision": 1,
+  "method": "Count native Siso lines matched by ^[progress] time F action output after independent transport ZIP hash verification. Group CC/CXX paths by the first source path component, or first two for third_party.",
+  "counts_scope": "Observed acknowledged finishes in two incomplete cold builds. Action labels do not establish cache eligibility, time share, CPU time or completion percentage.",
+  "profiles": [
+    {
+      "platform": "linux",
+      "run_id": 43525736057,
+      "artifact_id": 14099340851,
+      "source_commit": "8338a207fa0d173ffa13d00b0e53ed34de697ad7",
+      "archive_digest": "sha256:7cab05dd8496632c55320d0185f611392a9517537a0aa916cbf0fe6db789ea1f",
+      "native_log_sha256": "37545a0a911bac6116eb057a28caa8fa915b9db40efec8ebf8d432ae2e57319b",
+      "acknowledged_finish_actions": {
+        "CXX": 24297,
+        "ACTION": 4584,
+        "CC": 2900,
+        "SOLINK": 425,
+        "AR": 328,
+        "RUST": 227,
+        "COPY": 192,
+        "ASM": 128,
+        "RUST(BIN)": 25,
+        "RUST(MACRO)": 20,
+        "LINK": 20,
+        "CXX_MODULE": 1
+      },
+      "compile_by_source_prefix": {
+        "third_party/blink": 6970,
+        "components": 1657,
+        "v8": 1551,
+        "services": 1373,
+        "ui": 1239,
+        "skia": 1211,
+        "third_party/xnnpack": 1205,
+        "third_party/webrtc": 1180,
+        "net": 1068,
+        "third_party/perfetto": 802,
+        "media": 742,
+        "third_party/dawn": 738
+      },
+      "compile_candidate_share": 0.8205
+    },
+    {
+      "platform": "windows",
+      "run_id": 43498547353,
+      "artifact_id": 14092352585,
+      "source_commit": "b9fcb722a5ea5fa85e458c47c5fe24968ba7c609",
+      "archive_digest": "sha256:b0870beeea3b2e43999484c7b2c0d382fabe3c3e56d6508a2055c7191c3472be",
+      "native_log_sha256": "cf78e9c2451313aaf8e4b92dd128d44a9b388f14e80bb6aa181db32e92429aa0",
+      "acknowledged_finish_actions": {
+        "CXX": 16071,
+        "ACTION": 4183,
+        "CC": 2655,
+        "LINK(DLL)": 284,
+        "LIB": 257,
+        "RUST": 182,
+        "COPY": 140,
+        "RUST(BIN)": 24,
+        "RUST(MACRO)": 19,
+        "LINK": 17,
+        "RC": 4,
+        "ASM": 2,
+        "CXX_MODULE": 1
+      },
+      "compile_by_source_prefix": {
+        "third_party/dawn": 1801,
+        "v8": 1432,
+        "third_party/xnnpack": 1205,
+        "third_party/webrtc": 1180,
+        "skia": 1158,
+        "net": 1040,
+        "third_party/blink": 924,
+        "services": 820,
+        "components": 786,
+        "third_party/perfetto": 777,
+        "ui": 713,
+        "media": 607
+      },
+      "compile_candidate_share": 0.7855
+    }
+  ]
+}
