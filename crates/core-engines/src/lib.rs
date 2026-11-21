@@ -60,14 +60,40 @@ fn public_source_url(text: &str) -> bool {
     })
 }
 
+fn portable_component(part: &str) -> bool {
+    if part.is_empty()
+        || part.ends_with([' ', '.'])
+        || part.chars().any(|char| {
+            char.is_ascii_control()
+                || matches!(char, '<' | '>' | ':' | '"' | '\\' | '|' | '?' | '*')
+        })
+    {
+        return false;
+    }
+
+    // A Windows device alias remains reserved when followed by an extension.
+    let stem = part
+        .split('.')
+        .next()
+        .unwrap_or_default()
+        .trim_end_matches(' ')
+        .to_ascii_uppercase();
+    !matches!(
+        stem.as_str(),
+        "CON" | "PRN" | "AUX" | "NUL" | "CONIN$" | "CONOUT$"
+    ) && !stem
+        .strip_prefix("COM")
+        .or_else(|| stem.strip_prefix("LPT"))
+        .is_some_and(|number| {
+            matches!(
+                number,
+                "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "¹" | "²" | "³"
+            )
+        })
+}
+
 pub fn safe_relative(path: &str) -> bool {
-    !path.is_empty()
-        && !path.contains('\\')
-        && !path.contains(':')
-        && !path.contains('\0')
-        && path
-            .split('/')
-            .all(|part| !part.is_empty() && part != "." && part != "..")
+    path.split('/').all(portable_component)
         && Path::new(path)
             .components()
             .all(|p| matches!(p, Component::Normal(_)))
@@ -174,10 +200,22 @@ mod tests {
             "a//x",
             "a/./x",
             "a\0x",
+            "bin/CON",
+            "licenses/NuL.txt",
+            "data/prn .log",
+            "data/COM1.cache",
+            "data/lpt³.cfg",
+            "bin/CONOUT$",
+            "data/name.",
+            "data/name ",
+            "data/a\nb",
+            "data/a?b",
         ] {
             assert!(!safe_relative(path), "{path:?}");
         }
         assert!(safe_relative("bin/numera-chromium"));
+        assert!(safe_relative("data/مسیر فایل.txt"));
+        assert!(safe_relative("data/com10.txt"));
     }
     #[test]
     fn empty_inventory_does_not_claim_a_browser() {

@@ -6,4 +6,6 @@ For future portable runtime operation, explicit writable profile/data/cache gran
 
 Keep engine source workspaces outside the portable/runtime directory. Chromium source builds require paths without spaces; `Build-Chromium.ps1` therefore requires an explicit absolute scratch source root. It never silently moves the user's project. GitHub jobs use their own runner scratch storage and do not assume a `G:` drive.
 
+Engine manifest paths follow portable component rules. Inspection rejects Windows device aliases, invalid filename characters and trailing spaces or periods, including on Linux. Regression fixtures cover Persian filenames and Windows device names with extensions. [Windows filename rules](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file)
+
 Windows and Linux x86-64 are the distribution targets. The CLI builds independently and has no display, engine-download, Node or Python runtime requirement. A source-built real browser GUI, per-engine packages, offline verification, install/repair/removal and actual platform smoke tests remain pending. Current source delivery has no commercial code signing, Authenticode, artifact attestation or trusted client-update signature claim.
