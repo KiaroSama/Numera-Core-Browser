@@ -2,7 +2,7 @@
   "schema_revision": 1,
   "timestamp": "2026-11-10T17:33:44.732611+00:00",
   "current_review": {
-    "observed_at": "2026-11-21T18:35:45+00:00",
+    "observed_at": "2026-11-21T19:06:05+00:00",
     "active_targets": [
       "windows-x86_64",
       "linux-x86_64"
@@ -218,8 +218,20 @@
         ]
       },
       "C11": {
-        "release_acceptance": "NOT_RUN",
-        "checks": []
+        "release_acceptance": "BLOCKED",
+        "checks": [
+          {
+            "name": "Runner Chromium viewport, screen ratio and touch across reload and isolated targets",
+            "result": "PASS",
+            "platforms": [
+              "windows-x86_64",
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/automation-baseline-44938770669.json",
+            "source_commit": "a905d019a54aa81417259d9524c8df6a6d29905f",
+            "workflow_run": 44938770669
+          }
+        ]
       },
       "C12": {
         "release_acceptance": "BLOCKED",

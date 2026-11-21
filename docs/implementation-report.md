@@ -47,6 +47,8 @@ The read-only Linux replay linked Chromium and ChromeDriver with 39,176 cache hi
 
 The headed fixture passed on runner-installed Chrome on both platforms. It verifies local navigation and matches the browser window to ChromeDriver's launched process. Linux also confirms that the X11 window is viewable on the isolated display. The owned builds already running use earlier fixture revisions. [Verified headed comparison](evidence/automation-baseline-44936064509.json)
 
+The responsive viewport fixture measured two viewport and screen layouts, pixel ratios and touch points through Chromium CDP on both runner-installed browsers. The values persisted after local page reloads, and the separate target kept its original metrics. Device profile integration and network-facing emulation require further acceptance. [Verified responsive viewport comparison](evidence/automation-baseline-44938770669.json)
+
 The pinned Chromium license tool generated notice text and SPDX JSON using the native GN graphs for both platforms. The verified browser inventories report 336 entries on Linux and 338 on Windows, with separate ChromeDriver and Linux sandbox inventories. Review of the exact packaged files and complete corresponding source remains a release gate. [Verified graph inventories](evidence/chromium-licenses-44905192477.json)
 
 The source inventory records 169 checked-out Git revisions on Linux and 157 on Windows, including Chromium itself. Both `DEPS` files matched their official pinned bytes. The inventory covers the Git checkouts and the exact upstream `DEPS` reference for CIPD and GCS inputs. [Verified native source inventories](evidence/chromium-source-inventory-44913884524.json)

@@ -1,0 +1,86 @@
+{
+  "schema_revision": 1,
+  "workflow_run": 44938770669,
+  "source_commit": "a905d019a54aa81417259d9524c8df6a6d29905f",
+  "workflow_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44938770669",
+  "workflow_conclusion": "success",
+  "result": "PASS",
+  "owned_engine_acceptance": "NOT_RUN",
+  "device_profile_and_header_acceptance": "NOT_RUN",
+  "platforms": [
+    {
+      "id": 14720114505,
+      "size": 26502,
+      "digest": "901fb604b787a5e02714c2cb04c1f677aba585e79f111256f017a9d498a4cfad",
+      "host": "Linux",
+      "job_id": 136951134732,
+      "expires_at": "2026-11-28T19:02:59Z",
+      "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44938770669/artifacts/14720114505",
+      "browser": "runner-installed Google Chrome",
+      "browser_version": "157.0.8103.78",
+      "runner_image": "20261116.376.1",
+      "responsive_viewport": {
+        "result": "PASS",
+        "layouts": [
+          {
+            "width": 390,
+            "height": 844,
+            "screenWidth": 390,
+            "screenHeight": 844,
+            "deviceScaleFactor": 3,
+            "touchPoints": 5
+          },
+          {
+            "width": 844,
+            "height": 390,
+            "screenWidth": 844,
+            "screenHeight": 390,
+            "deviceScaleFactor": 2,
+            "touchPoints": 5
+          }
+        ],
+        "reload": "PASS",
+        "separate_target": "PASS",
+        "scope": "Chromium CDP viewport, screen, pixel ratio and touch on a controlled local document"
+      },
+      "owned_engine_used": false
+    },
+    {
+      "id": 14720139304,
+      "size": 19141,
+      "digest": "4b566ff03a510d9e7bd246ed0edafed6d32339155590de867c6d667ca5572f39",
+      "host": "Windows",
+      "job_id": 136951134650,
+      "expires_at": "2026-11-28T19:03:22Z",
+      "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44938770669/artifacts/14720139304",
+      "browser": "runner-installed Google Chrome",
+      "browser_version": "157.0.8103.79",
+      "runner_image": "20261116.315.1",
+      "responsive_viewport": {
+        "result": "PASS",
+        "layouts": [
+          {
+            "width": 390,
+            "height": 844,
+            "screenWidth": 390,
+            "screenHeight": 844,
+            "deviceScaleFactor": 3,
+            "touchPoints": 5
+          },
+          {
+            "width": 844,
+            "height": 390,
+            "screenWidth": 844,
+            "screenHeight": 390,
+            "deviceScaleFactor": 2,
+            "touchPoints": 5
+          }
+        ],
+        "reload": "PASS",
+        "separate_target": "PASS",
+        "scope": "Chromium CDP viewport, screen, pixel ratio and touch on a controlled local document"
+      },
+      "owned_engine_used": false
+    }
+  ]
+}
