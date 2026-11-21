@@ -19,14 +19,14 @@
     "No signed updater or paired manager smoke suite"
   ],
   "development_cli": {
-    "source_commit": "f2ec93e024a5f8df3f32eb4a3f2e9359dc0b694d",
-    "run_id": 44850257470,
+    "source_commit": "d3f2f0046608a65d2648b0025612fbcfebfe8a06",
+    "run_id": 44858039915,
     "channel": "unsigned-development-control-plane",
     "targets": [
       "windows-x86_64",
       "linux-x86_64"
     ],
-    "evidence": "docs/evidence/development-cli-44850257470.json",
+    "evidence": "docs/evidence/development-cli-44858039915.json",
     "browser_included": false,
     "clean_machine_installation": "NOT_RUN",
     "retention_days": 7,

@@ -1,0 +1,119 @@
+{
+  "schema_revision": 1,
+  "run": {
+    "id": 44858039915,
+    "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44858039915",
+    "source_commit": "d3f2f0046608a65d2648b0025612fbcfebfe8a06",
+    "conclusion": "success"
+  },
+  "scope": "Unsigned development Rust CLI for Windows and Linux x86-64.",
+  "native_jobs": [
+    {
+      "id": 136704723723,
+      "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44858039915/job/136704723723",
+      "target": "ubuntu-24.04",
+      "tests": 48,
+      "result": "success",
+      "empty_path_package_execution": "PASS"
+    },
+    {
+      "id": 136704723839,
+      "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44858039915/job/136704723839",
+      "target": "windows-2025",
+      "tests": 47,
+      "result": "success",
+      "empty_path_package_execution": "PASS"
+    }
+  ],
+  "artifacts": [
+    {
+      "source_commit": "d3f2f0046608a65d2648b0025612fbcfebfe8a06",
+      "artifact_id": 14687559344,
+      "target": "ubuntu-24.04",
+      "transport_sha256": "248be2eb6dbd41f121a2e258514706c2a958e72411821f7f6da9c9b230b24035",
+      "matching_source_sha256": "5e8d8a1ed1515c5696f366a42cc3627ece5c85e54268319b0abee96d028fec5c",
+      "complete_source_file_count": 338,
+      "executable_sha256": "db4eb2a0417a5434a62f67a59d4a55fe05f978c6fe2012f567dc4c73dbdeda80",
+      "local_execution": "PASS",
+      "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44858039915/artifacts/14687559344",
+      "expires_at": "2026-11-28T02:51:18Z",
+      "transport_zip_bytes": 6430406,
+      "complete_source_verification": "PASS",
+      "package_manifest": {
+        "schema_revision": 1,
+        "product": "Numera Core Browser development CLI",
+        "channel": "development-control-plane",
+        "version": "0.1.0-dev.1",
+        "source_commit": "d3f2f0046608a65d2648b0025612fbcfebfe8a06",
+        "runner_target": "ubuntu-24.04",
+        "native_system": "Linux",
+        "native_machine": "x86_64",
+        "executable": "numera-core",
+        "executable_sha256": "db4eb2a0417a5434a62f67a59d4a55fe05f978c6fe2012f567dc4c73dbdeda80",
+        "complete_source": {
+          "file": "complete-source.zip",
+          "sha256": "5e8d8a1ed1515c5696f366a42cc3627ece5c85e54268319b0abee96d028fec5c",
+          "scope": "Complete first-party repository tree; independent third-party source locations and notices are in licenses/dependencies.json"
+        },
+        "engine_ready": false,
+        "browser_gui": false,
+        "archive_signature": "none",
+        "publisher_signing": "NOT_CONFIGURED",
+        "platform_signing": "NOT_EVALUATED",
+        "clean_machine_installation": "NOT_RUN",
+        "native_staged_doctor": "PASS"
+      }
+    },
+    {
+      "source_commit": "d3f2f0046608a65d2648b0025612fbcfebfe8a06",
+      "artifact_id": 14688054148,
+      "target": "windows-2025",
+      "transport_sha256": "fc5b443d7f688f94d1542c5b4ca7e878518372917c28a38d608a58a5a1129589",
+      "matching_source_sha256": "5e8d8a1ed1515c5696f366a42cc3627ece5c85e54268319b0abee96d028fec5c",
+      "complete_source_file_count": 338,
+      "executable_sha256": "4cbe3b86a25e67e521a30d1ff570df58ea55f4eb4d38a4b5a370254cf17b2d24",
+      "local_execution": "NOT_RUN on this Linux verifier; native Windows execution verified by CI",
+      "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44858039915/artifacts/14688054148",
+      "expires_at": "2026-11-28T02:52:01Z",
+      "transport_zip_bytes": 1507984,
+      "complete_source_verification": "PASS",
+      "package_manifest": {
+        "schema_revision": 1,
+        "product": "Numera Core Browser development CLI",
+        "channel": "development-control-plane",
+        "version": "0.1.0-dev.1",
+        "source_commit": "d3f2f0046608a65d2648b0025612fbcfebfe8a06",
+        "runner_target": "windows-2025",
+        "native_system": "Windows",
+        "native_machine": "AMD64",
+        "executable": "numera-core.exe",
+        "executable_sha256": "4cbe3b86a25e67e521a30d1ff570df58ea55f4eb4d38a4b5a370254cf17b2d24",
+        "complete_source": {
+          "file": "complete-source.zip",
+          "sha256": "5e8d8a1ed1515c5696f366a42cc3627ece5c85e54268319b0abee96d028fec5c",
+          "scope": "Complete first-party repository tree; independent third-party source locations and notices are in licenses/dependencies.json"
+        },
+        "engine_ready": false,
+        "browser_gui": false,
+        "archive_signature": "none",
+        "publisher_signing": "NOT_CONFIGURED",
+        "platform_signing": "NOT_EVALUATED",
+        "clean_machine_installation": "NOT_RUN",
+        "native_staged_doctor": "PASS"
+      }
+    }
+  ],
+  "same_commit_checks": {
+    "CodeQL": 44858039828,
+    "Gitleaks": 44858039879,
+    "dependency_security": 136704723545,
+    "IPC_fuzzing": {
+      "run_id": 44858039866,
+      "artifact_id": 14687904999,
+      "verified_zip_sha256": "989c83d07d27badf4c2a0d0e742d73e711d5789f3d9f79c8551209137f5c13d6",
+      "executions": 335553,
+      "seconds": 61,
+      "sanitizer_errors": 0
+    }
+  }
+}
