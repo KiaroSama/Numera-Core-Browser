@@ -1,0 +1,208 @@
+{
+  "schema_revision": 1,
+  "workflow_run": 44910785784,
+  "workflow_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44910785784",
+  "workflow_attempt": 1,
+  "native_job_id": 136865950868,
+  "source_commit": "ef0188e341784bfc5cd82ee100269218072e838e",
+  "workflow_conclusion": "failure",
+  "native_job_completed_at": "2026-11-21T18:08:54Z",
+  "target": "linux-x86_64",
+  "artifact": {
+    "id": 14718204715,
+    "kind": "diagnostics",
+    "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44910785784/artifacts/14718204715",
+    "transport_bytes": 728333,
+    "transport_sha256": "sha256:32d97f07aaf12cdfd4c88303d5bdbe0ccd48c80b43dcdded7d78f0ff1e48c701",
+    "renderer_png_bytes": 23255,
+    "renderer_png_sha256": "07b4dc000a596a6489d683e4b4fddd56211871294f9f20133b3c32dbf0599512"
+  },
+  "checkpoint_evidence": "docs/evidence/chromium-staged-44846110371-segment-2.json",
+  "matching_binary_report": "docs/evidence/chromium-staged-44846110371-segment-3.json",
+  "verification_scope": "Verified the diagnostic archive bytes, client-report equality, renderer PNG signature and matching reported binary hashes from both linked builds. The diagnostic archive contains logs and reports.",
+  "portability": {
+    "result": "BLOCKED",
+    "failure": "Unexpected GN runtime dependency list size",
+    "cause": "The previous GN query requested runtime dependencies from the Linux strip action with an empty dependency listing.",
+    "corrected_layout_evidence": "docs/evidence/chromium-runtime-layout-44925530814.json",
+    "archive_replay": {
+      "run_id": 44927476670,
+      "source_commit": "3758ca8596be7374ab5874df97bac35966e51813",
+      "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44927476670",
+      "result": "IN_PROGRESS"
+    }
+  },
+  "report": {
+    "schema_revision": 1,
+    "result": "BLOCKED",
+    "stage": "portable-runtime-fixture",
+    "segment": 1,
+    "commit": "ef0188e341784bfc5cd82ee100269218072e838e",
+    "host": "Linux",
+    "release_ready": false,
+    "source_build": "PASS",
+    "read_only_replay": true,
+    "renderer_fixture": "PASS",
+    "driver_fixture": "PASS",
+    "automation_client_smokes": "PASS",
+    "automation_suites": "NOT_RUN",
+    "portable_runtime_fixture": "BLOCKED",
+    "compile_budget_minutes": 275,
+    "debug_build": true,
+    "elapsed_seconds": 14504.857,
+    "disk_free_bytes": 30675927040,
+    "peak_tree_rss_bytes": 4715864064,
+    "context": {
+      "head": "ef0188e341784bfc5cd82ee100269218072e838e",
+      "run_id": "44910785784",
+      "run_attempt": "1",
+      "runner_image": "20261116.376.1",
+      "host": "Linux",
+      "scratch": "/home/runner/work/_temp/numera-chromium-staged",
+      "targets": [
+        "chrome",
+        "chromedriver",
+        "chrome_sandbox"
+      ],
+      "source_lock_sha256": "a0899efb63de8badf27b640b9bfba4f702aaaa74cd2381c19f7fd6c5ac81bf12",
+      "gn_args_sha256": "408e167a7f67ca45d128210357045c90211bc05cdafce9df18fa52afcffea7dc",
+      "commands_sha256": "ee125cb1bde66ffac6568386d3ebdc1079a50d7db763d15bf5075cc2fa4a5ddf",
+      "cache_tool": "ccache",
+      "cache_tool_sha256": "d8c63ad7be5029fdbea0e326255a07a1618de8dca12809cee0219dbedc74e4de",
+      "cache_config_sha256": "c1f097e6d6875abf6d9313df522efd9322a7021ac03747fb4e2c454f4f08bb19",
+      "ninja_sha256": "607e668f90dd6cd82e1a42ae572647ad1b1fd43063964295b9547836d8c15d99",
+      "clang_sha256": "8091a95554f24a2affa32c80e884c3d36960c5d971560d3410391ffc36af19a7"
+    },
+    "runner_images": {
+      "seed": "20261116.376.1",
+      "resume": "20261116.376.1"
+    },
+    "reviewed_checkpoint": {
+      "sha256": "1bb453d7229315e15727ee47c81863c5aec59f978bf8dadbb5139932e7da3653",
+      "key": "chromium-staged-44846110371-1-2-ubuntu-24.04",
+      "job_id": 136747182574,
+      "source_commit": "ee1ebb7f22c665407ffae31a6e438a45fb85f208"
+    },
+    "parallelism": 4,
+    "native_action_progress": {
+      "completed": 56773,
+      "total": 56773
+    },
+    "compiler_cache": {
+      "autoconf_test": 0,
+      "bad_compiler_arguments": 0,
+      "bad_input_file": 0,
+      "bad_output_file": 0,
+      "cache_miss": 7783,
+      "cache_size_kibibyte": 2234904,
+      "called_for_link": 0,
+      "called_for_preprocessing": 0,
+      "cleanups_performed": 0,
+      "compile_failed": 0,
+      "compiler_check_failed": 0,
+      "compiler_produced_empty_output": 0,
+      "compiler_produced_no_output": 0,
+      "compiler_produced_stdout": 0,
+      "could_not_find_compiler": 0,
+      "could_not_use_modules": 0,
+      "could_not_use_precompiled_header": 0,
+      "direct_cache_hit": 0,
+      "direct_cache_miss": 0,
+      "disabled": 0,
+      "error_hashing_extra_file": 0,
+      "files_in_cache": 46959,
+      "internal_error": 0,
+      "local_storage_hit": 39176,
+      "local_storage_miss": 7783,
+      "local_storage_read_hit": 39176,
+      "local_storage_read_miss": 7783,
+      "local_storage_write": 7783,
+      "max_cache_size_kibibyte": 2490234,
+      "max_files_in_cache": 0,
+      "missing_cache_file": 0,
+      "modified_input_file": 0,
+      "multiple_source_files": 0,
+      "no_input_file": 0,
+      "output_to_stdout": 0,
+      "preprocessed_cache_hit": 39176,
+      "preprocessed_cache_miss": 7783,
+      "preprocessor_error": 0,
+      "recache": 0,
+      "remote_storage_error": 0,
+      "remote_storage_hit": 0,
+      "remote_storage_miss": 0,
+      "remote_storage_read_hit": 0,
+      "remote_storage_read_miss": 0,
+      "remote_storage_timeout": 0,
+      "remote_storage_write": 0,
+      "stats_updated_timestamp": 1795284357,
+      "stats_zeroed_timestamp": 1795269863,
+      "unsupported_code_directive": 0,
+      "unsupported_compiler_option": 0,
+      "unsupported_environment_variable": 0,
+      "unsupported_source_encoding": 0,
+      "unsupported_source_language": 0
+    },
+    "segment_stop": "built",
+    "browser_sha256": "a31a779b0cb4b41c360ae29e93e827f2226c12a33c1a4d9d7f7dceaef9453371",
+    "browser_bytes": 1102923312,
+    "chromedriver_sha256": "df2fc7da286de0445e61695a4a41c0cf337af31a785f10bfd812fc43eb67d318",
+    "chromedriver_bytes": 14172544,
+    "linux_sandbox_helper": {
+      "source_target": "chrome_sandbox",
+      "sha256": "0f5196ae181eec450044ed2da6ff97d08642e260ddac7f2a8b54cf5ab589496f",
+      "owner_uid": 0,
+      "mode": "4755",
+      "scope": "Owned-source SUID developer fixture; no global AppArmor/sysctl or browser sandbox disabling"
+    },
+    "webdriver": {
+      "result": "PASS",
+      "driver_version": "157.0.8103.78",
+      "scope": "ChromeDriver W3C HTTP session and a controlled local document"
+    },
+    "automation_clients": {
+      "result": "PASS",
+      "node": "24.22.3",
+      "browserVersion": "157.0.8103.78",
+      "tests": {
+        "selenium": {
+          "version": "4.53.0",
+          "transport": "WebDriver",
+          "checks": [
+            "navigation",
+            "unicode-input",
+            "click-and-wait",
+            "nested-frame",
+            "png-screenshot"
+          ]
+        },
+        "puppeteer": {
+          "version": "25.18.1",
+          "transport": "Chrome DevTools Protocol",
+          "checks": [
+            "navigation",
+            "unicode-input",
+            "click-and-wait",
+            "nested-frame",
+            "png-screenshot"
+          ]
+        },
+        "playwright": {
+          "version": "1.65.1",
+          "transport": "connectOverCDP",
+          "checks": [
+            "navigation",
+            "unicode-input",
+            "click-and-wait",
+            "nested-frame",
+            "png-screenshot"
+          ]
+        }
+      },
+      "scope": "Controlled headless navigation, Unicode input, frame, click and screenshot for each client"
+    },
+    "error_type": "RuntimeError",
+    "diagnostic": "Unexpected GN runtime dependency list size",
+    "timestamp": "2026-11-21T18:06:59.113242+00:00"
+  }
+}

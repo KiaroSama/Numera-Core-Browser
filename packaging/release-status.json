@@ -15,7 +15,7 @@
   "repository_published": true,
   "blockers": [
     "Owned Chromium compilation and linking remains in verification on Windows",
-    "Corrected native client, headed browser and portable runtime acceptance remain open",
+    "Windows native clients, headed browser, portable runtime and installer acceptance remain open",
     "No signed updater or paired manager smoke suite"
   ],
   "development_cli": {
@@ -113,9 +113,17 @@
       "target": "ubuntu-24.04",
       "run_id": 44910785784,
       "source_commit": "ef0188e341784bfc5cd82ee100269218072e838e",
-      "status": "in_progress",
+      "status": "completed",
       "reviewed_checkpoint": "docs/evidence/chromium-staged-44846110371-segment-2.json",
-      "cache_mode": "read-only-replay"
+      "cache_mode": "read-only-replay",
+      "conclusion": "failure",
+      "source_build": "PASS",
+      "renderer_fixture": "PASS",
+      "webdriver_fixture": "PASS",
+      "automation_client_smokes": "PASS",
+      "portable_runtime_fixture": "BLOCKED",
+      "failure_class": "empty-gn-strip-target-runtime-inventory",
+      "evidence": "docs/evidence/chromium-replay-44910785784.json"
     },
     {
       "target": "windows-2025-vs2026",
@@ -137,13 +145,14 @@
       "target": "ubuntu-24.04",
       "run_id": 44927476670,
       "source_commit": "3758ca8596be7374ab5874df97bac35966e51813",
-      "status": "pending",
+      "status": "in_progress",
       "scope": "Owned runtime archive extraction and native relocation",
       "reviewed_checkpoint": "docs/evidence/chromium-staged-44846110371-segment-2.json",
-      "declared_runtime_layout_evidence": "docs/evidence/chromium-runtime-layout-44925530814.json"
+      "declared_runtime_layout_evidence": "docs/evidence/chromium-runtime-layout-44925530814.json",
+      "native_job_id": 136936265504
     }
   ],
-  "source_experiment_status_observed_at": "2026-11-21T17:00:36+00:00",
+  "source_experiment_status_observed_at": "2026-11-21T18:10:00+00:00",
   "active_targets": [
     "windows-x86_64",
     "linux-x86_64"
