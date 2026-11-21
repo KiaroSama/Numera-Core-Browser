@@ -81,10 +81,26 @@
       "target": "windows-2025-vs2026",
       "run_id": 44856553847,
       "source_commit": "b2da35f098ad8ef8d116d56d09ce8617bc137782",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "reason": "Superseded before the first job by the verified loopback fixture correction"
+    },
+    {
+      "target": "ubuntu-24.04",
+      "run_id": 44910574065,
+      "source_commit": "fac5ff3ee5927109b2802456d523d4cba2422693",
+      "status": "queued",
+      "reviewed_checkpoint": "docs/evidence/chromium-staged-44846110371-segment-2.json",
+      "cache_mode": "read-only-replay"
+    },
+    {
+      "target": "windows-2025-vs2026",
+      "run_id": 44910588735,
+      "source_commit": "fac5ff3ee5927109b2802456d523d4cba2422693",
       "status": "pending"
     }
   ],
-  "source_experiment_status_observed_at": "2026-11-21T12:21:51+00:00",
+  "source_experiment_status_observed_at": "2026-11-21T13:47:25+00:00",
   "active_targets": [
     "windows-x86_64",
     "linux-x86_64"
