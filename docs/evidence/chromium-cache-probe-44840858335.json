@@ -1,0 +1,48 @@
+{
+  "run_id": 44840858335,
+  "artifact_id": 14682550851,
+  "verified_transport_digest": "sha256:8f3dd6a04ace160ae8d88f95e48de4afa86e115a7e7ee2f6fd5edb16211d7f57",
+  "report": {
+    "phase": "seed",
+    "runner": "Windows",
+    "source_commit": "64078657a48426c5940cdf2a64d057eb6b07d291",
+    "result": "BLOCKED",
+    "engine_source_acceptance": "NOT_RUN",
+    "release_ready": false,
+    "context": {
+      "run_id": "44840858335",
+      "run_attempt": "1",
+      "runner_image": "20261116.315.1",
+      "host": "Windows",
+      "head": "64078657a48426c5940cdf2a64d057eb6b07d291",
+      "scratch": "D:\\a\\_temp\\numera-compiler-cache-probe",
+      "target": "obj/base/base/logging.obj",
+      "lock_sha256": "a0899efb63de8badf27b640b9bfba4f702aaaa74cd2381c19f7fd6c5ac81bf12",
+      "gn_args_sha256": "ee9b53ab43bb4c1d2a09b8ebb11791455857a07df8b0cfc11de59fb249aed8ce",
+      "cache_tool": "ccache",
+      "cache_tool_sha256": "4761c961a0dfae1f84a9766b1c702c31c71f6114235c2f1148f15890f449ccba",
+      "cache_config_sha256": "67cd51facb6243227fdd1ba8ebb866a70306b61f80075b4a28cbfa05255e8fe1",
+      "ninja_sha256": "e52a7ad9538d9618c67a0bd777964e2eec8a30f68b810a2f6adce1f2daf847b8",
+      "clang_sha256": "4da6bc64ba680144071eddd49e70e4e9ab75a683ecf471cb298760adbe275094",
+      "command_sha256": "3381b16420b54d8a1bf204e0acb9cf910d1d8b256c6483066c8b05672fc353e8",
+      "input_sha256": "4d69842dafef18f5409b5f88a5716f84f7009b0ed1ea34a21eb4aa7559d7b696",
+      "sdk": {
+        "directory_version": "10.0.28000.0",
+        "debugging_tools_version": "10.0.28000.2957 (WinBuild.160101.0800)",
+        "requested_release": "10.0.28000.2957"
+      }
+    },
+    "error_type": "RuntimeError",
+    "diagnostic": "The requested object did not have an unambiguous ccache invocation"
+  },
+  "cold": {
+    "unsupported_compiler_option": 421,
+    "cache_miss": 0,
+    "preprocessed_cache_hit": 0,
+    "local_storage_write": 0
+  },
+  "native_object_compiled": true,
+  "cold_ninja_final_action": "[622/622] CXX obj/base/base/logging.obj",
+  "cache_continuation": "NOT_RUN",
+  "seed_job_id": 136648570449
+}
