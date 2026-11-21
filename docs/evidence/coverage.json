@@ -1,6 +1,404 @@
 {
   "schema_revision": 1,
   "timestamp": "2026-11-10T17:33:44.732611+00:00",
+  "current_review": {
+    "observed_at": "2026-11-21T15:09:00+00:00",
+    "active_targets": [
+      "windows-x86_64",
+      "linux-x86_64"
+    ],
+    "release_ready": false,
+    "scope": "Each result applies to the named test and evidence. The historical records below preserve the earlier experiment matrix.",
+    "requirements": {
+      "C01": {
+        "release_acceptance": "BLOCKED",
+        "checks": [
+          {
+            "name": "Formatting, strict lint, native unit and process tests, dependency and license checks",
+            "result": "PASS",
+            "platforms": [
+              "windows-x86_64",
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/development-artifacts-44907851253.json",
+            "source_commit": "4878e48bb36929061f1e0aa8607ca547171a834f",
+            "workflow_run": 44907851253
+          }
+        ]
+      },
+      "C02": {
+        "release_acceptance": "BLOCKED",
+        "checks": [
+          {
+            "name": "Extracted canonical contract and real inherited-stdio producer conformance",
+            "result": "PASS",
+            "platforms": [
+              "windows-x86_64",
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/development-artifacts-44907851253.json",
+            "source_commit": "4878e48bb36929061f1e0aa8607ca547171a834f",
+            "workflow_run": 44907851253
+          }
+        ]
+      },
+      "C03": {
+        "release_acceptance": "BLOCKED",
+        "checks": [
+          {
+            "name": "Deterministic identity configuration and seed unit tests",
+            "result": "PASS",
+            "platforms": [
+              "windows-x86_64",
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/development-artifacts-44907851253.json",
+            "source_commit": "4878e48bb36929061f1e0aa8607ca547171a834f",
+            "workflow_run": 44907851253
+          }
+        ]
+      },
+      "C04": {
+        "release_acceptance": "BLOCKED",
+        "checks": [
+          {
+            "name": "CLI capability negotiation",
+            "result": "PASS",
+            "platforms": [
+              "windows-x86_64",
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/development-artifacts-44907851253.json",
+            "source_commit": "4878e48bb36929061f1e0aa8607ca547171a834f",
+            "workflow_run": 44907851253
+          }
+        ]
+      },
+      "C05": {
+        "release_acceptance": "BLOCKED",
+        "checks": [
+          {
+            "name": "Pinned patched source compilation and controlled renderer regression",
+            "result": "PASS",
+            "platforms": [
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/chromium-staged-44846110371-segment-3.json",
+            "source_commit": "ee1ebb7f22c665407ffae31a6e438a45fb85f208",
+            "workflow_run": 44846110371
+          },
+          {
+            "name": "Native patched source regression",
+            "result": "IN_PROGRESS",
+            "platforms": [
+              "windows-x86_64"
+            ],
+            "evidence": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44913495180",
+            "source_commit": "d87a4c0fe6376d14db485df14352d6194c74d098",
+            "workflow_run": 44913495180
+          }
+        ]
+      },
+      "C06": {
+        "release_acceptance": "BLOCKED",
+        "checks": [
+          {
+            "name": "Full staged source compile, cache replay and linking",
+            "result": "PASS",
+            "platforms": [
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/chromium-staged-44846110371-segment-3.json",
+            "source_commit": "ee1ebb7f22c665407ffae31a6e438a45fb85f208",
+            "workflow_run": 44846110371
+          },
+          {
+            "name": "Full staged source build",
+            "result": "IN_PROGRESS",
+            "platforms": [
+              "windows-x86_64"
+            ],
+            "evidence": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44913495180",
+            "source_commit": "d87a4c0fe6376d14db485df14352d6194c74d098",
+            "workflow_run": 44913495180
+          },
+          {
+            "name": "Actual Git checkout provenance and pinned DEPS verification",
+            "result": "PASS",
+            "platforms": [
+              "windows-x86_64",
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/chromium-source-inventory-44913884524.json",
+            "source_commit": "98fed12c70a1ad689f98f91352bd791f8a98f1d3",
+            "workflow_run": 44913884524
+          }
+        ]
+      },
+      "C07": {
+        "release_acceptance": "BLOCKED",
+        "checks": [
+          {
+            "name": "Windows and Linux development CLI archive extraction and native doctor",
+            "result": "PASS",
+            "platforms": [
+              "windows-x86_64",
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/development-artifacts-44907851253.json",
+            "source_commit": "4878e48bb36929061f1e0aa8607ca547171a834f",
+            "workflow_run": 44907851253
+          }
+        ]
+      },
+      "C08": {
+        "release_acceptance": "BLOCKED",
+        "checks": [
+          {
+            "name": "Owned headless renderer and W3C local navigation",
+            "result": "PASS",
+            "platforms": [
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/chromium-staged-44846110371-segment-3.json",
+            "source_commit": "ee1ebb7f22c665407ffae31a6e438a45fb85f208",
+            "workflow_run": 44846110371
+          },
+          {
+            "name": "Runner-browser comparison with Unicode input, delayed DOM click and frames",
+            "result": "PASS",
+            "platforms": [
+              "windows-x86_64",
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/automation-baseline-44910313195.json",
+            "source_commit": "083935d5160fecda5ce473298a63d7936325fac6",
+            "workflow_run": 44910313195
+          }
+        ]
+      },
+      "C09": {
+        "release_acceptance": "NOT_RUN",
+        "checks": []
+      },
+      "C10": {
+        "release_acceptance": "BLOCKED",
+        "checks": [
+          {
+            "name": "Owned headless renderer and PNG screenshot",
+            "result": "PASS",
+            "platforms": [
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/chromium-staged-44846110371-segment-3.json",
+            "source_commit": "ee1ebb7f22c665407ffae31a6e438a45fb85f208",
+            "workflow_run": 44846110371
+          }
+        ]
+      },
+      "C11": {
+        "release_acceptance": "NOT_RUN",
+        "checks": []
+      },
+      "C12": {
+        "release_acceptance": "BLOCKED",
+        "checks": [
+          {
+            "name": "Playwright connectOverCDP runner-browser comparison",
+            "result": "PASS",
+            "platforms": [
+              "windows-x86_64",
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/automation-baseline-44910313195.json",
+            "source_commit": "083935d5160fecda5ce473298a63d7936325fac6",
+            "workflow_run": 44910313195
+          },
+          {
+            "name": "Owned Playwright connectOverCDP fixture",
+            "result": "IN_PROGRESS",
+            "platforms": [
+              "linux-x86_64"
+            ],
+            "evidence": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44910785784",
+            "source_commit": "ef0188e341784bfc5cd82ee100269218072e838e",
+            "workflow_run": 44910785784
+          }
+        ]
+      },
+      "C13": {
+        "release_acceptance": "BLOCKED",
+        "checks": [
+          {
+            "name": "Puppeteer CDP runner-browser comparison",
+            "result": "PASS",
+            "platforms": [
+              "windows-x86_64",
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/automation-baseline-44910313195.json",
+            "source_commit": "083935d5160fecda5ce473298a63d7936325fac6",
+            "workflow_run": 44910313195
+          },
+          {
+            "name": "Owned Puppeteer CDP fixture",
+            "result": "IN_PROGRESS",
+            "platforms": [
+              "linux-x86_64"
+            ],
+            "evidence": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44910785784",
+            "source_commit": "ef0188e341784bfc5cd82ee100269218072e838e",
+            "workflow_run": 44910785784
+          }
+        ]
+      },
+      "C14": {
+        "release_acceptance": "BLOCKED",
+        "checks": [
+          {
+            "name": "Actual source-built ChromeDriver W3C session",
+            "result": "PASS",
+            "platforms": [
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/chromium-staged-44846110371-segment-3.json",
+            "source_commit": "ee1ebb7f22c665407ffae31a6e438a45fb85f208",
+            "workflow_run": 44846110371
+          },
+          {
+            "name": "Selenium runner-browser comparison",
+            "result": "PASS",
+            "platforms": [
+              "windows-x86_64",
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/automation-baseline-44910313195.json",
+            "source_commit": "083935d5160fecda5ce473298a63d7936325fac6",
+            "workflow_run": 44910313195
+          },
+          {
+            "name": "Owned Selenium client suite",
+            "result": "IN_PROGRESS",
+            "platforms": [
+              "linux-x86_64"
+            ],
+            "evidence": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44910785784",
+            "source_commit": "ef0188e341784bfc5cd82ee100269218072e838e",
+            "workflow_run": 44910785784
+          }
+        ]
+      },
+      "C15": {
+        "release_acceptance": "NOT_RUN",
+        "checks": []
+      },
+      "C16": {
+        "release_acceptance": "BLOCKED",
+        "checks": [
+          {
+            "name": "Real standalone admission contention and independent-profile fixture",
+            "result": "PASS",
+            "platforms": [
+              "windows-x86_64",
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/development-artifacts-44907851253.json",
+            "source_commit": "4878e48bb36929061f1e0aa8607ca547171a834f",
+            "workflow_run": 44907851253
+          }
+        ]
+      },
+      "C17": {
+        "release_acceptance": "BLOCKED",
+        "checks": [
+          {
+            "name": "Windows kernel job and Linux worker process ownership fixtures",
+            "result": "PASS",
+            "platforms": [
+              "windows-x86_64",
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/development-artifacts-44907851253.json",
+            "source_commit": "4878e48bb36929061f1e0aa8607ca547171a834f",
+            "workflow_run": 44907851253
+          }
+        ]
+      },
+      "C18": {
+        "release_acceptance": "BLOCKED",
+        "checks": [
+          {
+            "name": "Isolated TUF library expiry, rotation, rollback and tampered target evaluation",
+            "result": "PASS",
+            "platforms": [
+              "linux-x86_64"
+            ],
+            "evidence": "docs/research/2026-11-21.md"
+          }
+        ]
+      },
+      "C19": {
+        "release_acceptance": "NOT_RUN",
+        "checks": []
+      },
+      "C20": {
+        "release_acceptance": "BLOCKED",
+        "checks": [
+          {
+            "name": "Extracted CLI smoke and UTF-8 paths",
+            "result": "PASS",
+            "platforms": [
+              "windows-x86_64",
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/development-artifacts-44907851253.json",
+            "source_commit": "4878e48bb36929061f1e0aa8607ca547171a834f",
+            "workflow_run": 44907851253
+          },
+          {
+            "name": "Unicode Persian input round trip in the unmodified hosted browser",
+            "result": "PASS",
+            "platforms": [
+              "windows-x86_64",
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/automation-baseline-44910313195.json",
+            "source_commit": "083935d5160fecda5ce473298a63d7936325fac6",
+            "workflow_run": 44910313195
+          },
+          {
+            "name": "Owned runtime relocation",
+            "result": "IN_PROGRESS",
+            "platforms": [
+              "linux-x86_64"
+            ],
+            "evidence": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44910785784",
+            "source_commit": "ef0188e341784bfc5cd82ee100269218072e838e",
+            "workflow_run": 44910785784
+          }
+        ]
+      },
+      "C21": {
+        "release_acceptance": "BLOCKED",
+        "checks": [
+          {
+            "name": "Bounded IPC libFuzzer and AddressSanitizer",
+            "result": "PASS",
+            "platforms": [
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/development-cli-44858039915.json",
+            "source_commit": "d3f2f0046608a65d2648b0025612fbcfebfe8a06",
+            "workflow_run": 44858039866
+          }
+        ]
+      },
+      "C22": {
+        "release_acceptance": "NOT_RUN",
+        "checks": []
+      }
+    }
+  },
   "overall_result": "BLOCKED",
   "owned_engine_ready": false,
   "repository_published": true,
