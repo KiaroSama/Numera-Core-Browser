@@ -75,6 +75,7 @@ const options = new chrome.Options().setChromeBinaryPath(browserPath).addArgumen
 );
 const driver = await new Builder().disableEnvironmentOverrides().usingServer(endpoint)
   .forBrowser('chrome').setChromeOptions(options).build();
+let browserVersion;
 try {
   await driver.manage().setTimeouts({ pageLoad: 15000, script: 15000 });
   await driver.get(fixture);
@@ -90,6 +91,8 @@ try {
   }
   verifyScreenshot(Buffer.from(await driver.takeScreenshot(), 'base64'));
   const capabilities = await driver.getCapabilities();
+  browserVersion = capabilities.get('browserVersion');
+  assert.match(browserVersion, /^\d+\.\d+\.\d+\.\d+$/);
   const browserEndpoint = loopbackPort(capabilities.get('goog:chromeOptions')?.debuggerAddress);
   await testPuppeteer(browserEndpoint, fixture);
   await testPlaywright(browserEndpoint, fixture);
@@ -102,6 +105,6 @@ const tests = {
   puppeteer: { version: dependencies['puppeteer-core'], transport: 'Chrome DevTools Protocol', checks: completedChecks },
   playwright: { version: dependencies['playwright-core'], transport: 'connectOverCDP', checks: completedChecks },
 };
-await writeFile(reportPath, JSON.stringify({ result: 'PASS', node: process.versions.node, tests,
+await writeFile(reportPath, JSON.stringify({ result: 'PASS', node: process.versions.node, browserVersion, tests,
   scope: 'Controlled headless navigation, Unicode input, frame, click and screenshot for each client' }, null, 2) + '\n',
 { encoding: 'utf8', flag: 'wx' });
