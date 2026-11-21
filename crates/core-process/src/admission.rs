@@ -167,7 +167,7 @@ pub struct StandaloneLease {
     directory: PathBuf,
     claim_path: PathBuf,
     claim: Claim,
-    _lock: File,
+    lock: File,
 }
 
 impl StandaloneLease {
@@ -263,7 +263,7 @@ impl StandaloneLease {
             directory,
             claim_path,
             claim,
-            _lock: lock,
+            lock,
         };
         lease.persist(previous.as_ref())?;
         Ok(lease)
@@ -340,6 +340,14 @@ impl StandaloneLease {
     }
 }
 
+impl Drop for StandaloneLease {
+    fn drop(&mut self) {
+        // An in-flight fork can share the open file description until exec.
+        // Release the lock explicitly while keeping the durable claim intact.
+        let _ = self.lock.unlock();
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -387,6 +395,9 @@ mod tests {
     fn dropped_live_claim_requires_recovery_instead_of_pid_based_relaunch() {
         let r = Root::new();
         let a = StandaloneLease::acquire(&r.0, "a", "launch", "key").unwrap();
+        // A fork can briefly share this open file description before exec.
+        #[cfg(unix)]
+        let inherited = a.lock.try_clone().unwrap();
         drop(a);
         assert_eq!(
             StandaloneLease::acquire(&r.0, "a", "retry", "key")
@@ -395,6 +406,8 @@ mod tests {
                 .code,
             ErrorCode::RecoveryRequired
         );
+        #[cfg(unix)]
+        drop(inherited);
     }
 
     #[test]
