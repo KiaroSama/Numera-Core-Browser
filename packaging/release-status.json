@@ -14,7 +14,7 @@
   },
   "repository_published": true,
   "blockers": [
-    "The measured Windows and Linux cold source builds reached their compilation budget before completing the owned engine",
+    "Owned Chromium compilation and linking remains unverified on the active Windows and Linux targets",
     "No real browser/native automation acceptance",
     "No signed updater or paired manager smoke suite"
   ],
@@ -50,9 +50,25 @@
       "conclusion": "failure",
       "failure_class": "bounded-build-time-budget",
       "evidence": "docs/evidence/cold-source-43525736057-provenance.json"
+    },
+    {
+      "target": "ubuntu-24.04",
+      "run_id": 44846110371,
+      "source_commit": "ee1ebb7f22c665407ffae31a6e438a45fb85f208",
+      "status": "in_progress",
+      "verified_checkpoint_evidence": [
+        "docs/evidence/chromium-staged-44846110371-segment-1.json",
+        "docs/evidence/chromium-staged-44846110371-segment-2.json"
+      ]
+    },
+    {
+      "target": "windows-2025-vs2026",
+      "run_id": 44856553847,
+      "source_commit": "b2da35f098ad8ef8d116d56d09ce8617bc137782",
+      "status": "pending"
     }
   ],
-  "source_experiment_status_observed_at": "2026-11-20T23:02:38.121622+00:00",
+  "source_experiment_status_observed_at": "2026-11-21T12:21:51+00:00",
   "active_targets": [
     "windows-x86_64",
     "linux-x86_64"

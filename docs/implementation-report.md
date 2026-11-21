@@ -7,11 +7,11 @@ Windows and Linux x86-64 are the active build and distribution targets. Earlier 
 - A Rust workspace with real CLI commands and an inherited-stdio NCB-1 producer: diagnostics, capabilities, engine inventory, pure launch planning, manifest inspection, hashing and schema export.
 - Strict JSON/NDJSON parsing, recursive duplicate-key checks, version/handshake state, bounded queues/frames/deadlines, output-backpressure cancellation and sanitized errors. Missing engines, unsupported capabilities and required proxies fail closed.
 - Deterministic identity keys and configuration coherence checks with explicit emulation limitations. No page-visible identity or mobile behavior is claimed.
-- A standalone Rust admission library with real cross-process profile locks, atomic claims and fail-closed stale/corrupt ownership. Its Windows kernel-job primitive atomically contains new child processes and passed five real native ownership fixtures. Production browser-session integration, manager grants and recovery repair remain open.
+- A standalone Rust admission library with real cross-process profile locks, atomic claims and fail-closed stale/corrupt ownership. Windows kernel jobs atomically contain new child processes. Dedicated Linux workers adopt and reap orphaned descendants using a kernel subreaper and process descriptors. Both primitives have native fixture coverage. Production browser-session integration, manager grants and recovery repair remain open.
 - Canonical generated schemas, positive/negative fixtures, an external Python consumer against the actual Rust process, versioned theme tokens and explicit engine/tool compatibility metadata.
 - Per-platform Chromium source/depot_tools pins and a hashed BSD-licensed branding patch. It changes product strings only; a complete browser source build has not passed.
 - Candidate PowerShell native source-build recipe and bounded public-hosted feasibility workflow; a separate native Rust CI matrix; official feed observation and one review-only candidate PR workflow.
-- Exact selected custom license, user-supplied logo, 63 locked dependency entries with preserved license texts, public-reference research, security/update/process ADRs and a manager integration checklist. The optional UEFI dependency r-efi 6.0.0 is explicitly used under its MIT alternative, with its complete AUTHORS grant preserved.
+- Exact selected custom license, user-supplied logo, 66 locked dependency entries with preserved license texts, public-reference research, security/update/process ADRs and a manager integration checklist. The optional UEFI dependency r-efi 6.0.0 is explicitly used under its MIT alternative, with its complete AUTHORS grant preserved.
 
 The user created the exact public repository after the initial API creation denial, and its prepared history was published without rewriting it. The earlier [native control-plane run 42914426653](https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/42914426653), at `4053a3f31b1eb5c43f3fa04da13676bf6378a405`, passed 47 Rust tests on Windows x86-64 and 45 each on Linux x86-64, macOS ARM64 and macOS Intel, plus strict lints, schema/actual-consumer conformance, 63 dependency notices and current vulnerability checks. [Exact job evidence](evidence/native-control-plane-42914426653.json) separates platform scope; historical runs remain in `docs/evidence/hosted-verification.json`.
 
@@ -33,12 +33,18 @@ The latest packaged Windows/Linux native run passed 47 Windows tests and 48 Linu
 
 All four downloaded transport ZIP hashes, executable hashes, matching-source hashes and archive paths were independently verified. The downloaded Linux executable also ran on the local Linux verifier; foreign executables were exercised on their native CI runners. [Exact job, artifact and expiry evidence](evidence/development-cli-43509657873.json) distinguishes those scopes. Those seven-day historical CI artifacts were development control-plane deliveries. They contain no browser/GUI and establish no publisher signature, clean-machine installation, updater or manager-integration acceptance.
 
+## Current owned Chromium builds
+
+The staged Linux run is building the pinned source graph on fresh standard GitHub runners. Its first checkpoint captured 24,601 compiler outputs. Its second verified 24,601 cache hits across two runner images and 14,575 new outputs, reaching 48,369 of 56,773 observed native actions. The third segment continues from that verified checkpoint. [First checkpoint](evidence/chromium-staged-44846110371-segment-1.json) · [Second checkpoint](evidence/chromium-staged-44846110371-segment-2.json) · [Native Linux run](https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44846110371)
+
+The Windows staged run is queued behind Linux under the shared repository cache allowance. Its compiler path has already passed a [separate fresh-runner replay](evidence/chromium-cache-resume-44848971290.json) of one actual Chromium object, with byte-identical output and a cache miss after an input change. [Native Windows run](https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44856553847)
+
 ## Open gates
 
 | Gate | Status | Remaining acceptance |
 | --- | --- | --- |
-| A: repository, license, baseline, feasibility | BLOCKED | Repository/license/baseline and bounded hosted measurements complete; full cold source-build viability remains unresolved |
-| B: working owned browser slice | BLOCKED | Build Chromium, native browser GUI, durable process ownership, real Playwright/Puppeteer/Selenium tests |
+| A: repository, license, baseline, feasibility | IN_PROGRESS | Staged native source builds follow the measured single-job limits |
+| B: working owned browser slice | IN_PROGRESS | Finish linking, verify native GUI and real automation, and integrate the ownership primitives with browser sessions |
 | C: broader engines/device/package scope | NOT_RUN | Engine-applied emulation, modular installers and themes; Gecko/WebKit deferred after the Orbita direction |
 | D: trusted updates and integration | NOT_RUN | Signed metadata, staging/leases/activation/real-data rollback and paired manager/browser smoke suite |
 | E: release acceptance | NOT_RUN | Full native matrix, upstream/security/licenses, packaging, performance and complete-source provenance |
