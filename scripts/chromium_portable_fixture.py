@@ -21,7 +21,8 @@ def runtime_dependency_path(line):
 
 
 def resolve_runtime_files(build, dependencies):
-    files = {}
+    files = set()
+    spellings = {}
     for line in dependencies:
         relative = runtime_dependency_path(line)
         path = build.joinpath(*relative.parts)
@@ -35,11 +36,13 @@ def resolve_runtime_files(build, dependencies):
                 continue
             if not candidate.is_file():
                 raise RuntimeError('Runtime dependency is not a regular file')
-            name = candidate.relative_to(build).as_posix()
-            previous = files.setdefault(name.casefold(), name)
-            if previous != name:
-                raise RuntimeError('Runtime dependency names conflict on a case-insensitive filesystem')
-    return sorted(files.values())
+            relative = candidate.relative_to(build)
+            files.add(relative.as_posix())
+            for component in (relative, *relative.parents):
+                name = component.as_posix()
+                if spellings.setdefault(name.upper(), name) != name:
+                    raise RuntimeError('Runtime dependency names conflict on a case-insensitive filesystem')
+    return sorted(files)
 
 
 def describe_portable_runtime(source, host, environment):

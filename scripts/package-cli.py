@@ -40,7 +40,10 @@ def verify_archive_cli(executable, directory, environment):
         raise RuntimeError('The extracted CLI returned unexpected runtime archive evidence')
     mismatch = subprocess.run([*command, '0' * 64], cwd=executable.parent, env=environment,
                               capture_output=True, timeout=15)
-    if mismatch.returncode != 2 or (directory / 'runtime').exists():
+    if (mismatch.returncode != 2
+            or json.loads(mismatch.stdout)['error']['message'] != 'Runtime archive SHA-256 does not match'
+            or sha256(fixture) != digest
+            or any((path / 'runtime').exists() for path in (directory, executable.parent))):
         raise RuntimeError('The extracted CLI did not enforce read-only archive integrity checks')
 
 

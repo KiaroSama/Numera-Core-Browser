@@ -4,7 +4,7 @@ use core_contracts::CoreError;
 use flate2::bufread::GzDecoder;
 use sha2::{Digest, Sha256};
 use std::{
-    collections::BTreeSet,
+    collections::BTreeMap,
     io::{self, BufRead, BufReader, Read},
     path::Path,
 };
@@ -43,33 +43,34 @@ fn invalid_archive() -> CoreError {
 }
 
 fn name_extension<R: Read>(entry: &mut tar::Entry<'_, R>) -> Result<String, CoreError> {
-    if entry.size() > (MAX_PATH_BYTES + 64) as u64 {
+    if entry.size() > (MAX_PATH_BYTES + 64) as u64
+        || (entry.header().as_gnu().is_none() && entry.header().as_ustar().is_none())
+    {
         return Err(invalid_archive());
     }
+    let mut bytes = Vec::new();
+    entry
+        .read_to_end(&mut bytes)
+        .map_err(|_| invalid_archive())?;
     if entry.header().entry_type().is_gnu_longname() {
-        let mut bytes = Vec::new();
-        entry
-            .read_to_end(&mut bytes)
-            .map_err(|_| invalid_archive())?;
         if bytes.pop() != Some(0) {
             return Err(invalid_archive());
         }
         return String::from_utf8(bytes).map_err(|_| invalid_archive());
     }
-    let mut extensions = entry
-        .pax_extensions()
-        .map_err(|_| invalid_archive())?
-        .ok_or_else(invalid_archive)?;
-    let path = extensions
-        .next()
-        .ok_or_else(invalid_archive)?
-        .map_err(|_| invalid_archive())?;
-    if path.key() != Ok("path") || extensions.next().is_some() {
+    // Numera emits only a single PAX path record, with its final LF included in the length.
+    let record = std::str::from_utf8(&bytes).map_err(|_| invalid_archive())?;
+    let (length, contents) = record.split_once(' ').ok_or_else(invalid_archive)?;
+    if !length.bytes().all(|byte| byte.is_ascii_digit())
+        || length.parse::<usize>() != Ok(bytes.len())
+    {
         return Err(invalid_archive());
     }
-    path.value()
+    contents
+        .strip_prefix("path=")
+        .and_then(|path| path.strip_suffix('\n'))
         .map(str::to_owned)
-        .map_err(|_| invalid_archive())
+        .ok_or_else(invalid_archive)
 }
 
 fn inspect_archive<R: Read>(
@@ -84,7 +85,7 @@ fn inspect_archive<R: Read>(
     };
     let decoder = GzDecoder::new(BufReader::new(source));
     let mut archive = tar::Archive::new(decoder.take(tar_limit + 1));
-    let mut files = BTreeSet::new();
+    let mut files = BTreeMap::new();
     let mut declared_path = None;
     let mut path_bytes = 0;
     let mut file_bytes = 0_u64;
@@ -113,7 +114,9 @@ fn inspect_archive<R: Read>(
             || path_bytes > MAX_ALL_PATH_BYTES
             || !safe_relative(relative)
             || files.len() >= MAX_MEMBERS
-            || !files.insert(relative.to_lowercase())
+            || files
+                .insert(relative.to_uppercase(), relative.to_owned())
+                .is_some()
         {
             return Err(invalid_archive());
         }
@@ -126,13 +129,21 @@ fn inspect_archive<R: Read>(
     if files.is_empty() || declared_path.is_some() {
         return Err(invalid_archive());
     }
-    for name in &files {
-        let mut path = name.as_str();
-        while let Some((parent, _)) = path.rsplit_once('/') {
-            if files.contains(parent) {
+    let mut directories = BTreeMap::new();
+    for (key, name) in &files {
+        let (mut folded, mut path) = (key.as_str(), name.as_str());
+        while let Some(((prefix, _), (spelling, _))) =
+            folded.rsplit_once('/').zip(path.rsplit_once('/'))
+        {
+            if files.contains_key(prefix)
+                || directories
+                    .insert(prefix, spelling)
+                    .is_some_and(|previous| previous != spelling)
+                || directories.len() > MAX_MEMBERS
+            {
                 return Err(invalid_archive());
             }
-            path = parent;
+            (folded, path) = (prefix, spelling);
         }
     }
 
@@ -244,6 +255,11 @@ mod tests {
                 ("runtime/chrome", b"x".as_slice()),
                 ("runtime/CHROME", b"y"),
             ],
+            vec![("runtime/Σ.pak", b"x".as_slice()), ("runtime/ς.pak", b"y")],
+            vec![
+                ("runtime/Locales/a.pak", b"x".as_slice()),
+                ("runtime/locales/b.pak", b"y"),
+            ],
             vec![
                 ("runtime/data", b"x".as_slice()),
                 ("runtime/data/inner", b"y"),
@@ -281,6 +297,26 @@ mod tests {
         header.set_entry_type(tar::EntryType::Symlink);
         header.set_mode(0o777);
         tar.append_link(&mut header, "runtime/chrome", "chromium")
+            .unwrap();
+        let bytes = tar.into_inner().unwrap().finish().unwrap();
+        assert!(check(&bytes, 8192).is_err());
+    }
+
+    #[test]
+    fn rejects_pax_path_without_its_record_terminator() {
+        let compressor = GzEncoder::new(Vec::new(), Compression::fast());
+        let mut tar = tar::Builder::new(compressor);
+        let extended = b"23 path=runtime/chrome";
+        let mut pax = tar::Header::new_ustar();
+        pax.set_entry_type(tar::EntryType::XHeader);
+        pax.set_size(extended.len() as u64);
+        pax.set_mode(0o644);
+        tar.append_data(&mut pax, "PaxHeader", &extended[..])
+            .unwrap();
+        let mut header = tar::Header::new_ustar();
+        header.set_size(1);
+        header.set_mode(0o755);
+        tar.append_data(&mut header, "runtime/chrome", &b"x"[..])
             .unwrap();
         let bytes = tar.into_inner().unwrap().finish().unwrap();
         assert!(check(&bytes, 8192).is_err());

@@ -106,6 +106,18 @@ class PortableRuntimeFixture(unittest.TestCase):
                     fixture.resolve_runtime_files(build, [dependency])
             self.assertEqual(fixture.resolve_runtime_files(build, ['./file.dat', 'file.dat']), ['file.dat'])
 
+    def test_runtime_inventory_rejects_case_conflicts_in_directory_components(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            build = Path(tmp).resolve()
+            (build / 'Locales').mkdir()
+            if (build / 'locales').exists():
+                self.skipTest('The test filesystem already rejects distinct directory spellings')
+            (build / 'locales').mkdir()
+            (build / 'Locales/a.pak').write_bytes(b'a')
+            (build / 'locales/b.pak').write_bytes(b'b')
+            with self.assertRaisesRegex(RuntimeError, 'names conflict'):
+                fixture.resolve_runtime_files(build, ['Locales', 'locales'])
+
     def test_archive_rejects_same_size_changes_to_staged_files(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp).resolve()
