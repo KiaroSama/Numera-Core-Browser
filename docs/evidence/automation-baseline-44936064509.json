@@ -1,0 +1,173 @@
+{
+  "schema_revision": 1,
+  "workflow_run": 44936064509,
+  "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44936064509",
+  "source_commit": "40517be7ee7bb3118e4b5aef206a569a0fcb3cf7",
+  "result": "PASS",
+  "scope": "Runner-installed Chrome compared in controlled headless and headed sessions. The headed test verified local navigation and an OS window matched to the process launched by ChromeDriver.",
+  "source_built_engine_acceptance": "NOT_RUN",
+  "packaged_headed_runtime": "NOT_RUN",
+  "physical_gpu_and_accessibility": "NOT_RUN",
+  "prior_run_failure": {
+    "run_id": 44935547387,
+    "source_commit": "7a91678bfc1b70bf0280f91492a873610549eff3",
+    "cause": "The standard Ubuntu image provided Xvfb but lacked the xwininfo client tool.",
+    "linux_tools": {
+      "package": "x11-utils",
+      "version": "7.7+6build2",
+      "source": "https://packages.ubuntu.com/noble/amd64/x11-utils/filelist"
+    }
+  },
+  "platforms": [
+    {
+      "id": 14719842306,
+      "size": 26158,
+      "digest": "8e26c4223b34340f85b7937cc5678660877b473914e252a026d2c137c0b7eaa8",
+      "host": "Linux",
+      "job_id": 136942823207,
+      "expires_at": "2026-11-28T18:33:21Z",
+      "report": {
+        "schema_revision": 1,
+        "source_commit": "40517be7ee7bb3118e4b5aef206a569a0fcb3cf7",
+        "runner_image": "20261116.133.1",
+        "host": "Linux",
+        "baseline": "runner-installed Google Chrome",
+        "owned_engine_used": false,
+        "source_build": "NOT_RUN",
+        "result": "PASS",
+        "browser_sha256": "aea09d69ce7f24d5901f6bfb15dd44d0c856e793e0a498f8d8393ec7d2c308ec",
+        "chromedriver_sha256": "758da273bc800d2c04f43f9ffe9a3e9f4288ea18cc0f8becfe1135e221853011",
+        "renderer_fixture": "PASS",
+        "webdriver": {
+          "result": "PASS",
+          "driver_version": "157.0.8103.78",
+          "scope": "ChromeDriver W3C HTTP session and a controlled local document"
+        },
+        "automation_clients": {
+          "result": "PASS",
+          "node": "24.22.3",
+          "browserVersion": "157.0.8103.78",
+          "tests": {
+            "selenium": {
+              "version": "4.53.0",
+              "transport": "WebDriver",
+              "checks": [
+                "navigation",
+                "unicode-input",
+                "click-and-wait",
+                "nested-frame",
+                "png-screenshot"
+              ]
+            },
+            "puppeteer": {
+              "version": "25.18.1",
+              "transport": "Chrome DevTools Protocol",
+              "checks": [
+                "navigation",
+                "unicode-input",
+                "click-and-wait",
+                "nested-frame",
+                "png-screenshot"
+              ]
+            },
+            "playwright": {
+              "version": "1.65.1",
+              "transport": "connectOverCDP",
+              "checks": [
+                "navigation",
+                "unicode-input",
+                "click-and-wait",
+                "nested-frame",
+                "png-screenshot"
+              ]
+            }
+          },
+          "scope": "Controlled headless navigation, Unicode input, frame, click and screenshot for each client"
+        },
+        "headed_browser": {
+          "result": "PASS",
+          "driver_version": "157.0.8103.78",
+          "scope": "Headed W3C navigation and an OS window owned by the browser process",
+          "native_window": "x11-viewable-window-with-browser-pid"
+        },
+        "timestamp": "2026-11-21T18:33:21.777905+00:00"
+      },
+      "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44936064509/artifacts/14719842306"
+    },
+    {
+      "id": 14719941521,
+      "size": 18796,
+      "digest": "ba5d070e1507b794be392403fe75d8733393bdcaadbc9fa651279a4ebae561e3",
+      "host": "Windows",
+      "job_id": 136942823524,
+      "expires_at": "2026-11-28T18:33:02Z",
+      "report": {
+        "schema_revision": 1,
+        "source_commit": "40517be7ee7bb3118e4b5aef206a569a0fcb3cf7",
+        "runner_image": "20261116.315.1",
+        "host": "Windows",
+        "baseline": "runner-installed Google Chrome",
+        "owned_engine_used": false,
+        "source_build": "NOT_RUN",
+        "result": "PASS",
+        "browser_sha256": "a527591d96df1f30bdabf5599d257b8b80c83d90c405ff997ddbc202ba5e9ada",
+        "chromedriver_sha256": "e32106adb49b38ed290b89a9e5b039f48a1fb652c0bd94dd880b8d896ee0c966",
+        "renderer_fixture": "PASS",
+        "webdriver": {
+          "result": "PASS",
+          "driver_version": "157.0.8103.78",
+          "scope": "ChromeDriver W3C HTTP session and a controlled local document"
+        },
+        "automation_clients": {
+          "result": "PASS",
+          "node": "24.22.3",
+          "browserVersion": "157.0.8103.79",
+          "tests": {
+            "selenium": {
+              "version": "4.53.0",
+              "transport": "WebDriver",
+              "checks": [
+                "navigation",
+                "unicode-input",
+                "click-and-wait",
+                "nested-frame",
+                "png-screenshot"
+              ]
+            },
+            "puppeteer": {
+              "version": "25.18.1",
+              "transport": "Chrome DevTools Protocol",
+              "checks": [
+                "navigation",
+                "unicode-input",
+                "click-and-wait",
+                "nested-frame",
+                "png-screenshot"
+              ]
+            },
+            "playwright": {
+              "version": "1.65.1",
+              "transport": "connectOverCDP",
+              "checks": [
+                "navigation",
+                "unicode-input",
+                "click-and-wait",
+                "nested-frame",
+                "png-screenshot"
+              ]
+            }
+          },
+          "scope": "Controlled headless navigation, Unicode input, frame, click and screenshot for each client"
+        },
+        "headed_browser": {
+          "result": "PASS",
+          "driver_version": "157.0.8103.78",
+          "scope": "Headed W3C navigation and an OS window owned by the browser process",
+          "native_window": "windows-main-window-with-browser-pid"
+        },
+        "timestamp": "2026-11-21T18:33:02.030544+00:00"
+      },
+      "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44936064509/artifacts/14719941521"
+    }
+  ]
+}

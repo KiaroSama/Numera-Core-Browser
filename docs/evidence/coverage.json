@@ -2,7 +2,7 @@
   "schema_revision": 1,
   "timestamp": "2026-11-10T17:33:44.732611+00:00",
   "current_review": {
-    "observed_at": "2026-11-21T18:10:00+00:00",
+    "observed_at": "2026-11-21T18:35:45+00:00",
     "active_targets": [
       "windows-x86_64",
       "linux-x86_64"
@@ -203,6 +203,17 @@
             "evidence": "docs/evidence/chromium-staged-44846110371-segment-3.json",
             "source_commit": "ee1ebb7f22c665407ffae31a6e438a45fb85f208",
             "workflow_run": 44846110371
+          },
+          {
+            "name": "Runner-browser headed navigation and native window matched to the launched process",
+            "result": "PASS",
+            "platforms": [
+              "windows-x86_64",
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/automation-baseline-44936064509.json",
+            "source_commit": "40517be7ee7bb3118e4b5aef206a569a0fcb3cf7",
+            "workflow_run": 44936064509
           }
         ]
       },
