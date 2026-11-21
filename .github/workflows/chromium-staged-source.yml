@@ -20,6 +20,10 @@ on:
         description: Optional evidence filename for a reviewed stable Chromium candidate
         type: string
         default: ''
+      verified_source_export:
+        description: Optional verified source export filename to retain a tested development runtime
+        type: string
+        default: ''
 permissions:
   contents: read
   actions: read
@@ -40,6 +44,7 @@ jobs:
       reviewed_checkpoint_run: ${{ inputs.reviewed_checkpoint_run }}
       reviewed_checkpoint_segment: ${{ inputs.reviewed_checkpoint_segment }}
       reviewed_upstream_evidence: ${{ inputs.reviewed_upstream_evidence }}
+      verified_source_export: ${{ inputs.verified_source_export }}
   second:
     needs: first
     if: needs.first.outputs.result == 'PARTIAL'
@@ -51,6 +56,7 @@ jobs:
       previous: 1
       checkpoint_sha: ${{ needs.first.outputs.checkpoint_sha }}
       reviewed_upstream_evidence: ${{ inputs.reviewed_upstream_evidence }}
+      verified_source_export: ${{ inputs.verified_source_export }}
   third:
     needs: second
     if: needs.second.outputs.result == 'PARTIAL'
@@ -62,6 +68,7 @@ jobs:
       previous: 2
       checkpoint_sha: ${{ needs.second.outputs.checkpoint_sha }}
       reviewed_upstream_evidence: ${{ inputs.reviewed_upstream_evidence }}
+      verified_source_export: ${{ inputs.verified_source_export }}
   fourth:
     needs: third
     if: needs.third.outputs.result == 'PARTIAL'
@@ -73,3 +80,20 @@ jobs:
       previous: 3
       checkpoint_sha: ${{ needs.third.outputs.checkpoint_sha }}
       reviewed_upstream_evidence: ${{ inputs.reviewed_upstream_evidence }}
+      verified_source_export: ${{ inputs.verified_source_export }}
+  attest-development-runtime:
+    if: >-
+      always() && inputs.verified_source_export != '' &&
+      (needs.first.outputs.result == 'PASS' && needs.first.result == 'success' ||
+       needs.second.outputs.result == 'PASS' && needs.second.result == 'success' ||
+       needs.third.outputs.result == 'PASS' && needs.third.result == 'success' ||
+       needs.fourth.outputs.result == 'PASS' && needs.fourth.result == 'success')
+    needs: [first, second, third, fourth]
+    uses: ./.github/workflows/chromium-development-provenance.yml
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      attestations: write
+    with:
+      target: ${{ inputs.target }}

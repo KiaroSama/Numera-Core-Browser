@@ -1,0 +1,68 @@
+name: Attest a native Chromium development runtime
+on:
+  workflow_call:
+    inputs:
+      target:
+        type: string
+        required: true
+jobs:
+  attest:
+    if: >-
+      github.repository == 'KiaroSama/Numera-Core-Browser' && github.event.repository.private == false &&
+      github.ref == 'refs/heads/main' && (inputs.target == 'ubuntu-24.04' || inputs.target == 'windows-2025-vs2026')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: development-chromium-runtime-${{ inputs.target }}
+          path: build/tested-runtime
+      - name: Confirm the tested runtime and source subjects
+        shell: bash
+        env:
+          RUNTIME_TARGET: ${{ inputs.target }}
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path('build/tested-runtime')
+          manifest = json.loads((root / 'development-runtime.json').read_text(encoding='utf-8'))
+          targets = {'ubuntu-24.04': 'x86_64-unknown-linux-gnu',
+                     'windows-2025-vs2026': 'x86_64-pc-windows-msvc'}
+          if manifest['trusted_release'] or manifest['build_mode'] != 'development':
+              raise SystemExit('Expected an unapproved development bundle')
+          if (manifest['numera_commit'] != os.environ['GITHUB_SHA']
+                  or manifest['workflow_run'] != int(os.environ['GITHUB_RUN_ID'])
+                  or manifest['target'] != targets[os.environ['RUNTIME_TARGET']]):
+              raise SystemExit('The bundle identity differs from its native workflow run')
+          for key, name in [('runtime', 'numera-portable-runtime.tar.gz'), ('numera_source', 'numera-source.zip')]:
+              subject = manifest[key]
+              if subject['file'] != name:
+                  raise SystemExit('Unexpected tested development subject')
+              with (root / name).open('rb') as file:
+                  if hashlib.file_digest(file, 'sha256').hexdigest() != subject['sha256']:
+                      raise SystemExit('The tested development subject digest changed')
+          PY
+      - name: Attest the tested development runtime, source and manifest
+        id: attest
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
+        with:
+          subject-path: |
+            build/tested-runtime/numera-portable-runtime.tar.gz
+            build/tested-runtime/numera-source.zip
+            build/tested-runtime/development-runtime.json
+      - name: Retain the offline development provenance bundle
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: development-chromium-provenance-${{ inputs.target }}
+          path: ${{ steps.attest.outputs.bundle-path }}
+          retention-days: 7
+          if-no-files-found: error

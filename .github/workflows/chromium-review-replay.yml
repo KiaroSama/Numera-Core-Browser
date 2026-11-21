@@ -46,3 +46,14 @@ jobs:
       reviewed_upstream_evidence: ${{ inputs.reviewed_upstream_evidence }}
       verified_source_export: ${{ inputs.verified_source_export }}
       read_only_replay: true
+  attest-development-runtime:
+    if: inputs.verified_source_export != '' && needs.first.outputs.result == 'PASS'
+    needs: first
+    uses: ./.github/workflows/chromium-development-provenance.yml
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      attestations: write
+    with:
+      target: ${{ inputs.target }}
