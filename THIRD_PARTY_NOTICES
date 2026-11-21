@@ -21,3 +21,10 @@ Locked Rust dependencies, exact package checksums, declared SPDX expressions,
 source repositories and complete preserved crate license texts are recorded in
 licenses/dependencies.json and licenses/dependencies/. Development-only external
 tools are not part of the Core runtime and retain their upstream terms.
+
+The headless automation fixtures use the npm packages locked in
+tests/native-automation/package-lock.json. The lock records registry URLs,
+SHA-512 integrity values and declared licenses for the 42 test dependencies.
+GitHub Actions installs them for test execution with package scripts disabled.
+JSZip 3.10.2 is used under its MIT option. Pako 1.0.11 retains its MIT and Zlib
+notices. Package license files remain in their upstream test installations.

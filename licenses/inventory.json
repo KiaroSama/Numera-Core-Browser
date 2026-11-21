@@ -8,6 +8,12 @@
   "assets": [{"path": "assets/logo.svg", "origin": "user-supplied", "status": "authorized for requested project"}],
   "upstream_derived_patches": [{"path": "upstream/chromium/patches/0001-product-name.patch", "license": "BSD-3-Clause", "notice": "upstream/chromium/patches/LICENSE.chromium", "scope": "branding only; no engine binary built"}],
   "rust_dependencies": "licenses/dependencies.json",
+  "automation_fixture_dependencies": {
+    "lock": "tests/native-automation/package-lock.json",
+    "scope": "Hosted headless automation fixtures",
+    "runtime_bundled": false,
+    "license_choices": {"jszip@3.10.2": "MIT"}
+  },
   "bundled_engine_binaries": [],
   "engine_redistribution_review": "BLOCKED: no engine release or complete component inventory exists"
 }
