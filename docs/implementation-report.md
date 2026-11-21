@@ -47,6 +47,8 @@ The corrected fixture passed navigation, mixed Persian and Latin input, delayed 
 
 The pinned Chromium license tool generated notice text and SPDX JSON using the native GN graphs for both platforms. The verified browser inventories report 336 entries on Linux and 338 on Windows, with separate ChromeDriver and Linux sandbox inventories. Review of the exact packaged files and complete corresponding source remains a release gate. [Verified graph inventories](evidence/chromium-licenses-44905192477.json)
 
+The source inventory records 169 checked-out Git revisions on Linux and 157 on Windows, including Chromium itself. Both `DEPS` files matched their official pinned bytes. The inventory covers the Git checkouts and the exact upstream `DEPS` reference for CIPD and GCS inputs. [Verified native source inventories](evidence/chromium-source-inventory-44913884524.json)
+
 ## Open gates
 
 | Gate | Status | Remaining acceptance |

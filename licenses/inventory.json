@@ -17,6 +17,7 @@
   "bundled_engine_binaries": [],
   "chromium_graph_inventory": {
     "evidence": "docs/evidence/chromium-licenses-44905192477.json",
+    "source_revisions_evidence": "docs/evidence/chromium-source-inventory-44913884524.json",
     "targets": ["windows-x86_64", "linux-x86_64"],
     "result": "PASS",
     "redistribution_approved": false
