@@ -34,7 +34,7 @@ class PortableRuntimeFixture(unittest.TestCase):
                     return b'./chromedriver.unstripped\n./libdriver-component.so\n'
                 return b''  # The stripped executable's action has no runtime_deps.
 
-            runtime = scratch / 'Numera portable مسیر' / 'runtime'
+            runtime = scratch / 'Numera extracted مسیر' / 'runtime'
             original_environment = {'CHROME_DEVEL_SANDBOX': '/original/helper'}
             helper = scratch / 'portable-sandbox' / 'numera-source-sandbox'
 
@@ -60,6 +60,9 @@ class PortableRuntimeFixture(unittest.TestCase):
             self.assertEqual(webdriver.call_args.args[1], runtime / 'chromedriver')
             self.assertEqual(original_environment['CHROME_DEVEL_SANDBOX'], '/original/helper')
             self.assertEqual(report['sandbox_helper']['mode'], '4755')
+            package = scratch / 'numera-portable-runtime.tar.gz'
+            self.assertEqual(report['archive']['sha256'], fixture.sha256(package))
+            self.assertEqual(report['archive']['files'], len(names))
             self.assertEqual({path.name for path in runtime.iterdir()}, names)
             inventory = json.loads((output / 'portable-runtime-inventory.json').read_text(encoding='utf-8'))
             self.assertEqual(set(inventory['files']), names)
@@ -102,3 +105,15 @@ class PortableRuntimeFixture(unittest.TestCase):
                 with self.subTest(dependency=dependency), self.assertRaisesRegex(RuntimeError, 'outside'):
                     fixture.resolve_runtime_files(build, [dependency])
             self.assertEqual(fixture.resolve_runtime_files(build, ['./file.dat', 'file.dat']), ['file.dat'])
+
+    def test_archive_rejects_same_size_changes_to_staged_files(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp).resolve()
+            staged = root / 'runtime'
+            staged.mkdir()
+            asset = staged / 'asset.dat'
+            asset.write_bytes(b'pass')
+            inventory = {'files': {'asset.dat': {'bytes': 4, 'sha256': fixture.sha256(asset)}}, 'bytes': 4}
+            asset.write_bytes(b'fail')
+            with self.assertRaisesRegex(RuntimeError, 'not byte-identical'):
+                fixture.extract_portable_archive(staged, root, inventory)

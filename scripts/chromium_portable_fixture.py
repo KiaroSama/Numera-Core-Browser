@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Stage a source-built runtime and verify it from a relocated path."""
+import json
 from pathlib import PurePosixPath
 import shutil
 import stat
 import subprocess
+import tarfile
 
 from chromedriver_fixture import smoke_driver
 from engine_build import install_linux_sandbox, sha256, smoke, stop_tree, write_json
@@ -95,8 +97,35 @@ def stage_portable_runtime(source, scratch, output, host, environment):
     return runtime, layout['binary'], layout['driver']
 
 
+def extract_portable_archive(staged, scratch, inventory):
+    files = inventory['files']
+    if shutil.disk_usage(scratch).free - 2 * inventory['bytes'] < 64 * 1024**2:
+        raise RuntimeError('Insufficient space to write and verify the portable archive')
+    package = scratch / 'numera-portable-runtime.tar.gz'
+    with tarfile.open(package, 'x:gz', compresslevel=3) as archive:
+        for name in files:
+            archive.add(staged / name, arcname=f'runtime/{name}', recursive=False)
+    destination = scratch / 'Numera extracted مسیر'
+    destination.mkdir()
+    expected = {f'runtime/{name}': entry for name, entry in files.items()}
+    with tarfile.open(package, 'r:gz') as archive:
+        members = archive.getmembers()
+        if (len(members) != len(expected) or {member.name for member in members} != set(expected)
+                or any(not member.isfile() or member.mode & 0o7000 or member.size != expected[member.name]['bytes']
+                       for member in members)):
+            raise RuntimeError('Portable archive members differ from the staged file inventory')
+        archive.extractall(destination, members, filter='data')
+    if any(sha256(destination / name) != entry['sha256'] for name, entry in expected.items()):
+        raise RuntimeError('Extracted runtime is not byte-identical to the staged files')
+    return destination / 'runtime', {'format': 'tar.gz', 'files': len(files),
+                                    'bytes': package.stat().st_size, 'sha256': sha256(package)}
+
+
 def smoke_portable_runtime(source, scratch, output, host, environment):
-    runtime, binary, driver = stage_portable_runtime(source, scratch, output, host, environment)
+    staged, binary, driver = stage_portable_runtime(source, scratch, output, host, environment)
+    inventory_path = output / 'portable-runtime-inventory.json'
+    inventory = json.loads(inventory_path.read_text(encoding='utf-8'))
+    runtime, archive = extract_portable_archive(staged, scratch, inventory)
     build = source / 'out/Numera'
     original = build.with_name('Numera-fixture-held')
     if original.exists() or original.is_symlink():
@@ -120,8 +149,8 @@ def smoke_portable_runtime(source, scratch, output, host, environment):
         result = smoke_driver(runtime / binary, runtime / driver, profile, evidence, relocated_environment, stop_tree)
     finally:
         original.rename(build)
-    report = {'result': 'PASS', 'scope': 'Relocated runtime and profile, controlled renderer and WebDriver tests',
-              'runtime_inventory_sha256': sha256(output / 'portable-runtime-inventory.json'), 'webdriver': result}
+    report = {'result': 'PASS', 'scope': 'Extracted relocated runtime and profile, controlled renderer and WebDriver tests',
+              'archive': archive, 'runtime_inventory_sha256': sha256(inventory_path), 'webdriver': result}
     if sandbox_helper is not None:
         report['sandbox_helper'] = {**sandbox_helper, 'staged_source': 'chrome_sandbox',
                                     'fixture_location': 'Separate space-free privileged fixture directory'}
