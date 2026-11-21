@@ -205,6 +205,17 @@
             "evidence": "docs/evidence/chromium-replay-44910785784.json",
             "source_commit": "ef0188e341784bfc5cd82ee100269218072e838e",
             "workflow_run": 44910785784
+          },
+          {
+            "name": "Runner-browser comparison with dedicated worker, exact download and persistent isolated profiles",
+            "result": "PASS",
+            "platforms": [
+              "windows-x86_64",
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/chromium-profile-baseline-44948395760.json",
+            "source_commit": "f74908f79a492d181769719a9258eb72813cdf08",
+            "workflow_run": 44948395760
           }
         ]
       },

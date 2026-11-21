@@ -1,0 +1,56 @@
+{
+  "schema_revision": 1,
+  "workflow_run": 44948395760,
+  "workflow_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44948395760",
+  "source_commit": "f74908f79a492d181769719a9258eb72813cdf08",
+  "workflow_conclusion": "success",
+  "scope": "Controlled loopback page and a runner-installed Chrome/ChromeDriver pair on native x86-64.",
+  "owned_engine_used": false,
+  "production_session_restore": "NOT_RUN",
+  "platforms": [
+    {
+      "id": 14724289498,
+      "host": "Windows",
+      "job": 136980688767,
+      "size": 20029,
+      "expires": "2026-11-28T20:51:48Z",
+      "report_sha256": "9bb109c964475edcc77a5d03a958403876b4ee06606c4d020ef0d7a6adb75b96",
+      "runner_image": "20261116.315.1",
+      "browser_sha256": "a527591d96df1f30bdabf5599d257b8b80c83d90c405ff997ddbc202ba5e9ada",
+      "chromedriver_sha256": "e32106adb49b38ed290b89a9e5b039f48a1fb652c0bd94dd880b8d896ee0c966",
+      "profile_data": {
+        "result": "PASS",
+        "computed_style": "PASS",
+        "dedicated_worker": "PASS",
+        "download_bytes": 37,
+        "profile_restart": "PASS",
+        "profile_isolation": "PASS",
+        "profile_and_download_paths": "Unicode with spaces"
+      },
+      "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44948395760/artifacts/14724289498",
+      "transport_sha256": "sha256:8ec1f31432c741b40e0e6b115c2f11368998b23008596365a7971df9a09259f0"
+    },
+    {
+      "id": 14724726165,
+      "host": "Linux",
+      "job": 136980689103,
+      "size": 27458,
+      "expires": "2026-11-28T20:51:42Z",
+      "report_sha256": "67977307ec1e88be9925b7077a15011988728d0367949482d4decc5a0988dcab",
+      "runner_image": "20261116.133.1",
+      "browser_sha256": "aea09d69ce7f24d5901f6bfb15dd44d0c856e793e0a498f8d8393ec7d2c308ec",
+      "chromedriver_sha256": "758da273bc800d2c04f43f9ffe9a3e9f4288ea18cc0f8becfe1135e221853011",
+      "profile_data": {
+        "result": "PASS",
+        "computed_style": "PASS",
+        "dedicated_worker": "PASS",
+        "download_bytes": 37,
+        "profile_restart": "PASS",
+        "profile_isolation": "PASS",
+        "profile_and_download_paths": "Unicode with spaces"
+      },
+      "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44948395760/artifacts/14724726165",
+      "transport_sha256": "sha256:7df91850ce5f767e42f6b845b91f6cae89221792708c3e436653eb1c3b9fea66"
+    }
+  ]
+}
