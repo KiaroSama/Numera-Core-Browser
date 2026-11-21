@@ -60,7 +60,7 @@ def main():
         subprocess.run([sys.executable, 'scripts/check-contracts.py', '--binary', str(binary)],
                        cwd=extracted, check=True, timeout=120)
     (output / f'{ARTIFACT}.sha256').write_text(
-        f'{hashlib.sha256(package.read_bytes()).hexdigest()}  {package.name}\n', encoding='utf-8')
+        f'{hashlib.sha256(package.read_bytes()).hexdigest()}  {package.name}\n', encoding='utf-8', newline='\n')
     log('PASS: extracted NCB-1 contract archive passed real native producer conformance')
 
 
