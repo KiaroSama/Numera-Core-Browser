@@ -12,6 +12,8 @@ import time
 MAX_RESPONSE = 256 * 1024
 STARTED = re.compile(rb'(?m)^ChromeDriver was started successfully on port ([1-9][0-9]{0,4})\.\r?$')
 FIXTURE_TITLE = 'Numera source build fixture'
+DRIVER_ERRORS = {'invalid argument', 'invalid session id', 'no such window', 'session not created',
+                 'timeout', 'unknown error', 'unsupported operation'}
 
 
 def json_command(port, method, path, data=None, timeout=15):
@@ -22,9 +24,19 @@ def json_command(port, method, path, data=None, timeout=15):
         connection.request(method, path, body=body, headers=headers)
         response = connection.getresponse()
         raw = response.read(MAX_RESPONSE + 1)
-        if response.status != 200 or len(raw) > MAX_RESPONSE:
-            raise RuntimeError('Native ChromeDriver rejected the controlled command')
-        value = json.loads(raw)
+        if len(raw) > MAX_RESPONSE:
+            raise RuntimeError('Native ChromeDriver rejected the controlled command (response size limit exceeded)')
+        try:
+            value = json.loads(raw)
+        except (ValueError, RecursionError):
+            value = None
+        if response.status != 200:
+            detail = value.get('value') if isinstance(value, dict) else None
+            error = detail.get('error') if isinstance(detail, dict) else None
+            status = f'HTTP {response.status}'
+            if isinstance(error, str) and error in DRIVER_ERRORS:
+                status += f', {error}'
+            raise RuntimeError(f'Native ChromeDriver rejected the controlled command ({status})')
         if not isinstance(value, dict) or 'value' not in value:
             raise RuntimeError('Native ChromeDriver returned an invalid W3C response')
         return value['value']

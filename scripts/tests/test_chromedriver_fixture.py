@@ -16,9 +16,14 @@ from chromedriver_fixture import MAX_RESPONSE, json_command, smoke_driver, verif
 class FixtureHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         body = json.dumps({'value': {'ready': True}}).encode('utf-8')
+        status = 302 if self.path == '/redirect' else 200
         if self.path == '/oversized':
             body = b' ' * MAX_RESPONSE + body
-        self.send_response(302 if self.path == '/redirect' else 200)
+        if self.path == '/session-failure':
+            status = 500
+            body = json.dumps({'value': {'error': 'session not created',
+                                         'message': 'synthetic-secret-for-untrusted-body'}}).encode('utf-8')
+        self.send_response(status)
         if self.path == '/redirect':
             self.send_header('Location', '/status')
         self.send_header('Content-Length', str(len(body)))
@@ -40,6 +45,9 @@ class DriverFixtureTransport(unittest.TestCase):
                 for path in ('/oversized', '/redirect'):
                     with self.subTest(path=path), self.assertRaisesRegex(RuntimeError, 'controlled command'):
                         json_command(port, 'GET', path)
+                with self.assertRaisesRegex(RuntimeError, 'HTTP 500, session not created') as failure:
+                    json_command(port, 'GET', '/session-failure')
+                self.assertNotIn('synthetic-secret', str(failure.exception))
             finally:
                 server.shutdown()
                 thread.join(timeout=5)
