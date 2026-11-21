@@ -1,13 +1,15 @@
 """Verify the local transport bounds independently of the native driver."""
+from contextlib import nullcontext
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 from pathlib import Path
 import sys
 from threading import Thread
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from chromedriver_fixture import MAX_RESPONSE, json_command
+from chromedriver_fixture import MAX_RESPONSE, json_command, smoke_driver
 
 
 class FixtureHandler(BaseHTTPRequestHandler):
@@ -40,3 +42,28 @@ class DriverFixtureTransport(unittest.TestCase):
             finally:
                 server.shutdown()
                 thread.join(timeout=5)
+
+    def test_headed_probe_runs_in_the_validated_browser_session(self):
+        requests = []
+        browser_pid = 1234
+        session_id = 'a' * 32
+
+        def respond(port, method, path, data=None, timeout=15):
+            requests.append((method, path, data))
+            if path == '/session':
+                return {'sessionId': session_id, 'capabilities': {'goog:processID': browser_pid}}
+            if path.endswith('/execute/sync'):
+                return 'NUMERA_RENDERER_FIXTURE_PASS'
+            return None
+
+        with (patch('chromedriver_fixture.local_driver', return_value=nullcontext((123, '157.0.8103.78'))),
+              patch('chromedriver_fixture.json_command', side_effect=respond),
+              patch('chromedriver_fixture.verify_native_window', return_value='test-window') as verify):
+            report = smoke_driver(Path('/browser'), Path('/driver'), Path('profile'), Path('evidence'),
+                                  {'DISPLAY': ':1'}, None, headed=True)
+        options = requests[0][2]['capabilities']['alwaysMatch']['goog:chromeOptions']
+        self.assertEqual(options['binary'], str(Path('/browser')))
+        self.assertFalse(any(argument.startswith('--headless') for argument in options['args']))
+        verify.assert_called_once_with(browser_pid, {'DISPLAY': ':1'})
+        self.assertEqual(report['native_window'], 'test-window')
+        self.assertEqual(requests[-1][:2], ('DELETE', f'/session/{session_id}'))

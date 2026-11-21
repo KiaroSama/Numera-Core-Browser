@@ -4,12 +4,14 @@ from contextlib import contextmanager, suppress
 import http.client
 import json
 from pathlib import Path
+import platform
 import re
 import subprocess
 import time
 
 MAX_RESPONSE = 256 * 1024
 STARTED = re.compile(rb'(?m)^ChromeDriver was started successfully on port ([1-9][0-9]{0,4})\.\r?$')
+FIXTURE_TITLE = 'Numera source build fixture'
 
 
 def json_command(port, method, path, data=None, timeout=15):
@@ -69,15 +71,45 @@ def local_driver(driver, logfile, environment, stop_tree):
             process.wait(timeout=5)
 
 
-def smoke_driver(binary, driver, scratch, output, environment, stop_tree):
+def verify_native_window(browser_pid, environment):
+    if type(browser_pid) is not int or browser_pid <= 0:
+        raise RuntimeError('Native ChromeDriver did not identify the headed browser process')
+    host = platform.system()
+    deadline = time.monotonic() + 12
+    while time.monotonic() < deadline:
+        if host == 'Linux':
+            tree = subprocess.check_output(['xwininfo', '-root', '-tree'], env=environment, timeout=3,
+                                           encoding='utf-8')
+            window_pattern = rf'^\s*(0x[0-9a-f]+) "{re.escape(FIXTURE_TITLE)}(?: - [^"]+)?":'
+            for window in re.findall(window_pattern, tree, re.MULTILINE):
+                owner = subprocess.check_output(['xprop', '-id', window, '_NET_WM_PID'], env=environment,
+                                                timeout=3, encoding='utf-8')
+                if owner.strip() == f'_NET_WM_PID(CARDINAL) = {browser_pid}':
+                    return 'x11-window-with-browser-pid'
+        elif host == 'Windows':
+            # The PID comes from this session and is validated as an integer before use.
+            command = (f'$Browser = Get-Process -Id {browser_pid} -ErrorAction Stop\n'
+                       'if ($Browser.MainWindowHandle -ne 0) { $Browser.MainWindowTitle }')
+            title = subprocess.check_output(['pwsh', '-NoProfile', '-NonInteractive', '-Command', command],
+                                            env=environment, timeout=5, encoding='utf-8').strip()
+            if title == FIXTURE_TITLE or title.startswith(FIXTURE_TITLE + ' - '):
+                return 'windows-main-window-with-browser-pid'
+        else:
+            raise RuntimeError('The headed fixture requires native Linux or Windows')
+        time.sleep(0.2)
+    raise RuntimeError('The headed browser did not expose the controlled native window')
+
+
+def smoke_driver(binary, driver, scratch, output, environment, stop_tree, *, headed=False):
     session = None
     with local_driver(driver, output / 'chromedriver-fixture.log', environment, stop_tree) as (port, version):
         try:
             profile = scratch / 'driver-fixture-profile'
+            arguments = ['--no-first-run', '--no-default-browser-check', '--user-data-dir=' + str(profile)]
+            if not headed:
+                arguments.insert(0, '--headless=new')
             session_data = json_command(port, 'POST', '/session', {'capabilities': {'alwaysMatch': {
-                'browserName': 'chrome', 'goog:chromeOptions': {'binary': str(binary), 'args': [
-                    '--headless=new', '--no-first-run', '--no-default-browser-check', '--user-data-dir=' + str(profile)
-                ]}
+                'browserName': 'chrome', 'goog:chromeOptions': {'binary': str(binary), 'args': arguments}
             }}}, timeout=45)
             session_id = session_data.get('sessionId') if isinstance(session_data, dict) else None
             if not isinstance(session_id, str) or not re.fullmatch(r'[0-9a-fA-F]{32,64}', session_id):
@@ -89,8 +121,13 @@ def smoke_driver(binary, driver, scratch, output, environment, stop_tree):
                 'script': "return document.getElementById('result').textContent;", 'args': []})
             if actual != 'NUMERA_RENDERER_FIXTURE_PASS':
                 raise RuntimeError('Native WebDriver did not observe the renderer fixture marker')
-            return {'result': 'PASS', 'driver_version': version,
-                    'scope': 'ChromeDriver W3C HTTP session and a controlled local document'}
+            report = {'result': 'PASS', 'driver_version': version,
+                      'scope': 'ChromeDriver W3C HTTP session and a controlled local document'}
+            if headed:
+                process_id = session_data.get('capabilities', {}).get('goog:processID')
+                report['native_window'] = verify_native_window(process_id, environment)
+                report['scope'] = 'Headed W3C navigation and an OS window owned by the browser process'
+            return report
         finally:
             if session is not None:
                 with suppress(OSError, ValueError, RuntimeError, http.client.HTTPException):
