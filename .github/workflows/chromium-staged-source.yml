@@ -13,8 +13,9 @@ on:
         default: ''
       reviewed_checkpoint_segment:
         description: Segment of the prior run to restore when a run ID is provided
-        type: number
-        default: 2
+        type: choice
+        options: ['1', '2', '3']
+        default: '2'
 permissions:
   contents: read
   actions: read

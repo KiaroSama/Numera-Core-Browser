@@ -21,8 +21,8 @@ on:
         type: string
         default: ''
       reviewed_checkpoint_segment:
-        type: number
-        default: 2
+        type: string
+        default: '2'
       read_only_replay:
         type: boolean
         default: false
