@@ -44,15 +44,19 @@ def main():
                     or any(entry.external_attr >> 16 & 0o170000 == 0o120000 for entry in files)):
                 raise RuntimeError('Contract archive does not contain exactly the expected regular source files')
             archive.extractall(directory, files)
-        extracted = Path(directory) / ARTIFACT
+        # A temporary root can be expressed through a symlink or Windows 8.3
+        # alias. Compare both sides using the actual extraction directory.
+        extracted = (Path(directory) / ARTIFACT).resolve(strict=True)
         contracts = extracted / 'contracts'
         manifest = json.loads((contracts / 'v1/manifest.json').read_text(encoding='utf-8'))
         if manifest['artifact'] != ARTIFACT:
             raise RuntimeError('Contract archive identity differs from the canonical manifest')
         for name, digest in manifest['sha256'].items():
             path = contracts / ('v1' if name.endswith('.schema.json') else '') / name
-            if not path.resolve().is_relative_to(contracts) or hashlib.sha256(path.read_bytes()).hexdigest() != digest:
-                raise RuntimeError('Archived schema or fixture differs from the canonical manifest')
+            if not path.resolve(strict=True).is_relative_to(contracts):
+                raise RuntimeError('Canonical manifest path escapes the contract directory')
+            if hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+                raise RuntimeError('Archived contract member does not match its canonical SHA-256')
         subprocess.run([sys.executable, 'scripts/check-contracts.py', '--binary', str(binary)],
                        cwd=extracted, check=True, timeout=120)
     (output / f'{ARTIFACT}.sha256').write_text(
