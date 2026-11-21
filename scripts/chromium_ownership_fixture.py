@@ -66,13 +66,42 @@ def capture_startup_sites(source, output):
         (output / 'chromium-startup-sites.json').write_text(json.dumps(records) + '\n', encoding='utf-8')
 
 
+def capture_process_shape(worker, profile, output):
+    counts = {'browser': 0, 'renderer': 0, 'gpu-process': 0, 'utility': 0, 'other': 0}
+    root_arguments = None
+    try:
+        observed = psutil.Process(worker.pid).children(recursive=True)
+    except (psutil.NoSuchProcess, psutil.AccessDenied):
+        observed = []
+    for process in observed:
+        try:
+            arguments = process.cmdline()[1:]
+            parent_pid = process.ppid()
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+        role = next((arg.partition('=')[2] for arg in arguments if arg.startswith('--type=')), 'browser')
+        counts[role if role in counts else 'other'] += 1
+        if parent_pid == worker.pid and role == 'browser':
+            root_arguments = {
+                'headless': '--headless=new' in arguments,
+                'auto_debugging_port': '--remote-debugging-port=0' in arguments,
+                'explicit_profile': any(arg.startswith('--user-data-dir=') and
+                                        Path(arg.partition('=')[2]) == profile for arg in arguments),
+            }
+    summary = {'process_roles': counts, 'browser_arguments': root_arguments,
+               'profile_created': profile.is_dir(), 'local_state_created': (profile / 'Local State').is_file(),
+               'debugger_port_created': (profile / 'DevToolsActivePort').is_file()}
+    (output / 'chromium-ownership-startup.json').write_text(json.dumps(summary) + '\n', encoding='utf-8')
+
+
 def smoke_browser_ownership(browser, scratch, output, environment):
     suffix = '.exe' if platform.system() == 'Windows' else ''
     supervisor = (Path('target/debug') / f'numera-process-fixture{suffix}').resolve(strict=True)
     root = scratch / 'Rust browser ownership'
     root.mkdir()
     fixture = Path('tests/fixtures/engine-smoke.html').resolve(strict=True).as_uri()
-    port_file = root / 'داده‌های مرورگر' / 'DevToolsActivePort'
+    profile = root / 'داده‌های مرورگر'
+    port_file = profile / 'DevToolsActivePort'
     with (output / 'chromium-ownership.log').open('wb') as log:
         worker = subprocess.Popen([str(supervisor), 'chromium-owner', str(root), str(browser), fixture],
                                   env=environment, stdin=subprocess.PIPE, stdout=log, stderr=subprocess.STDOUT)
@@ -81,6 +110,7 @@ def smoke_browser_ownership(browser, scratch, output, environment):
             observation, equivalent_url = observe_browser(port_file, fixture)
             while observation != 'rendered':
                 if worker.poll() is not None or time.monotonic() >= deadline:
+                    capture_process_shape(worker, profile, output)
                     raise RuntimeError(f'The Rust ownership fixture did not observe the controlled page ({observation})')
                 time.sleep(0.1)
                 observation, equivalent_url = observe_browser(port_file, fixture)
