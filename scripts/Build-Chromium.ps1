@@ -10,7 +10,8 @@ param(
     [switch]$DebugBuild,
     [switch]$BuildDriver,
     [switch]$CompilerCacheProbe,
-    [ValidateSet('ccache', 'sccache')][string]$ProbeCacheTool = 'ccache'
+    [ValidateSet('ccache', 'sccache')][string]$ProbeCacheTool = 'ccache',
+    [string]$ReviewedGraphLock
 )
 $ErrorActionPreference = 'Stop'
 function Log([string]$Level, [string]$Message) {
@@ -33,7 +34,13 @@ try {
     }
     if ($SourceRoot -match '\s' -or -not [IO.Path]::IsPathFullyQualified($SourceRoot)) { throw 'Provide an absolute scratch source path without spaces' }
     $RepositoryRoot = Split-Path $PSScriptRoot -Parent
-    $Lock = Get-Content (Join-Path $RepositoryRoot 'upstream/chromium/lock.json') -Raw | ConvertFrom-Json
+    $LockPath = Join-Path $RepositoryRoot 'upstream/chromium/lock.json'
+    if ($ReviewedGraphLock) {
+        if (-not $CompilerCacheProbe -or $env:GITHUB_REF -ne 'refs/heads/main' -or
+            -not [IO.Path]::IsPathFullyQualified($ReviewedGraphLock)) { throw 'A stable candidate override is restricted to a graph probe on main' }
+        $LockPath = $ReviewedGraphLock
+    }
+    $Lock = Get-Content -LiteralPath $LockPath -Raw -Encoding utf8 | ConvertFrom-Json
     $HostPlatform = if ($IsWindows) { 'windows' } elseif ($IsLinux) { 'linux' }
     else { throw 'Chromium source builds are supported on Windows and Linux only' }
     if ($env:RUNNER_ARCH -ne 'X64') { throw 'Chromium source builds require an x86-64 runner' }

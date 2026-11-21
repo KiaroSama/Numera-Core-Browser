@@ -67,11 +67,13 @@ def install_tool(directory, release):
     return path
 
 
-def compile_graph(root, environment, output, cache_tool='ccache'):
+def compile_graph(root, environment, output, cache_tool='ccache', *, review_lock=None):
     if shutil.disk_usage(root.parent).free < 80_000_000_000:
         raise RuntimeError('Real-graph probe requires at least 80 GB free before acquisition')
     command = ['pwsh', '-NoProfile', '-File', 'scripts/Build-Chromium.ps1', '-SourceRoot', str(root),
                '-Phase', 'Generate', '-CompilerCacheProbe', '-ProbeCacheTool', cache_tool, '-ComponentBuild', '-DebugBuild']
+    if review_lock is not None:
+        command.extend(('-ReviewedGraphLock', str(review_lock)))
     with (output / 'graph.log').open('wb') as log_file:
         child = subprocess.Popen(command, env=environment, stdout=log_file, stderr=subprocess.STDOUT)
         deadline = time.monotonic() + 40 * 60

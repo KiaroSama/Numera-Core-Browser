@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Generate review evidence with the pinned Chromium licensing tool and GN graph."""
+import argparse
 import json
 import os
 from pathlib import Path
@@ -13,6 +14,31 @@ from chromium_cache_probe import RELEASES, REPOSITORY, compile_graph, install_to
 from chromium_portable_fixture import describe_portable_runtime
 from engine_build import now, sha256, write_json
 from logging_util import log
+
+
+def reviewed_stable_lock(lock, evidence):
+    error = 'The candidate needs matched official version, tag and branding evidence'
+    try:
+        versions = evidence['observation']['versions']['chromium']
+        checks = {item['version']: item for item in evidence['chromium_active_target_tag_checks']}
+        if evidence['engine_approved'] is not False or evidence['source_build'] != 'NOT_RUN':
+            raise RuntimeError(error)
+        pins = {}
+        for platform_name, feed_name in (('windows', 'win'), ('linux', 'linux')):
+            version = versions[feed_name]['version']
+            check = checks[version]
+            if (not re.fullmatch(r'[0-9]+(?:\.[0-9]+){3}', version)
+                    or not re.fullmatch(r'[0-9a-f]{40}', check['revision'])
+                    or not re.fullmatch(r'[0-9a-f]{64}', check['branding_source_sha256'])
+                    or check['tag_url'] != f"https://chromium.googlesource.com/chromium/src/+/refs/tags/{version}"
+                    or check['original_patch_applies'] is not True):
+                raise RuntimeError(error)
+            pins[platform_name] = {'version': version, 'revision': check['revision'],
+                                   'branding_source_sha256': check['branding_source_sha256']}
+    except (KeyError, TypeError, ValueError) as failure:
+        raise RuntimeError(error) from failure
+    return dict(lock, platform_pins=pins, upstream_version=pins['windows']['version'],
+                upstream_revision=pins['windows']['revision'], status='candidate-not-built', approved=False)
 
 
 def git_source_inventory(root, source, output, pin, environment):
@@ -50,6 +76,9 @@ def git_source_inventory(root, source, output, pin, environment):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--reviewed-candidate', metavar='EVIDENCE_FILENAME')
+    args = parser.parse_args()
     host = platform.system()
     event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text(encoding='utf-8'))
     if (os.environ.get('GITHUB_ACTIONS') != 'true' or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted'
@@ -65,15 +94,29 @@ def main():
                    {'GH_TOKEN', 'GITHUB_TOKEN', 'ACTIONS_RUNTIME_TOKEN', 'ACTIONS_ID_TOKEN_REQUEST_TOKEN'}}
     environment.update(DEPOT_TOOLS_UPDATE='0', DEPOT_TOOLS_WIN_TOOLCHAIN='0', PYTHONUTF8='1')
     environment['PATH'] = os.pathsep.join((str(tools), str(root / 'depot_tools'), environment['PATH']))
-    lock = Path('upstream/chromium/lock.json')
-    pin = json.loads(lock.read_text(encoding='utf-8'))['platform_pins'][host.lower()]
+    lock_path = Path('upstream/chromium/lock.json')
+    lock = json.loads(lock_path.read_text(encoding='utf-8'))
+    review_lock = None
+    review_record = None
+    if args.reviewed_candidate:
+        if not re.fullmatch(r'upstream-review-\d{4}-\d{2}-\d{2}\.json', args.reviewed_candidate):
+            raise RuntimeError('Select a reviewed upstream evidence filename from docs/evidence')
+        review = Path('docs/evidence') / args.reviewed_candidate
+        lock = reviewed_stable_lock(lock, json.loads(review.read_text(encoding='utf-8')))
+        review_lock = output / 'candidate-source-lock.json'
+        write_json(review_lock, lock)
+        lock_path = review_lock
+        review_record = {'file': review.as_posix(), 'sha256': sha256(review)}
+    pin = lock['platform_pins'][host.lower()]
     report = {'schema_revision': 1, 'source_commit': os.environ['GITHUB_SHA'], 'host': host,
               'runner_image': os.environ['ImageVersion'], 'chromium_revision': pin['revision'],
-              'chromium_version': pin['version'], 'source_lock_sha256': sha256(lock), 'targets': {},
+              'chromium_version': pin['version'], 'source_lock_sha256': sha256(lock_path), 'targets': {},
               'engine_compilation': 'NOT_RUN', 'redistribution_approval': False, 'result': 'BLOCKED'}
+    if review_record is not None:
+        report['candidate_source_review'] = review_record
     try:
         wrapper = install_tool(tools, RELEASES[host][0])
-        compile_graph(root, environment, output, wrapper.stem)
+        compile_graph(root, environment, output, wrapper.stem, review_lock=review_lock)
         source = root / 'checkout/src'
         native = source / 'out/Numera'
         license_tool = source / 'tools/licenses/licenses.py'

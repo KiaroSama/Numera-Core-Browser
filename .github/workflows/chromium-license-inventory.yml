@@ -1,6 +1,11 @@
 name: Chromium graph license inventory
 on:
   workflow_dispatch:
+    inputs:
+      reviewed_candidate:
+        description: Optional upstream-review JSON filename from docs/evidence for a graph-only candidate
+        type: string
+        default: ''
 permissions:
   contents: read
 concurrency:
@@ -24,7 +29,14 @@ jobs:
       - name: Install pinned native tooling dependency
         run: python -m pip install --disable-pip-version-check -r requirements-engine-build.txt
       - name: Collect license evidence from the pinned native graph
-        run: python scripts/chromium_license_inventory.py
+        env:
+          REVIEWED_CANDIDATE: ${{ inputs.reviewed_candidate }}
+        shell: pwsh
+        run: |
+          $Candidate = @()
+          if ($env:REVIEWED_CANDIDATE) { $Candidate = @('--reviewed-candidate', $env:REVIEWED_CANDIDATE) }
+          python scripts/chromium_license_inventory.py @Candidate
+          exit $LASTEXITCODE
       - name: Retain native license review evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
