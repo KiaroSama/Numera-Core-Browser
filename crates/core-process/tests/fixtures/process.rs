@@ -65,6 +65,65 @@ fn main() {
             // Intentionally exit with a descendant alive. The kernel job,
             // not this parent's lifetime, must retain ownership of that child.
         }
+        #[cfg(target_os = "linux")]
+        "linux-detach-parent" => {
+            use std::os::unix::process::CommandExt;
+            #[allow(clippy::zombie_processes)]
+            let spawned = child("leaf", root).process_group(0).spawn().unwrap();
+            await_file(&root.join("leaf-ready"));
+            fs::write(root.join("parent-ready"), spawned.id().to_string()).unwrap();
+        }
+        #[cfg(target_os = "linux")]
+        "linux-owner" => {
+            let mut tree = core_process::linux::OwnedProcessTree::spawn(
+                &std::env::current_exe().unwrap(),
+                &["linux-detach-parent".into(), root.as_os_str().to_owned()],
+                root,
+                &std::collections::BTreeMap::new(),
+            )
+            .unwrap();
+            let start = Instant::now();
+            while !tree.root_exited().unwrap() {
+                assert!(
+                    start.elapsed() < Duration::from_secs(5),
+                    "Linux fixture parent did not exit"
+                );
+                std::thread::sleep(Duration::from_millis(10));
+            }
+            fs::write(root.join("owner-ready"), b"ready").unwrap();
+            await_file(&root.join("stop"));
+            tree.terminate_and_wait(Duration::from_secs(3)).unwrap();
+        }
+        #[cfg(target_os = "linux")]
+        "linux-reject-shared" => {
+            use core_contracts::ErrorCode;
+            use core_process::linux::OwnedProcessTree;
+            let mut existing = child("leaf", root).spawn().unwrap();
+            await_file(&root.join("leaf-ready"));
+            let rejected = OwnedProcessTree::spawn(
+                &std::env::current_exe().unwrap(),
+                &["echo".into(), root.as_os_str().to_owned()],
+                root,
+                &std::collections::BTreeMap::new(),
+            );
+            let was_alive = existing.try_wait().unwrap().is_none();
+            fs::write(root.join("finish"), b"cleanup").unwrap();
+            assert!(existing.wait().unwrap().success());
+            assert!(matches!(rejected, Err(error) if error.code == ErrorCode::OwnershipConflict));
+            assert!(was_alive);
+        }
+        #[cfg(target_os = "linux")]
+        "linux-reject-sigchld" => {
+            use core_contracts::ErrorCode;
+            use core_process::linux::OwnedProcessTree;
+            let rejected = OwnedProcessTree::spawn(
+                &std::env::current_exe().unwrap(),
+                &["echo".into(), root.as_os_str().to_owned()],
+                root,
+                &std::collections::BTreeMap::new(),
+            );
+            assert!(matches!(rejected, Err(error) if error.code == ErrorCode::OwnershipConflict));
+        }
         #[cfg(windows)]
         "breakaway" => {
             use std::os::windows::process::CommandExt;

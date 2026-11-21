@@ -36,7 +36,7 @@ For Windows or Linux x86-64, select the corresponding `development-cli-*` artifa
 | `crates/core-contracts` | Typed NCB-1 messages, strict JSON, schemas and NDJSON bounds |
 | `crates/core-identity` | Coherence validation and deterministic identity keys; no browser overrides |
 | `crates/core-engines` | Package-manifest validation, hashing and truthful empty inventory |
-| `crates/core-process` | Standalone admission claims and a tested Windows atomic job primitive; production session integration remains open |
+| `crates/core-process` | Standalone admission claims and native ownership primitives for Windows jobs and dedicated Linux workers |
 | `crates/core-runtime` | Shared planning, connection/version negotiation and diagnostics |
 | `crates/core-cli` | Standalone CLI and bounded inherited-stdio service |
 | `contracts` | Generated canonical schemas, fixtures and manager theme tokens |

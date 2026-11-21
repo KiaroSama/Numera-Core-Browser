@@ -18,7 +18,11 @@ checksums = {(p["name"], p["version"]): p.get("checksum") for p in lock["package
 allowed = {"MIT", "Apache-2.0", "BSD-3-Clause", "BSD-2-Clause", "Unicode-3.0", "ISC", "Zlib", "CC0-1.0", "Unlicense", "0BSD"}
 # Reviewed exact-version alternative, not an expansion of accepted copyleft
 # licenses. r-efi embeds the complete MIT grant and copyright in AUTHORS.
-alternatives = {("r-efi", "6.0.0", "MIT OR Apache-2.0 OR LGPL-2.1-or-later"): "MIT"}
+alternatives = {
+    ("r-efi", "6.0.0", "MIT OR Apache-2.0 OR LGPL-2.1-or-later"): "MIT",
+    ("rustix", "1.1.6", "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT"): "MIT",
+    ("linux-raw-sys", "0.12.1", "Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT"): "MIT",
+}
 entries = []
 for package in sorted(metadata["packages"], key=lambda p: (p["name"], p["version"])):
     if package["source"] is None:
