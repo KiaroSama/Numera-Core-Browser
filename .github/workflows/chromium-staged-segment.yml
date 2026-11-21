@@ -26,6 +26,9 @@ on:
       reviewed_upstream_evidence:
         type: string
         default: ''
+      verified_source_export:
+        type: string
+        default: ''
       read_only_replay:
         type: boolean
         default: false
@@ -115,6 +118,7 @@ jobs:
           REVIEWED_CHECKPOINT_RUN: ${{ inputs.reviewed_checkpoint_run }}
           REVIEWED_CHECKPOINT_SEGMENT: ${{ inputs.reviewed_checkpoint_segment }}
           REVIEWED_UPSTREAM_EVIDENCE: ${{ inputs.reviewed_upstream_evidence }}
+          VERIFIED_SOURCE_EXPORT: ${{ inputs.verified_source_export }}
           READ_ONLY_REPLAY: ${{ inputs.read_only_replay }}
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
@@ -143,6 +147,15 @@ jobs:
           path: build/chromium-staged-evidence
           retention-days: 7
           if-no-files-found: warn
+      - name: Retain the tested development runtime and matching source references
+        if: inputs.verified_source_export != '' && steps.build.outputs.result == 'PASS'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: development-chromium-runtime-${{ inputs.target }}
+          path: build/chromium-development-runtime
+          compression-level: 0
+          retention-days: 7
+          if-no-files-found: error
       - name: Require a linked build by the fourth segment
         if: inputs.segment == 4 && steps.build.outputs.result == 'PARTIAL'
         shell: pwsh

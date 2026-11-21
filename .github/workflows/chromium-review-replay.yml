@@ -20,6 +20,10 @@ on:
         description: Evidence filename for a candidate checkpoint with a different source lock
         type: string
         default: ''
+      verified_source_export:
+        description: Optional verified source export filename to retain a tested development runtime
+        type: string
+        default: ''
 permissions:
   contents: read
   actions: read
@@ -40,4 +44,5 @@ jobs:
       reviewed_checkpoint_run: ${{ inputs.reviewed_checkpoint_run }}
       reviewed_checkpoint_segment: ${{ inputs.reviewed_checkpoint_segment }}
       reviewed_upstream_evidence: ${{ inputs.reviewed_upstream_evidence }}
+      verified_source_export: ${{ inputs.verified_source_export }}
       read_only_replay: true

@@ -13,6 +13,7 @@ import time
 
 import psutil
 from chromedriver_fixture import smoke_clients, smoke_driver
+from chromium_development_bundle import read_source_export, retain_development_bundle
 from chromium_cache_probe import (REPOSITORY, RELEASES, STAGED_CACHE_CONFIG, compile_graph,
                                   install_tool, pack_cache, restore_cache, sccache_server)
 from chromium_headed_fixture import smoke_headed_browser
@@ -194,6 +195,10 @@ def main():
         lock_sha256 = sha256(lock_path)
         if reviewed is not None and reviewed['context']['source_lock_sha256'] != lock_sha256:
             raise RuntimeError('The reviewed checkpoint belongs to a different Chromium source lock')
+        source_export = os.environ.get('VERIFIED_SOURCE_EXPORT', '')
+        source_proof = None
+        if source_export:
+            source_proof = read_source_export(source_export, host, lock_sha256)
         wrapper, ninja = [install_tool(tools, spec) for spec in RELEASES[host]]
         cache_tool = wrapper.stem
         config = tools / 'local-cache.conf'
@@ -298,7 +303,11 @@ def main():
         if (material_digests['chromium-source-lock.json'] != context['source_lock_sha256']
                 or material_digests['chromium-args.gn'] != context['gn_args_sha256']):
             raise RuntimeError('Retained source material does not match the compiled build context')
-        report.update(result='PASS', stage='source-and-native-fixtures-complete', linked_build_materials='PASS')
+        report['linked_build_materials'] = 'PASS'
+        if source_proof is not None:
+            report['stage'] = 'development-runtime-bundle'
+            report['development_runtime'] = retain_development_bundle(root, output, report, source_proof, environment)
+        report.update(result='PASS', stage='source-and-native-fixtures-complete')
         write_outputs('PASS')
     except Exception as error:
         report.update(result='BLOCKED', error_type=type(error).__name__)

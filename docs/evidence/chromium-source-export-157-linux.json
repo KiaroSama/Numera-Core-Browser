@@ -1,0 +1,48 @@
+{
+  "schema_revision": 1,
+  "scope": "Official upstream Linux source export compared with reviewed Chromium source inputs. Browser packaging and production redistribution acceptance remain open.",
+  "host": "Linux",
+  "arch": "x86-64",
+  "chromium_version": "157.0.8103.78",
+  "chromium_revision": "4b3d0dabb8250b6f152d2d85d79e7706e309d087",
+  "source_lock_sha256": "a0899efb63de8badf27b640b9bfba4f702aaaa74cd2381c19f7fd6c5ac81bf12",
+  "native_inventory": {
+    "run_id": 44925530814,
+    "artifact_id": 14715857510,
+    "git_checkouts_sha256": "714e327b4becda0f2d8754f815a70e5d2d62a4f20c157322a0802c811444a08c",
+    "git_checkouts": 169
+  },
+  "source_archive": {
+    "url": "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-157.0.8103.78.tar.xz?generation=1794436736176923",
+    "hashes_url": "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-157.0.8103.78.tar.xz.hashes",
+    "generation": "1794436736176923",
+    "bytes": 4513947968,
+    "sha256": "d7af88cd8d9abf0ed1adc3f2ad2c507aeda79b4373dc83557f27a0b78f1bdc6c",
+    "gcs_md5_verified": true
+  },
+  "branding_patch_check": "PASS",
+  "official_export_recipe": "https://chromium.googlesource.com/chromium/tools/build/+/HEAD/recipes/recipes/publish_tarball.py",
+  "content_checks": {
+    "deps_identical_to_pinned_git": true,
+    "branding_matches_pinned_git": true,
+    "version_matches": true,
+    "regular_files": 1194266,
+    "directories": 159344,
+    "expanded_regular_file_bytes": 24248537593,
+    "verified_upstream_files_sha256": {
+      "DEPS": "70f36c59069488921a7d83b5ad0dfb3d221211be2be966f28ed84ef6ceeb8daa",
+      "LICENSE": "368cca1106be99d39ecd32a38d8305585d802a475effb66380b91ffc9bcf709b",
+      "chrome/VERSION": "df55c37ecbb025e7173b070d6b57d5bab57648cc84761bec807c05305fe58176",
+      "tools/licenses/licenses.py": "b312c62523e955b1893923e8b45c13092eb58a6df22504c4e045205bf1904063",
+      "chrome/app/chromium_strings.grd": "a8fb46cd865b6b7fbf829da098e98c6833b74bdcf2522c78183c30dde2cef942"
+    },
+    "reviewed_dependency_checkouts": 168,
+    "present_checkout_directories": 168,
+    "absent_checkout_directories": [],
+    "ffmpeg_compared_regular_files": 11351,
+    "ffmpeg_byte_identical_regular_files": 11351,
+    "ffmpeg_omitted_regular_files": [],
+    "ffmpeg_changed_files": []
+  },
+  "engine_release_approved": false
+}
