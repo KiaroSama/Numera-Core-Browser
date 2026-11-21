@@ -19,6 +19,49 @@ function verifyScreenshot(bytes) {
     'Expected a browser screenshot in PNG format');
 }
 
+async function measureViewport(page) {
+  return page.evaluate(() => ({
+    width: window.innerWidth,
+    height: window.innerHeight,
+    screenWidth: window.screen.width,
+    screenHeight: window.screen.height,
+    deviceScaleFactor: window.devicePixelRatio,
+    touchPoints: navigator.maxTouchPoints,
+  }));
+}
+
+async function testResponsiveViewport(browser, fixture) {
+  const url = new URL('responsive-viewport.html', fixture).href;
+  const untouched = await browser.newPage();
+  const emulated = await browser.newPage();
+  try {
+    await untouched.goto(url, { timeout: 15000 });
+    const desktop = await measureViewport(untouched);
+    const session = await emulated.createCDPSession();
+    const results = [];
+    for (const layout of [{ width: 390, height: 844, scale: 3 }, { width: 844, height: 390, scale: 2 }]) {
+      const { width, height, scale } = layout;
+      await session.send('Emulation.setDeviceMetricsOverride', {
+        mobile: true, width, height, screenWidth: width, screenHeight: height, deviceScaleFactor: scale,
+      });
+      await session.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+      await emulated.goto(url, { timeout: 15000 });
+      const expected = { width, height, screenWidth: width, screenHeight: height, deviceScaleFactor: scale, touchPoints: 5 };
+      const observed = await measureViewport(emulated);
+      assert.deepEqual(observed, expected);
+      await emulated.reload({ timeout: 15000 });
+      assert.deepEqual(await measureViewport(emulated), expected);
+      assert.deepEqual(await measureViewport(untouched), desktop);
+      results.push(observed);
+    }
+    return { result: 'PASS', layouts: results, reload: 'PASS', separate_target: 'PASS',
+      scope: 'Chromium CDP viewport, screen, pixel ratio and touch on a controlled local document' };
+  } finally {
+    await emulated.close();
+    await untouched.close();
+  }
+}
+
 async function testPuppeteer(endpoint, fixture) {
   const browser = await puppeteer.connect({ browserURL: endpoint, protocolTimeout: 15000 });
   try {
@@ -35,6 +78,7 @@ async function testPuppeteer(endpoint, fixture) {
     assert.equal(await frame.$eval('#frame-result', element => element.textContent), frameMarker);
     verifyScreenshot(await page.screenshot({ type: 'png' }));
     await page.close();
+    return await testResponsiveViewport(browser, fixture);
   } finally {
     await browser.disconnect();
   }
@@ -70,7 +114,7 @@ const options = new chrome.Options().setChromeBinaryPath(browserPath).addArgumen
 );
 const driver = await new Builder().disableEnvironmentOverrides().usingServer(endpoint)
   .forBrowser('chrome').setChromeOptions(options).build();
-let browserVersion;
+let browserVersion, responsiveViewport;
 try {
   await driver.manage().setTimeouts({ pageLoad: 15000, script: 15000 });
   await driver.get(fixture);
@@ -89,7 +133,7 @@ try {
   browserVersion = capabilities.get('browserVersion');
   assert.match(browserVersion, /^\d+\.\d+\.\d+\.\d+$/);
   const browserEndpoint = loopbackPort(capabilities.get('goog:chromeOptions')?.debuggerAddress);
-  await testPuppeteer(browserEndpoint, fixture);
+  responsiveViewport = await testPuppeteer(browserEndpoint, fixture);
   await testPlaywright(browserEndpoint, fixture);
 } finally {
   await driver.quit();
@@ -100,6 +144,6 @@ const tests = {
   puppeteer: { version: dependencies['puppeteer-core'], transport: 'Chrome DevTools Protocol', checks: completedChecks },
   playwright: { version: dependencies['playwright-core'], transport: 'connectOverCDP', checks: completedChecks },
 };
-await writeFile(reportPath, JSON.stringify({ result: 'PASS', node: process.versions.node, browserVersion, tests,
+await writeFile(reportPath, JSON.stringify({ result: 'PASS', node: process.versions.node, browserVersion, tests, responsiveViewport,
   scope: 'Controlled headless navigation, Unicode input, frame, click and screenshot for each client' }, null, 2) + '\n',
 { encoding: 'utf8', flag: 'wx' });
