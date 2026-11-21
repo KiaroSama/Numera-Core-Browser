@@ -3,10 +3,13 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { isAbsolute } from 'node:path';
 import { chromium } from 'playwright-core';
 import puppeteer from 'puppeteer-core';
-import { Builder, By } from 'selenium-webdriver';
+import { Builder, By, until } from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome.js';
 
 const marker = 'NUMERA_RENDERER_FIXTURE_PASS';
+const frameMarker = 'NUMERA_FRAME_FIXTURE_PASS';
+const fixtureText = 'Numera مسیر 2026';
+const completedChecks = ['navigation', 'unicode-input', 'click-and-wait', 'nested-frame', 'png-screenshot'];
 const pngSignature = Buffer.from('89504e470d0a1a0a', 'hex');
 
 function verifyScreenshot(bytes) {
@@ -27,6 +30,14 @@ async function testPuppeteer(endpoint, fixture) {
     const page = await browser.newPage();
     await page.goto(fixture, { timeout: 15000 });
     assert.equal(await page.$eval('#result', element => element.textContent), marker);
+    await page.type('#entry', fixtureText);
+    await page.click('#apply');
+    await page.waitForFunction(value => document.getElementById('applied').textContent === value,
+      { timeout: 15000 }, fixtureText);
+    const iframe = await page.waitForSelector('#details', { timeout: 15000 });
+    const frame = await iframe.contentFrame();
+    await frame.waitForSelector('#frame-result', { timeout: 15000 });
+    assert.equal(await frame.$eval('#frame-result', element => element.textContent), frameMarker);
     verifyScreenshot(await page.screenshot({ type: 'png' }));
     await page.close();
   } finally {
@@ -40,6 +51,11 @@ async function testPlaywright(endpoint, fixture) {
     const page = await browser.contexts()[0].newPage();
     await page.goto(fixture, { timeout: 15000 });
     assert.equal(await page.locator('#result').textContent({ timeout: 15000 }), marker);
+    await page.locator('#entry').fill(fixtureText, { timeout: 15000 });
+    await page.locator('#apply').click({ timeout: 15000 });
+    await page.waitForFunction(value => document.getElementById('applied').textContent === value,
+      fixtureText, { timeout: 15000 });
+    assert.equal(await page.frameLocator('#details').locator('#frame-result').textContent({ timeout: 15000 }), frameMarker);
     verifyScreenshot(await page.screenshot({ type: 'png', timeout: 15000 }));
     await page.close();
   } finally {
@@ -63,6 +79,15 @@ try {
   await driver.manage().setTimeouts({ pageLoad: 15000, script: 15000 });
   await driver.get(fixture);
   assert.equal(await driver.findElement(By.id('result')).getText(), marker);
+  await driver.findElement(By.id('entry')).sendKeys(fixtureText);
+  await driver.findElement(By.id('apply')).click();
+  await driver.wait(until.elementTextIs(driver.findElement(By.id('applied')), fixtureText), 15000);
+  await driver.switchTo().frame(driver.findElement(By.id('details')));
+  try {
+    assert.equal(await driver.findElement(By.id('frame-result')).getText(), frameMarker);
+  } finally {
+    await driver.switchTo().defaultContent();
+  }
   verifyScreenshot(Buffer.from(await driver.takeScreenshot(), 'base64'));
   const capabilities = await driver.getCapabilities();
   const browserEndpoint = loopbackPort(capabilities.get('goog:chromeOptions')?.debuggerAddress);
@@ -73,10 +98,10 @@ try {
 }
 
 const tests = {
-  selenium: { version: dependencies['selenium-webdriver'], transport: 'WebDriver' },
-  puppeteer: { version: dependencies['puppeteer-core'], transport: 'Chrome DevTools Protocol' },
-  playwright: { version: dependencies['playwright-core'], transport: 'connectOverCDP' },
+  selenium: { version: dependencies['selenium-webdriver'], transport: 'WebDriver', checks: completedChecks },
+  puppeteer: { version: dependencies['puppeteer-core'], transport: 'Chrome DevTools Protocol', checks: completedChecks },
+  playwright: { version: dependencies['playwright-core'], transport: 'connectOverCDP', checks: completedChecks },
 };
 await writeFile(reportPath, JSON.stringify({ result: 'PASS', node: process.versions.node, tests,
-  scope: 'Controlled local navigation, DOM result and screenshot for each client' }, null, 2) + '\n',
+  scope: 'Controlled headless navigation, Unicode input, frame, click and screenshot for each client' }, null, 2) + '\n',
 { encoding: 'utf8', flag: 'wx' });

@@ -4,7 +4,15 @@
 <style>body{font:20px system-ui;background:#191d24;color:#ecedf5;padding:40px}strong{color:#b7adff}</style>
 <h1>Numera Core Browser</h1>
 <strong id="result">Waiting for the renderer</strong>
+<p><label for="entry">Fixture text</label> <input id="entry" type="text"></p>
+<button id="apply" type="button">Apply text</button>
+<output id="applied" dir="auto" aria-live="polite"></output>
+<iframe id="details" title="Fixture frame" srcdoc="<!doctype html><meta charset=utf-8><p id=frame-result>NUMERA_FRAME_FIXTURE_PASS</p>"></iframe>
 <script>
 document.getElementById('result').textContent = 'NUMERA_RENDERER_FIXTURE_PASS';
 document.documentElement.dataset.domReady = String(typeof document.querySelector === 'function');
+document.getElementById('apply').addEventListener('click', () => {
+  const value = document.getElementById('entry').value;
+  setTimeout(() => { document.getElementById('applied').textContent = value; }, 50);
+});
 </script>
