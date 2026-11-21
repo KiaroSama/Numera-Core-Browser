@@ -21,6 +21,7 @@ from logging_util import log
 REPOSITORY = 'KiaroSama/Numera-Core-Browser'
 ARCHIVE_LIMIT = 32 * 1024 * 1024
 MANIFEST_NAME = 'manifest.json'
+PROBE_CACHE_CONFIG = 'direct_mode = false\ncompiler_check = content\nmax_size = 24M\n'
 RELEASES = {
     'Linux': (
         ('ccache/ccache', 'v4.14.3', 'ccache-4.14.3-linux-x86_64-musl-static.tar.gz',
@@ -109,7 +110,8 @@ def pack_cache(root, archive, context, object_hash, *, limit=ARCHIVE_LIMIT, max_
         raise RuntimeError('Compiler cache archive exceeds the configured transport limit')
 
 
-def restore_cache(root, archive, expected, context, *, limit=ARCHIVE_LIMIT, max_entries=512):
+def restore_cache(root, archive, expected, context, *, limit=ARCHIVE_LIMIT, max_entries=512,
+                  probe_image_evidence=None):
     if not re.fullmatch(r'[0-9a-f]{64}', expected or '') or archive.stat().st_size > limit or sha256(archive) != expected:
         raise RuntimeError('Checkpoint does not match this attempt’s seed digest')
     with tarfile.open(archive, 'r:') as bundle:
@@ -121,9 +123,22 @@ def restore_cache(root, archive, expected, context, *, limit=ARCHIVE_LIMIT, max_
                        for m in members)):
             raise RuntimeError('Unexpected compiler-cache archive members')
         manifest = json.load(bundle.extractfile(MANIFEST_NAME))
-        if manifest['context'] != context:
-            changed = sorted(k for k in context if manifest['context'].get(k) != context[k])
-            raise RuntimeError('Checkpoint build context changed: ' + ', '.join(changed))
+        producer = manifest['context']
+        changed = {k for k in context.keys() | producer.keys()
+                   if k not in context or k not in producer or producer[k] != context[k]}
+        if changed:
+            # The single-object probe independently verifies the hit and the
+            # byte-identical result. Each request must first preprocess the
+            # fresh checkout, so the host image label is only provenance here.
+            compatible_probe = (probe_image_evidence is not None and changed == {'runner_image'}
+                                and context.get('host') == 'Linux' and context.get('cache_tool') == 'ccache'
+                                and context.get('cache_config_sha256') == hashlib.sha256(PROBE_CACHE_CONFIG.encode()).hexdigest()
+                                and all(isinstance(item.get('runner_image'), str) and item['runner_image']
+                                        for item in (producer, context)))
+            if not compatible_probe:
+                raise RuntimeError('Checkpoint build context changed: ' + ', '.join(sorted(changed)))
+        if probe_image_evidence is not None:
+            probe_image_evidence.update(seed=producer.get('runner_image'), resume=context.get('runner_image'))
         names.remove(MANIFEST_NAME)
         if set(manifest['files']) != set(names):
             raise RuntimeError('Checkpoint inventory is incomplete')
@@ -213,7 +228,7 @@ def main():
     try:
         wrapper, ninja = [install_tool(tools, spec) for spec in RELEASES[host]]
         config = tools / 'local-cache.conf'
-        config.write_text('direct_mode = false\ncompiler_check = content\nmax_size = 24M\n', encoding='utf-8')
+        config.write_text(PROBE_CACHE_CONFIG, encoding='utf-8')
         environment.update(CCACHE_DIR=str(cache), CCACHE_CONFIGPATH=str(config))
         log('Acquiring pinned Chromium source and generating the native graph', component='compiler-cache-probe')
         compile_graph(root, environment, output)
@@ -241,7 +256,9 @@ def main():
         if args.phase == 'resume':
             if (gn_dir / target).exists():
                 raise RuntimeError('Fresh runner unexpectedly contains the compiled probe object')
-            seed_hash = restore_cache(cache, transfer, os.environ.get('EXPECTED_CHECKPOINT_SHA'), context)
+            report['runner_images'] = {}
+            seed_hash = restore_cache(cache, transfer, os.environ.get('EXPECTED_CHECKPOINT_SHA'), context,
+                                      probe_image_evidence=report['runner_images'])
         if args.phase == 'seed':
             digest, cold = native_object(ninja, wrapper, environment, source, target, output, 'cold')
             if not {'cache_miss', 'local_storage_write'} <= set(cold['target_results']):
