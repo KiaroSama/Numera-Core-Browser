@@ -1,0 +1,151 @@
+{
+  "schema_revision": 1,
+  "workflow_run": 44910313195,
+  "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44910313195",
+  "source_commit": "083935d5160fecda5ce473298a63d7936325fac6",
+  "result": "PASS",
+  "source_built_engine_acceptance": "NOT_RUN",
+  "prior_run_failure": {
+    "run_id": 44909960164,
+    "source_commit": "db385a4117beaf69833dcfa80cca43461f8119ff",
+    "cause": "The fixture rejected ChromeDriver's localhost debuggerAddress before its CDP client tests."
+  },
+  "platforms": [
+    {
+      "id": 14710005583,
+      "size": 18317,
+      "digest": "f9269064b2d7abee71c969da77ddd00249b53e3c4985409e9a587b4dd00d8ab4",
+      "host": "Windows",
+      "job_id": 136864532109,
+      "report": {
+        "schema_revision": 1,
+        "source_commit": "083935d5160fecda5ce473298a63d7936325fac6",
+        "runner_image": "20261116.315.1",
+        "host": "Windows",
+        "baseline": "runner-installed Google Chrome",
+        "owned_engine_used": false,
+        "source_build": "NOT_RUN",
+        "result": "PASS",
+        "browser_sha256": "a527591d96df1f30bdabf5599d257b8b80c83d90c405ff997ddbc202ba5e9ada",
+        "chromedriver_sha256": "e32106adb49b38ed290b89a9e5b039f48a1fb652c0bd94dd880b8d896ee0c966",
+        "renderer_fixture": "PASS",
+        "webdriver": {
+          "result": "PASS",
+          "driver_version": "157.0.8103.78",
+          "scope": "ChromeDriver W3C HTTP session and a controlled local document"
+        },
+        "automation_clients": {
+          "result": "PASS",
+          "node": "24.22.3",
+          "browserVersion": "157.0.8103.79",
+          "tests": {
+            "selenium": {
+              "version": "4.53.0",
+              "transport": "WebDriver",
+              "checks": [
+                "navigation",
+                "unicode-input",
+                "click-and-wait",
+                "nested-frame",
+                "png-screenshot"
+              ]
+            },
+            "puppeteer": {
+              "version": "25.18.1",
+              "transport": "Chrome DevTools Protocol",
+              "checks": [
+                "navigation",
+                "unicode-input",
+                "click-and-wait",
+                "nested-frame",
+                "png-screenshot"
+              ]
+            },
+            "playwright": {
+              "version": "1.65.1",
+              "transport": "connectOverCDP",
+              "checks": [
+                "navigation",
+                "unicode-input",
+                "click-and-wait",
+                "nested-frame",
+                "png-screenshot"
+              ]
+            }
+          },
+          "scope": "Controlled headless navigation, Unicode input, frame, click and screenshot for each client"
+        },
+        "timestamp": "2026-11-21T13:44:42.418422+00:00"
+      },
+      "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44910313195/artifacts/14710005583"
+    },
+    {
+      "id": 14709298258,
+      "size": 25226,
+      "digest": "f09604fbaf91b690a627d0054d1635af906b451249ac790b8556370b2a7cfa3d",
+      "host": "Linux",
+      "job_id": 136864531967,
+      "report": {
+        "schema_revision": 1,
+        "source_commit": "083935d5160fecda5ce473298a63d7936325fac6",
+        "runner_image": "20261116.133.1",
+        "host": "Linux",
+        "baseline": "runner-installed Google Chrome",
+        "owned_engine_used": false,
+        "source_build": "NOT_RUN",
+        "result": "PASS",
+        "browser_sha256": "aea09d69ce7f24d5901f6bfb15dd44d0c856e793e0a498f8d8393ec7d2c308ec",
+        "chromedriver_sha256": "758da273bc800d2c04f43f9ffe9a3e9f4288ea18cc0f8becfe1135e221853011",
+        "renderer_fixture": "PASS",
+        "webdriver": {
+          "result": "PASS",
+          "driver_version": "157.0.8103.78",
+          "scope": "ChromeDriver W3C HTTP session and a controlled local document"
+        },
+        "automation_clients": {
+          "result": "PASS",
+          "node": "24.22.3",
+          "browserVersion": "157.0.8103.78",
+          "tests": {
+            "selenium": {
+              "version": "4.53.0",
+              "transport": "WebDriver",
+              "checks": [
+                "navigation",
+                "unicode-input",
+                "click-and-wait",
+                "nested-frame",
+                "png-screenshot"
+              ]
+            },
+            "puppeteer": {
+              "version": "25.18.1",
+              "transport": "Chrome DevTools Protocol",
+              "checks": [
+                "navigation",
+                "unicode-input",
+                "click-and-wait",
+                "nested-frame",
+                "png-screenshot"
+              ]
+            },
+            "playwright": {
+              "version": "1.65.1",
+              "transport": "connectOverCDP",
+              "checks": [
+                "navigation",
+                "unicode-input",
+                "click-and-wait",
+                "nested-frame",
+                "png-screenshot"
+              ]
+            }
+          },
+          "scope": "Controlled headless navigation, Unicode input, frame, click and screenshot for each client"
+        },
+        "timestamp": "2026-11-21T13:44:31.907151+00:00"
+      },
+      "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44910313195/artifacts/14709298258"
+    }
+  ]
+}

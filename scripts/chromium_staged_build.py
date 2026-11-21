@@ -154,6 +154,9 @@ def main():
             raise RuntimeError('Only the first segment can start from a reviewed earlier run')
         reviewed = reviewed_checkpoint(Path('docs/evidence'), reviewed_run,
                                        os.environ.get('REVIEWED_CHECKPOINT_SEGMENT', ''), host)
+    read_only_replay = os.environ.get('READ_ONLY_REPLAY') == 'true'
+    if read_only_replay and reviewed is None:
+        raise RuntimeError('A read-only replay requires a reviewed earlier checkpoint')
     if args.checkpoint_key:
         if reviewed is None:
             raise RuntimeError('A reviewed run is required to resolve a cache key')
@@ -170,6 +173,7 @@ def main():
     entries.mkdir()
     report = {'schema_revision': 1, 'result': 'BLOCKED', 'stage': 'prepare', 'segment': args.segment,
               'commit': os.environ['GITHUB_SHA'], 'host': host, 'release_ready': False, 'source_build': 'NOT_RUN',
+              'read_only_replay': read_only_replay,
               'renderer_fixture': 'NOT_RUN', 'driver_fixture': 'NOT_RUN', 'automation_client_smokes': 'NOT_RUN',
               'automation_suites': 'NOT_RUN', 'portable_runtime_fixture': 'NOT_RUN',
               'compile_budget_minutes': args.minutes,
@@ -244,6 +248,8 @@ def main():
         if (args.segment > 1 or reviewed is not None) and values['preprocessed_cache_hit'] < 1:
             raise RuntimeError('Fresh runner did not reuse any transferred Chromium compile outputs')
         if reason == 'time-budget':
+            if read_only_replay:
+                raise RuntimeError('The read-only replay exhausted its compile budget')
             if args.segment == SEGMENTS:
                 raise RuntimeError('The full graph did not finish within the four configured job segments')
             if values['local_storage_write'] < 1:

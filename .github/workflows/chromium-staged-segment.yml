@@ -23,6 +23,9 @@ on:
       reviewed_checkpoint_segment:
         type: number
         default: 2
+      read_only_replay:
+        type: boolean
+        default: false
     outputs:
       result:
         description: Whether this segment built the source or saved a partial checkpoint
@@ -99,11 +102,12 @@ jobs:
           EXPECTED_CHECKPOINT_SHA: ${{ inputs.checkpoint_sha }}
           REVIEWED_CHECKPOINT_RUN: ${{ inputs.reviewed_checkpoint_run }}
           REVIEWED_CHECKPOINT_SEGMENT: ${{ inputs.reviewed_checkpoint_segment }}
+          READ_ONLY_REPLAY: ${{ inputs.read_only_replay }}
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
         run: python scripts/chromium_staged_build.py --segment $env:BUILD_SEGMENT --minutes $env:BUILD_MINUTES
       - name: Confirm repository cache allowance before saving a partial compile
-        if: steps.build.outputs.result == 'PARTIAL'
+        if: inputs.read_only_replay == false && steps.build.outputs.result == 'PARTIAL'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
@@ -113,7 +117,7 @@ jobs:
           $Checkpoint = (Get-Item 'build/chromium-staged-cache/checkpoint.tar').Length
           if (([int64]$Usage + $Checkpoint + 150000000) -ge 9500000000) { throw 'Repository cache headroom is too small for this checkpoint' }
       - name: Save the bounded checkpoint for the next native job
-        if: steps.build.outputs.result == 'PARTIAL'
+        if: inputs.read_only_replay == false && steps.build.outputs.result == 'PARTIAL'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
           path: build/chromium-staged-cache/checkpoint.tar
