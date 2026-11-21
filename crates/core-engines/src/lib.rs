@@ -1,5 +1,8 @@
 //! Untrusted package metadata inspection. Hash matching is not trust approval.
+mod runtime_archive;
+
 use core_contracts::{CoreError, EngineFamily, strict_json};
+pub use runtime_archive::{RuntimeArchiveReport, inspect_runtime_archive};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};

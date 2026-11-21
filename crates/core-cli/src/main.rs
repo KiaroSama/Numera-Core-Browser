@@ -148,6 +148,13 @@ fn command(args: &[String]) -> Result<Value, CoreError> {
         ["doctor"] | ["diagnostics"] => Ok(core_runtime::doctor()),
         ["capabilities"] => Ok(core_runtime::capabilities()),
         ["engines", "list"] => Ok(core_engines::inventory()),
+        ["engines", "verify-archive", path, sha256] => {
+            let report = core_engines::inspect_runtime_archive(Path::new(path), sha256)?;
+            Ok(
+                json!({"archive_verified":true,"archive_sha256":report.sha256,"archive_bytes":report.archive_bytes,
+                "files":report.files,"expanded_file_bytes":report.file_bytes,"approved_package":false}),
+            )
+        }
         ["plan", path] => {
             let snapshot: LaunchSnapshot =
                 serde_json::from_value(strict_json(&read_bounded(path)?)?)
@@ -176,7 +183,7 @@ fn command(args: &[String]) -> Result<Value, CoreError> {
             Ok(json!({"product":"Numera Core Browser","version":env!("CARGO_PKG_VERSION")}))
         }
         [] | ["help"] | ["--help"] => Ok(
-            json!({"usage":["numera-core [--json] doctor","numera-core capabilities","numera-core engines list","numera-core plan SNAPSHOT.json","numera-core serve","numera-core schema request|response|manifest","numera-core manifest inspect MANIFEST.json","numera-core hash-file FILE"],
+            json!({"usage":["numera-core [--json] doctor","numera-core capabilities","numera-core engines list","numera-core engines verify-archive FILE SHA256","numera-core plan SNAPSHOT.json","numera-core serve","numera-core schema request|response|manifest","numera-core manifest inspect MANIFEST.json","numera-core hash-file FILE"],
             "status":"Development control plane; no approved browser engine or GUI available"}),
         ),
         _ => Err(CoreError::invalid(

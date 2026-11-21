@@ -2,6 +2,7 @@
 """Stage a tested development CLI, notices and matching complete first-party source."""
 import argparse
 import hashlib
+import io
 import json
 import os
 from pathlib import Path, PurePosixPath
@@ -21,6 +22,26 @@ def sha256(path):
         for block in iter(lambda: file.read(1024 * 1024), b''):
             digest.update(block)
     return digest.hexdigest()
+
+
+def verify_archive_cli(executable, directory, environment):
+    fixture = directory / 'بررسی بسته.tar.gz'
+    payload = b'controlled portable archive data'
+    with tarfile.open(fixture, 'x:gz', format=tarfile.PAX_FORMAT) as archive:
+        member = tarfile.TarInfo('runtime/locales/داده‌های مرورگر.pak')
+        member.size = len(payload)
+        archive.addfile(member, io.BytesIO(payload))
+    digest = sha256(fixture)
+    command = [str(executable), '--json', 'engines', 'verify-archive', str(fixture)]
+    result = json.loads(subprocess.check_output([*command, digest], cwd=executable.parent,
+                                               env=environment, timeout=15))
+    if result != {'archive_verified': True, 'archive_sha256': digest, 'archive_bytes': fixture.stat().st_size,
+                  'files': 1, 'expanded_file_bytes': len(payload), 'approved_package': False}:
+        raise RuntimeError('The extracted CLI returned unexpected runtime archive evidence')
+    mismatch = subprocess.run([*command, '0' * 64], cwd=executable.parent, env=environment,
+                              capture_output=True, timeout=15)
+    if mismatch.returncode != 2 or (directory / 'runtime').exists():
+        raise RuntimeError('The extracted CLI did not enforce read-only archive integrity checks')
 
 
 def main():
@@ -121,6 +142,7 @@ def main():
             raise RuntimeError('Extracted development archive did not execute natively')
         if sha256(executable) != manifest['executable_sha256']:
             raise RuntimeError('Extracted executable hash does not match the package')
+        verify_archive_cli(executable, extracted, environment)
     log('PASS: extracted native development CLI with matching source/notices; browser readiness remains false')
 
 

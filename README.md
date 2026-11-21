@@ -23,6 +23,8 @@ cargo run --locked -q -p core-cli -- serve
 
 `doctor` reports command success separately from browser readiness. `launch.plan` returns a blocked plan until a reviewed engine exists. `session.launch` fails with `missing_package`; it never downloads or relabels another product's browser.
 
+`numera-core --json engines verify-archive FILE SHA256` verifies a portable Chromium `tar.gz` layout and SHA-256 digest. Supply the digest from a separately verified build report or signed release metadata. The command reads the archive and reports its file count and expanded size.
+
 The compiled CLI requires no Node.js, Python, display server or manager installation. Development tooling uses Python, and native automation fixtures also use Node.js. On Windows use PowerShell 7: `./scripts/Build.ps1 -Mode Check` or `-Mode Build`.
 
 Successful native CI jobs produce `development-cli-*` artifacts with a `development-cli.tar.gz` bundle containing the tested CLI, notices and matching `complete-source.zip`. After extracting the artifact ZIP, extract the tar bundle with `tar -xzf development-cli.tar.gz`. In its `development-cli` directory run `./numera-core --json doctor` (PowerShell: `.\numera-core.exe --json doctor`). These unsigned development archives contain the control plane; browser/GUI and clean-machine installation acceptance remain open.
