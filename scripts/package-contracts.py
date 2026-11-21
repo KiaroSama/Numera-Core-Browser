@@ -35,7 +35,9 @@ def main():
     subprocess.run(['git', 'archive', '--format=zip', f'--prefix={ARTIFACT}/', '--output', str(package),
                     commit, '--', *INCLUDED], check=True)
     with zipfile.ZipFile(package, 'a') as archive:
-        archive.writestr(zipfile.ZipInfo(f'{ARTIFACT}/source-commit.txt'), commit + '\n')
+        provenance = zipfile.ZipInfo(f'{ARTIFACT}/source-commit.txt')
+        provenance.create_system = 3  # Match Git's archive metadata on every native runner.
+        archive.writestr(provenance, commit + '\n')
     with tempfile.TemporaryDirectory(prefix='Numera NCB-1 فارسی ') as directory:
         with zipfile.ZipFile(package) as archive:
             files = [entry for entry in archive.infolist() if not entry.is_dir()]
