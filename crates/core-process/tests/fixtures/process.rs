@@ -36,11 +36,68 @@ fn hold(root: &Path) {
         std::thread::sleep(Duration::from_millis(10));
     }
 }
+
+#[cfg(any(target_os = "linux", windows))]
+fn chromium_owner(root: &Path, browser: &Path, fixture: &std::ffi::OsStr) {
+    #[cfg(target_os = "linux")]
+    use core_process::linux::OwnedProcessTree;
+    #[cfg(windows)]
+    use core_process::windows::OwnedProcessTree;
+    use std::{collections::BTreeMap, ffi::OsString, io::Read};
+
+    let mut environment = BTreeMap::new();
+    for key in [
+        "PATH",
+        "LANG",
+        "SystemRoot",
+        "WINDIR",
+        "SYSTEMDRIVE",
+        "CHROME_DEVEL_SANDBOX",
+    ] {
+        if let Some(value) = std::env::var_os(key) {
+            environment.insert(key.to_owned(), value);
+        }
+    }
+    let home = root.join("home");
+    fs::create_dir(&home).unwrap();
+    environment.insert("HOME".to_owned(), home.as_os_str().to_owned());
+    #[cfg(windows)]
+    for key in ["USERPROFILE", "LOCALAPPDATA", "APPDATA", "TEMP", "TMP"] {
+        environment.insert(key.to_owned(), home.as_os_str().to_owned());
+    }
+    let mut profile = OsString::from("--user-data-dir=");
+    profile.push(root.join("داده‌های مرورگر"));
+    let arguments = [
+        "--headless=new".into(),
+        "--no-first-run".into(),
+        "--no-default-browser-check".into(),
+        "--remote-debugging-address=127.0.0.1".into(),
+        "--remote-debugging-port=0".into(),
+        profile,
+        fixture.to_owned(),
+    ];
+    #[cfg(target_os = "linux")]
+    let mut tree = OwnedProcessTree::spawn(browser, &arguments, root, &environment).unwrap();
+    #[cfg(windows)]
+    let tree = OwnedProcessTree::spawn(browser, &arguments, root, &environment).unwrap();
+    let mut signal = [0; 1];
+    let requested = std::io::stdin().read_exact(&mut signal).is_ok() && signal == *b"s";
+    let browser_was_running = !tree.root_exited().unwrap();
+    tree.terminate_and_wait(Duration::from_secs(8)).unwrap();
+    assert!(tree.root_exited().unwrap());
+    assert!(
+        requested && browser_was_running,
+        "Chromium did not stay active until the fixture requested shutdown"
+    );
+}
+
 fn main() {
     let args: Vec<_> = std::env::args_os().skip(1).collect();
     let role = args[0].to_str().unwrap();
     let root = Path::new(&args[1]);
     match role {
+        #[cfg(any(target_os = "linux", windows))]
+        "chromium-owner" => chromium_owner(root, Path::new(&args[2]), &args[3]),
         "echo" => {
             let values: Vec<_> = args[2..].iter().map(|s| s.to_str().unwrap()).collect();
             fs::write(root.join("argv.json"), serde_json::to_vec(&values).unwrap()).unwrap();
