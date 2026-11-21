@@ -124,6 +124,14 @@ jobs:
           sha256sum --check numera-core-contracts-v1.sha256
           mv numera-core-contracts-v1.zip ../../attestation-subjects/
       - name: Attest the tested development packages and contract
+        id: attest
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
         with:
           subject-path: build/attestation-subjects/*
+      - name: Retain the signed provenance bundle for offline verification
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: development-artifact-provenance
+          path: ${{ steps.attest.outputs.bundle-path }}
+          retention-days: 7
+          if-no-files-found: error
