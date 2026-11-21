@@ -1,0 +1,116 @@
+{
+  "schema_revision": 1,
+  "workflow_run": 44925530814,
+  "workflow_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44925530814",
+  "source_commit": "898b12bec69ea437f0a1f4b7cffc942c1309352c",
+  "workflow_conclusion": "success",
+  "scope": "Actual pinned native GN target declarations validated within the build layout. Compiled file existence and browser execution are separate.",
+  "platforms": [
+    {
+      "id": 14715857510,
+      "name": "chromium-license-evidence-ubuntu-24.04",
+      "transport_bytes": 864180,
+      "transport_sha256": "sha256:532e80542b987dafa7fc21f180a9572124d791e02e02e5f40a177c6379b2b739",
+      "report": {
+        "schema_revision": 1,
+        "source_commit": "898b12bec69ea437f0a1f4b7cffc942c1309352c",
+        "host": "Linux",
+        "runner_image": "20261116.376.1",
+        "chromium_revision": "4b3d0dabb8250b6f152d2d85d79e7706e309d087",
+        "chromium_version": "157.0.8103.78",
+        "source_lock_sha256": "a0899efb63de8badf27b640b9bfba4f702aaaa74cd2381c19f7fd6c5ac81bf12",
+        "targets": {
+          "chromium": {
+            "gn_label": "//chrome:chrome",
+            "packages": 336,
+            "notice_sha256": "bf6dbf470443ab86afa52acc80b672d9e809d38ff3009330abfcc0376fcd3eb7",
+            "spdx_sha256": "d009effe055c517103fece7658d499c5531f6f45b76fa164ef1cb8c463ed78f4"
+          },
+          "chromedriver": {
+            "gn_label": "//chrome/test/chromedriver:chromedriver_server",
+            "packages": 229,
+            "notice_sha256": "9c4600cd85a0b5c4b40b704b19d8d8d0e292ada3b9b91679e1d12e92dc2c1ad2",
+            "spdx_sha256": "5555539dbf6d1614d8fbb8d8fa59697160b53806d96f8e6b195dee82b2c99647"
+          },
+          "chrome-sandbox": {
+            "gn_label": "//sandbox/linux:chrome_sandbox",
+            "packages": 3,
+            "notice_sha256": "5d70e4fd91dcb613d11982570526ceef9d4e2576c233ae7cf2156a2b1e69d62e",
+            "spdx_sha256": "79e0dd2a3504fad5ad99bc0a7c8c73267b27dc69a41cae7a2adc970dec8839e0"
+          }
+        },
+        "engine_compilation": "NOT_RUN",
+        "redistribution_approval": false,
+        "result": "PASS",
+        "gn_args_sha256": "408e167a7f67ca45d128210357045c90211bc05cdafce9df18fa52afcffea7dc",
+        "license_tool_sha256": "b312c62523e955b1893923e8b45c13092eb58a6df22504c4e045205bf1904063",
+        "runtime_layout": {
+          "sha256": "8da07bbc86ff66ea868b11b5b3e80840ae8cdcca95a5b63d7e2656510aa74e2e",
+          "paths": 5558,
+          "file_contents": "NOT_RUN"
+        },
+        "source_inventory": {
+          "git_checkouts": 169,
+          "sha256": "714e327b4becda0f2d8754f815a70e5d2d62a4f20c157322a0802c811444a08c",
+          "deps_sha256": "70f36c59069488921a7d83b5ad0dfb3d221211be2be966f28ed84ef6ceeb8daa"
+        },
+        "timestamp": "2026-11-21T16:50:22.292287+00:00"
+      },
+      "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44925530814/artifacts/14715857510",
+      "native_job_id": 136910652344
+    },
+    {
+      "id": 14715608215,
+      "name": "chromium-license-evidence-windows-2025-vs2026",
+      "transport_bytes": 780714,
+      "transport_sha256": "sha256:c775ed98bf6bb483fbae8f7aa194e2acc7d4e507ff497328d13306582b1a5437",
+      "report": {
+        "schema_revision": 1,
+        "source_commit": "898b12bec69ea437f0a1f4b7cffc942c1309352c",
+        "host": "Windows",
+        "runner_image": "20261116.315.1",
+        "chromium_revision": "6dc9bc3bdaea5c35ed6d41fceab2f7a3a2227c4f",
+        "chromium_version": "157.0.8103.79",
+        "source_lock_sha256": "a0899efb63de8badf27b640b9bfba4f702aaaa74cd2381c19f7fd6c5ac81bf12",
+        "targets": {
+          "chromium": {
+            "gn_label": "//chrome:chrome",
+            "packages": 338,
+            "notice_sha256": "8164a9e92e6cdf068905601dff4f5b5a3c00d560e284ee7aa9f53dcbeab83e2a",
+            "spdx_sha256": "0b365db772d5416fb4f8ac32ad1045e3efb5a2b67ec9403ecd46445b3b9c1e39"
+          },
+          "chromedriver": {
+            "gn_label": "//chrome/test/chromedriver:chromedriver_server",
+            "packages": 223,
+            "notice_sha256": "1e78c722c9bc68c05fab6e82b85a406fb61648a0fefb7700f390772296231e3c",
+            "spdx_sha256": "5024a34ed80cda3b8dd942dd27afc4b6de0560f3a816798052c793a306d50687"
+          }
+        },
+        "engine_compilation": "NOT_RUN",
+        "redistribution_approval": false,
+        "result": "PASS",
+        "gn_args_sha256": "ed77d85ceb6cb8e5c1d5c3753cc61af2f7cf9e4a86224629be516c13629b9da5",
+        "license_tool_sha256": "b312c62523e955b1893923e8b45c13092eb58a6df22504c4e045205bf1904063",
+        "runtime_layout": {
+          "sha256": "c2d69b234b67a3ab3e2ea806acc01a79eb2449363438933c009de45f8bc62724",
+          "paths": 6097,
+          "file_contents": "NOT_RUN"
+        },
+        "source_inventory": {
+          "git_checkouts": 157,
+          "sha256": "5bb9dff21d87f46d8a7e51a3f33bcf57716971e17e693c6c8d952481a40bcaf4",
+          "deps_sha256": "70f36c59069488921a7d83b5ad0dfb3d221211be2be966f28ed84ef6ceeb8daa"
+        },
+        "timestamp": "2026-11-21T16:58:18.545054+00:00"
+      },
+      "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44925530814/artifacts/14715608215",
+      "native_job_id": 136910652053
+    }
+  ],
+  "packaged_runtime_replay": {
+    "run_id": 44927476670,
+    "source_commit": "3758ca8596be7374ab5874df97bac35966e51813",
+    "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44927476670",
+    "result": "PENDING"
+  }
+}

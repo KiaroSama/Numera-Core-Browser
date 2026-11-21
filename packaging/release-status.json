@@ -132,9 +132,18 @@
       "source_commit": "d87a4c0fe6376d14db485df14352d6194c74d098",
       "build_tooling_and_transport_tests": "PASS",
       "status": "in_progress"
+    },
+    {
+      "target": "ubuntu-24.04",
+      "run_id": 44927476670,
+      "source_commit": "3758ca8596be7374ab5874df97bac35966e51813",
+      "status": "pending",
+      "scope": "Owned runtime archive extraction and native relocation",
+      "reviewed_checkpoint": "docs/evidence/chromium-staged-44846110371-segment-2.json",
+      "declared_runtime_layout_evidence": "docs/evidence/chromium-runtime-layout-44925530814.json"
     }
   ],
-  "source_experiment_status_observed_at": "2026-11-21T14:22:51+00:00",
+  "source_experiment_status_observed_at": "2026-11-21T17:00:36+00:00",
   "active_targets": [
     "windows-x86_64",
     "linux-x86_64"

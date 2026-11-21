@@ -49,6 +49,8 @@ The pinned Chromium license tool generated notice text and SPDX JSON using the n
 
 The source inventory records 169 checked-out Git revisions on Linux and 157 on Windows, including Chromium itself. Both `DEPS` files matched their official pinned bytes. The inventory covers the Git checkouts and the exact upstream `DEPS` reference for CIPD and GCS inputs. [Verified native source inventories](evidence/chromium-source-inventory-44913884524.json)
 
+The corrected GN preflight verified 5,558 declared runtime paths on Linux and 6,097 on Windows. The next Linux replay uses the corrected ChromeDriver inventory and validates a temporary runtime archive by starting the extracted browser and driver. [Verified graph declarations](evidence/chromium-runtime-layout-44925530814.json) · [Owned archive replay](https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44927476670)
+
 ## Open gates
 
 | Gate | Status | Remaining acceptance |
