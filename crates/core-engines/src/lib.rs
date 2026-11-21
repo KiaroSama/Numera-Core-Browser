@@ -1,7 +1,9 @@
 //! Untrusted package metadata inspection. Hash matching is not trust approval.
+#[cfg(feature = "runtime-archive")]
 mod runtime_archive;
 
 use core_contracts::{CoreError, EngineFamily, strict_json};
+#[cfg(feature = "runtime-archive")]
 pub use runtime_archive::{RuntimeArchiveReport, inspect_runtime_archive};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
