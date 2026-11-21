@@ -19,18 +19,27 @@
     "No signed updater or paired manager smoke suite"
   ],
   "development_cli": {
-    "source_commit": "d3f2f0046608a65d2648b0025612fbcfebfe8a06",
-    "run_id": 44858039915,
+    "source_commit": "1d60da611b931c52bbbc5cd2709d2b523c072c6b",
+    "run_id": 44904768647,
     "channel": "unsigned-development-control-plane",
     "targets": [
       "windows-x86_64",
       "linux-x86_64"
     ],
-    "evidence": "docs/evidence/development-cli-44858039915.json",
+    "evidence": "docs/evidence/development-artifacts-44904768647.json",
     "browser_included": false,
     "clean_machine_installation": "NOT_RUN",
     "retention_days": 7,
     "artifact_status": "Verified native development artifacts with seven-day retention."
+  },
+  "development_contract": {
+    "artifact": "numera-core-contracts-v1",
+    "source_commit": "1d60da611b931c52bbbc5cd2709d2b523c072c6b",
+    "run_id": 44904768647,
+    "sha256": "9b90ce280254cd15387125609a18fe39d6d5100e1d3db1cdaded91e0c41aa8e4",
+    "native_producer_conformance": "PASS",
+    "paired_manager_browser": "NOT_RUN",
+    "evidence": "docs/evidence/development-artifacts-44904768647.json"
   },
   "native_source_experiments": [
     {
