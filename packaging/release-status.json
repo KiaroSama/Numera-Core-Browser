@@ -19,18 +19,18 @@
     "No signed updater or paired manager smoke suite"
   ],
   "development_cli": {
-    "source_commit": "344fbb49b30dea922578ccdef1fb8ec1ef76f1a3",
-    "run_id": 43509657873,
+    "source_commit": "a1a4dfe53cad8e832ae3aceefeec085158f6f192",
+    "run_id": 44834324962,
     "channel": "unsigned-development-control-plane",
     "targets": [
       "windows-x86_64",
       "linux-x86_64"
     ],
-    "evidence": "docs/evidence/development-cli-43509657873.json",
+    "evidence": "docs/evidence/development-cli-44834324962.json",
     "browser_included": false,
     "clean_machine_installation": "NOT_RUN",
     "retention_days": 7,
-    "artifact_status": "Historical native verification. See the Windows and Linux Rust CI workflow for current development artifacts."
+    "artifact_status": "Verified native development artifacts with seven-day retention."
   },
   "native_source_experiments": [
     {

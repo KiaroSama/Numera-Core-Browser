@@ -1,0 +1,11 @@
+{
+  "name": "numera-native-automation-fixtures",
+  "version": "0.1.0",
+  "private": true,
+  "engines": { "node": "24.22.3" },
+  "dependencies": {
+    "playwright-core": "1.65.1",
+    "puppeteer-core": "25.18.1",
+    "selenium-webdriver": "4.53.0"
+  }
+}

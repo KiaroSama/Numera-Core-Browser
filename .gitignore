@@ -1,6 +1,7 @@
 /target/
 /build/
 /work/
+/tests/native-automation/node_modules/
 *.tmp
 __pycache__/
 .DS_Store

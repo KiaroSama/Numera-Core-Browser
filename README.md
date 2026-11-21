@@ -23,7 +23,7 @@ cargo run --locked -q -p core-cli -- serve
 
 `doctor` reports command success separately from browser readiness. `launch.plan` returns a blocked plan until a reviewed engine exists. `session.launch` fails with `missing_package`; it never downloads or relabels another product's browser.
 
-The compiled CLI requires no Node.js, Python, display server or manager installation. Python is used only by development/research/conformance tools. On Windows use PowerShell 7: `./scripts/Build.ps1 -Mode Check` or `-Mode Build`.
+The compiled CLI requires no Node.js, Python, display server or manager installation. Development tooling uses Python, and native automation fixtures also use Node.js. On Windows use PowerShell 7: `./scripts/Build.ps1 -Mode Check` or `-Mode Build`.
 
 Successful native CI jobs produce `development-cli-*` artifacts with a `development-cli.tar.gz` bundle containing the tested CLI, notices and matching `complete-source.zip`. After extracting the artifact ZIP, extract the tar bundle with `tar -xzf development-cli.tar.gz`. In its `development-cli` directory run `./numera-core --json doctor` (PowerShell: `.\numera-core.exe --json doctor`). These unsigned development archives contain the control plane; browser/GUI and clean-machine installation acceptance remain open.
 
@@ -58,7 +58,7 @@ python scripts/licenses.py --check
 python scripts/security-audit.py
 ```
 
-Windows executable paths end in `.exe`. Use the native CI matrix for Windows/Linux/macOS verification. [Protocol](contracts/PROTOCOL.md), [security](SECURITY.md), [updates](docs/adr/003-updates.md), [feasibility](docs/feasibility.md), and [manager checklist](docs/manager-integration.md) describe the current boundaries.
+Windows executable paths end in `.exe`. Use the native CI matrix for Windows and Linux verification. [Protocol](contracts/PROTOCOL.md) · [Security](SECURITY.md) · [Updates](docs/adr/003-updates.md) · [Feasibility](docs/feasibility.md) · [Manager integration](docs/manager-integration.md)
 
 The external consumer also tests shutdown with a saturated stderr pipe. On Linux it compiles a small development fixture with the system `cc` to reproduce file replacement during opening; this fixture is never linked into the installed CLI.
 
