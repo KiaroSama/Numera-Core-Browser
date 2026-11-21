@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Stage a source-built runtime and verify it from a relocated path."""
 import json
+import os
 from pathlib import PurePosixPath
 import shutil
 import stat
@@ -68,7 +69,7 @@ def describe_portable_runtime(source, host, environment):
             'gn_sha256': sha256(gn), 'gn_targets': targets}
 
 
-def stage_portable_runtime(source, scratch, output, host, environment):
+def measure_portable_runtime(source, output, host, environment):
     build = source / 'out/Numera'
     if build.resolve(strict=True) != build:
         raise RuntimeError('Chromium build output follows an unexpected link')
@@ -76,35 +77,32 @@ def stage_portable_runtime(source, scratch, output, host, environment):
     files = resolve_runtime_files(build, layout['dependencies'])
     if not set(layout['required']) <= set(files):
         raise RuntimeError('Runtime dependency list is missing required executable files')
-    runtime = scratch / 'Numera portable مسیر' / 'runtime'
-    bytes_required = sum((build / name).stat().st_size for name in files)
-    if shutil.disk_usage(scratch).free - bytes_required < 64 * 1024**2:
-        raise RuntimeError('Insufficient disk space for the relocated runtime and its test evidence')
-    runtime.mkdir(parents=True, exist_ok=False)
-    manifest = {}
-    for name in files:
-        original, staged = build / name, runtime / name
-        staged.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(original, staged)
-        staged.chmod(stat.S_IMODE(original.stat().st_mode) & 0o777)
-        digest = sha256(staged)
-        if digest != sha256(original):
-            raise RuntimeError('Relocated runtime file does not match the source-built file')
-        manifest[name] = {'sha256': digest, 'bytes': staged.stat().st_size}
+    manifest = {name: {'sha256': sha256(build / name), 'bytes': (build / name).stat().st_size} for name in files}
+    bytes_required = sum(item['bytes'] for item in manifest.values())
     write_json(output / 'portable-runtime-inventory.json', {'files': manifest, 'bytes': bytes_required,
                'gn_sha256': layout['gn_sha256'], 'gn_targets': layout['gn_targets'],
                'publisher_signing': 'NOT_CONFIGURED'})
-    return runtime, layout['binary'], layout['driver']
+    return build, layout['binary'], layout['driver']
 
 
 def extract_portable_archive(staged, scratch, inventory):
     files = inventory['files']
-    if shutil.disk_usage(scratch).free - 2 * inventory['bytes'] < 64 * 1024**2:
-        raise RuntimeError('Insufficient space to write and verify the portable archive')
+    minimum_free = inventory['bytes'] + 64 * 1024**2
+    if shutil.disk_usage(scratch).free < minimum_free:
+        raise RuntimeError('Insufficient space to write the portable archive')
     package = scratch / 'numera-portable-runtime.tar.gz'
     with tarfile.open(package, 'x:gz', compresslevel=3) as archive:
-        for name in files:
-            archive.add(staged / name, arcname=f'runtime/{name}', recursive=False)
+        for name, entry in files.items():
+            with (staged / name).open('rb') as source:
+                metadata = os.fstat(source.fileno())
+                if not stat.S_ISREG(metadata.st_mode) or metadata.st_size != entry['bytes']:
+                    raise RuntimeError('Runtime file identity changed during packaging')
+                member = tarfile.TarInfo(f'runtime/{name}')
+                member.size = metadata.st_size
+                member.mode = metadata.st_mode & 0o777
+                archive.addfile(member, source)
+    if shutil.disk_usage(scratch).free < minimum_free:
+        raise RuntimeError('Insufficient space to extract the portable archive')
     destination = scratch / 'Numera extracted مسیر'
     destination.mkdir()
     expected = {f'runtime/{name}': entry for name, entry in files.items()}
@@ -122,7 +120,7 @@ def extract_portable_archive(staged, scratch, inventory):
 
 
 def smoke_portable_runtime(source, scratch, output, host, environment):
-    staged, binary, driver = stage_portable_runtime(source, scratch, output, host, environment)
+    staged, binary, driver = measure_portable_runtime(source, output, host, environment)
     inventory_path = output / 'portable-runtime-inventory.json'
     inventory = json.loads(inventory_path.read_text(encoding='utf-8'))
     runtime, archive = extract_portable_archive(staged, scratch, inventory)
