@@ -1,0 +1,160 @@
+{
+  "schema_revision": 1,
+  "source_commit": "fe937c2e6cab71ab473a039ccf66639e0dc3c2bc",
+  "native_run": {
+    "id": 44946324377,
+    "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44946324377",
+    "conclusion": "success",
+    "linux": {
+      "job_id": 136974334524,
+      "rust_tests": 53
+    },
+    "windows": {
+      "job_id": 136974334381,
+      "rust_tests": 52
+    },
+    "dependency_audit": {
+      "job_id": 136974334085,
+      "artifact_id": 14723308978,
+      "packages_checked": 73,
+      "result": "PASS"
+    }
+  },
+  "retention_days": 7,
+  "development_cli": [
+    {
+      "source_commit": "fe937c2e6cab71ab473a039ccf66639e0dc3c2bc",
+      "artifact_id": 14723631769,
+      "target": "ubuntu-24.04",
+      "transport_sha256": "509c9df9241e42810837b128c3e6c56cab5d989e314e62ff2d50ab2bffa565a6",
+      "matching_source_sha256": "16d402fc64bff396d2a6e7e3668423bc2e35471f6a8c27061ded41bf8babdabc",
+      "complete_source_file_count": 385,
+      "executable_sha256": "59188434486f352f30f5003c91ed9386e6501383af2f4f51bb0783b8cce6d8fe",
+      "local_execution": "PASS",
+      "expires_at": "2026-11-28T20:27:46Z",
+      "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44946324377/artifacts/14723631769",
+      "transport_bytes": 7560102,
+      "native_runtime_archive_verification": "PASS"
+    },
+    {
+      "source_commit": "fe937c2e6cab71ab473a039ccf66639e0dc3c2bc",
+      "artifact_id": 14723601832,
+      "target": "windows-2025",
+      "transport_sha256": "eba0581b19fadc01fdca462c6c93108a5be7ed7dba49bec39528d5f5a5ff4fb3",
+      "matching_source_sha256": "16d402fc64bff396d2a6e7e3668423bc2e35471f6a8c27061ded41bf8babdabc",
+      "complete_source_file_count": 385,
+      "executable_sha256": "60de483356478c90f04a32d53b2fef659f0db25e934f7037985e5f703b628c63",
+      "local_execution": "NOT_RUN on this Linux verifier; native Windows execution verified by CI",
+      "expires_at": "2026-11-28T20:28:17Z",
+      "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44946324377/artifacts/14723601832",
+      "transport_bytes": 1777405,
+      "native_runtime_archive_verification": "PASS"
+    }
+  ],
+  "contract": {
+    "artifact": "numera-core-contracts-v1",
+    "wire_major": 1,
+    "schema_revision": 1,
+    "extracted_native_producer_conformance": "PASS",
+    "archives_byte_identical": true,
+    "platforms": [
+      {
+        "id": 14723227869,
+        "name": "numera-core-contracts-v1-ubuntu-24.04",
+        "run_id": 44946324377,
+        "source_commit": "fe937c2e6cab71ab473a039ccf66639e0dc3c2bc",
+        "transport_sha256": "sha256:6b04df9d0f01298b91b8ec8e16f5a3f387e536b43cf4ea9c352ca1874f483a3c",
+        "transport_bytes": 19117,
+        "contract_sha256": "0a0c8c3f1a343b6c27358f84f2a9b41c39a18517b44f13a977d6702544c55078",
+        "contract_bytes": 22979,
+        "verified_exact_source_members": 20,
+        "canonical_hashes_verified": 11,
+        "expires_at": "2026-11-28T20:27:49Z",
+        "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44946324377/artifacts/14723227869"
+      },
+      {
+        "id": 14723242927,
+        "name": "numera-core-contracts-v1-windows-2025",
+        "run_id": 44946324377,
+        "source_commit": "fe937c2e6cab71ab473a039ccf66639e0dc3c2bc",
+        "transport_sha256": "sha256:dc8876402ac358dbfb0e83d2e0f65a2cd0b5d0d483658d6caa5368e5eadaaa88",
+        "transport_bytes": 19117,
+        "contract_sha256": "0a0c8c3f1a343b6c27358f84f2a9b41c39a18517b44f13a977d6702544c55078",
+        "contract_bytes": 22979,
+        "verified_exact_source_members": 20,
+        "canonical_hashes_verified": 11,
+        "expires_at": "2026-11-28T20:28:19Z",
+        "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44946324377/artifacts/14723242927"
+      }
+    ]
+  },
+  "provenance": {
+    "job_id": 136974724832,
+    "verifier": "GitHub CLI 2.105.0 with TUF-verified trust roots and the retained Sigstore bundle",
+    "signer_workflow": "KiaroSama/Numera-Core-Browser/.github/workflows/rust.yml",
+    "source_ref": "refs/heads/main",
+    "predicate": "https://slsa.dev/provenance/v1",
+    "github_hosted_required": true,
+    "bundle": {
+      "artifact_id": 14723907146,
+      "transport_sha256": "sha256:cf5d3b8e623e914abe25119355a0fd17b2c217d989bdd93ad45e04a3466b4c4f",
+      "transport_bytes": 6886,
+      "bundle_sha256": "13b0b654c4f47c9e9c857ed5f2ce30ce31d4398e604bba9050033d0d307fbbd7",
+      "bundle_bytes": 11094,
+      "json_records": 1,
+      "expires_at": "2026-11-28T20:28:35Z",
+      "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44946324377/artifacts/14723907146"
+    },
+    "subjects": {
+      "numera-core-cli-linux-x86_64.tar.gz": "54b07b10df0c68f8aad32495c98a3916a1d84443e9bfa5019663838664b1788b",
+      "numera-core-cli-windows-x86_64.tar.gz": "3f2a916ffc51bd7efd429f40aadaa4e4f349ce28fa1227fd58d457341a5d88bc",
+      "numera-core-contracts-v1.zip": "0a0c8c3f1a343b6c27358f84f2a9b41c39a18517b44f13a977d6702544c55078"
+    },
+    "subject_verification": "PASS",
+    "tampered_contract_verification": "REJECTED",
+    "application_update_signature": "NOT_RUN",
+    "windows_authenticode": "NOT_RUN"
+  },
+  "acceptance": {
+    "browser_engine": false,
+    "paired_manager": false,
+    "trusted_release": false
+  },
+  "runtime_archive_fixture": {
+    "result": "PASS",
+    "platforms": [
+      "windows-x86_64",
+      "linux-x86_64"
+    ],
+    "checks": [
+      "extracted CLI with empty PATH",
+      "UTF-8 Persian file and PAX entry",
+      "exact SHA-256 and size",
+      "incorrect SHA-256 rejected with the recorded error",
+      "input unchanged and no extraction beside either the input or the process work directory",
+      "native tests reject ambiguous path casing and incomplete PAX records"
+    ],
+    "source_browser_archive": "NOT_RUN"
+  },
+  "bounded_ipc_fuzzing": {
+    "run": 44946324557,
+    "job": 136974334527,
+    "id": 14723842251,
+    "size": 104966,
+    "digest": "5647e9d1044d05ab154a786a03996d95d9ec3208a73bb32aac70b0f3aa6961ea",
+    "commit": "fe937c2e6cab71ab473a039ccf66639e0dc3c2bc",
+    "cases": 335971,
+    "seconds": 61,
+    "security": {
+      "timestamp": "2026-11-21T20:27:35.548441+00:00",
+      "source": "https://api.osv.dev/v1/querybatch",
+      "lock_file": "fuzz/Cargo.lock",
+      "result": "PASS",
+      "packages_checked": 64,
+      "findings": []
+    },
+    "result": "PASS",
+    "sanitizer": "AddressSanitizer",
+    "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44946324557/artifacts/14723842251"
+  }
+}
