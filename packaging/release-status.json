@@ -14,8 +14,8 @@
   },
   "repository_published": true,
   "blockers": [
-    "Owned Chromium compilation and linking remains unverified on the active Windows and Linux targets",
-    "No real browser/native automation acceptance",
+    "Owned Chromium compilation and linking remains in verification on Windows",
+    "Corrected native client, headed browser and portable runtime acceptance remain open",
     "No signed updater or paired manager smoke suite"
   ],
   "development_cli": {
@@ -71,7 +71,13 @@
       "target": "ubuntu-24.04",
       "run_id": 44846110371,
       "source_commit": "ee1ebb7f22c665407ffae31a6e438a45fb85f208",
-      "status": "in_progress",
+      "status": "completed",
+      "conclusion": "failure",
+      "source_build": "PASS",
+      "renderer_fixture": "PASS",
+      "webdriver_fixture": "PASS",
+      "failure_class": "fixture-rejected-loopback-hostname",
+      "evidence": "docs/evidence/chromium-staged-44846110371-segment-3.json",
       "verified_checkpoint_evidence": [
         "docs/evidence/chromium-staged-44846110371-segment-1.json",
         "docs/evidence/chromium-staged-44846110371-segment-2.json"
@@ -115,10 +121,10 @@
       "target": "windows-2025-vs2026",
       "run_id": 44910829932,
       "source_commit": "ef0188e341784bfc5cd82ee100269218072e838e",
-      "status": "pending"
+      "status": "in_progress"
     }
   ],
-  "source_experiment_status_observed_at": "2026-11-21T13:50:20+00:00",
+  "source_experiment_status_observed_at": "2026-11-21T14:16:15+00:00",
   "active_targets": [
     "windows-x86_64",
     "linux-x86_64"

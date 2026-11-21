@@ -1,6 +1,6 @@
 # Source-build feasibility — Windows and Linux
 
-The current product targets Windows and Linux x86-64. Their measured cold recipes exhausted the 330-minute build budget. The macOS observations below document earlier experiments on targets that have since been removed.
+The current product targets Windows and Linux x86-64. The initial single-job cold recipes exhausted their 330-minute build budget. A later three-segment Linux run compiled and linked all 56,773 native actions from pinned source, then passed controlled rendering and WebDriver with the source-built browser and sandbox. The macOS observations below document earlier experiments on targets that have since been removed. [Verified staged Linux result](evidence/chromium-staged-44846110371-segment-3.json)
 
 The initial GitHub integration denied both repository-creation routes: GraphQL `createRepository` and REST `POST /user/repos` returned `Resource not accessible by integration` (REST HTTP 403). The user subsequently created the exact public repository and its prepared source history was published. No existing repository was renamed or overwritten.
 

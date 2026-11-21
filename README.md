@@ -4,7 +4,7 @@
 
 An independent browser runtime for [Numera Browser](https://github.com/KiaroSama/Numera-Browser), following the GoLogin/Orbita product boundary: the manager owns profiles; Core owns the browser runtime. The initial delivery targets an owned Chromium source build and retained browser chrome, with a shared Rust control plane.
 
-**Development status: Windows and Linux x86-64 are the active targets. The Rust control plane has passed native CI on both. The Chromium source build and browser release are still blocked.** A passing Rust check never implies a passing browser-source build. See [implementation report](docs/implementation-report.md), [hosted evidence](docs/evidence/hosted-verification.json), [scope](docs/scope.md), and the [original handoff](docs/original-build-specification.md).
+**Development status.** Windows and Linux x86-64 are the active targets, and the Rust control plane has passed native CI on both. The staged Linux build compiled and linked Chromium and ChromeDriver from pinned source and passed controlled renderer and WebDriver tests. Native client tests, Windows source verification and browser distribution are in progress. [Linux build evidence](docs/evidence/chromium-staged-44846110371-segment-3.json) · [Implementation report](docs/implementation-report.md) · [Scope](docs/scope.md) · [Original handoff](docs/original-build-specification.md)
 
 This is source-available, noncommercial software under the exact [Noncommercial Network Share-Alike License 1.0](LICENSE). Third-party material retains its own terms. It is not described as OSI-approved open source.
 
