@@ -75,7 +75,6 @@ fn chromium_owner(root: &Path, browser: &Path, fixture: &std::ffi::OsStr) {
             "ALLUSERSPROFILE",
             "ProgramData",
             "ProgramFiles",
-            "ProgramFiles(x86)",
             "ProgramW6432",
         ] {
             if let Some(value) = std::env::var_os(key) {
