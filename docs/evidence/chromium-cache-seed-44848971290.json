@@ -1,0 +1,84 @@
+{
+  "run_id": 44848971290,
+  "artifact_id": 14685657765,
+  "verified_transport_digest": "sha256:a026842220cc98ac7f8dbb4016b5cf355bcde18b0e4ac2941552975e4f5a9631",
+  "report": {
+    "phase": "seed",
+    "runner": "Windows",
+    "source_commit": "0c4f7305b43af276dc5fe21148d12516db586387",
+    "result": "PASS",
+    "engine_source_acceptance": "NOT_RUN",
+    "release_ready": false,
+    "context": {
+      "run_id": "44848971290",
+      "run_attempt": "1",
+      "runner_image": "20261116.315.1",
+      "host": "Windows",
+      "head": "0c4f7305b43af276dc5fe21148d12516db586387",
+      "scratch": "D:\\a\\_temp\\numera-compiler-cache-probe",
+      "target": "obj/base/base/logging.obj",
+      "lock_sha256": "a0899efb63de8badf27b640b9bfba4f702aaaa74cd2381c19f7fd6c5ac81bf12",
+      "gn_args_sha256": "ed77d85ceb6cb8e5c1d5c3753cc61af2f7cf9e4a86224629be516c13629b9da5",
+      "cache_tool": "sccache",
+      "cache_tool_sha256": "ba5542107b245431e37011110c1929d635e3a8e52cc98d35c4b01d0aa328b5a5",
+      "cache_config_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "ninja_sha256": "e52a7ad9538d9618c67a0bd777964e2eec8a30f68b810a2f6adce1f2daf847b8",
+      "clang_sha256": "4da6bc64ba680144071eddd49e70e4e9ab75a683ecf471cb298760adbe275094",
+      "command_sha256": "e0fd1c1329314170051b6550e1b259779e50d2040f5b2b07ee1f10f46d207cd4",
+      "input_sha256": "4d69842dafef18f5409b5f88a5716f84f7009b0ed1ea34a21eb4aa7559d7b696",
+      "sdk": {
+        "directory_version": "10.0.28000.0",
+        "debugging_tools_version": "10.0.28000.2957 (WinBuild.160101.0800)",
+        "requested_release": "10.0.28000.2957"
+      }
+    },
+    "checkpoint_bytes": 215040,
+    "checkpoint_sha256": "7833ee3eb29d7b09dca6adec02ca63292d0620a0f7e683048f64d075a3a08076",
+    "object_sha256": "a1411be1d5cc9d144bc335c6d857d3713d49e3f15550d8b267335cdf90e812d3"
+  },
+  "cold": {
+    "compile_requests": 1,
+    "cache_hits": {
+      "counts": {},
+      "adv_counts": {}
+    },
+    "cache_misses": {
+      "counts": {
+        "C/C++": 1
+      },
+      "adv_counts": {
+        "c++ [msvc]": 1
+      }
+    },
+    "cache_writes": 1,
+    "non_cacheable_compilations": 0,
+    "not_cached": {}
+  },
+  "seed_job_id": 136675534890,
+  "native_object_compiled": true,
+  "prerequisite_last_action": "[621/621] ACTION //third_party/rust/serde_json_lenient/v0_2/wrapper:wrapper_cxx_generated_gen(//build/toolchain/win:win_clang_x64)",
+  "target_last_action": "[1/1] CXX obj/base/base/logging.obj",
+  "prerequisites": {
+    "compile_requests": 420,
+    "cache_hits": {
+      "counts": {
+        "C/C++": 18
+      },
+      "adv_counts": {
+        "c++ [msvc]": 18
+      }
+    },
+    "cache_misses": {
+      "counts": {
+        "C/C++": 402
+      },
+      "adv_counts": {
+        "c [msvc]": 2,
+        "c++ [msvc]": 400
+      }
+    },
+    "cache_writes": 402,
+    "not_cached": {},
+    "cache_write_errors": 0
+  }
+}
