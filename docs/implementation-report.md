@@ -27,7 +27,9 @@ The later [observation PR #4](https://github.com/KiaroSama/Numera-Core-Browser/p
 
 ## Tested development CLI archives
 
-The latest native development run passed 47 Windows tests and 48 Linux tests, including Linux process ownership. Both downloaded CLI archives matched the exact published commit, including executable digests and all 343 files in the matching source ZIP. The extracted Linux binary passed `doctor` with an empty `PATH`. The Windows and Linux NCB-1 contract ZIPs were byte-identical, and their extracted conformance harnesses passed against the native Rust producers. [Verification and artifact links](evidence/development-artifacts-44904768647.json) · [Native run](https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44904768647)
+The latest native development run passed 47 Windows tests and 48 Linux tests, including Linux process ownership. Both downloaded CLI archives matched the exact published commit, including executable digests and all 347 files in the matching source ZIP. The extracted Linux binary passed `doctor` with an empty `PATH`. The Windows and Linux NCB-1 contract ZIPs were byte-identical, and their extracted conformance harnesses passed against the native Rust producers. [Verification and artifact links](evidence/development-artifacts-44907851253.json) · [Native run](https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44907851253)
+
+The official GitHub CLI verified the retained Sigstore attestation for both inner CLI bundles and the canonical contract ZIP. Verification enforced the exact `main` commit, signer workflow and GitHub-hosted runner. A one-byte contract change failed verification. Production application updates require their own trusted root and publisher signatures. [Verified provenance](evidence/development-artifacts-44907851253.json)
 
 The earlier Linux ownership implementation commit passed CodeQL, Gitleaks, the dependency audit and 335,553 bounded IPC fuzz executions. [Exact source and evidence](evidence/development-cli-44858039915.json)
 

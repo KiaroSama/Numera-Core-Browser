@@ -29,7 +29,9 @@ Successful native CI jobs produce `development-cli-*` artifacts with a `developm
 
 For Windows or Linux x86-64, select the corresponding `development-cli-*` artifact on a recent successful Windows and Linux native CI run. GitHub may require login, and each archive expires seven days after its run. Check the source commit in `development-manifest.json`. [Native CI runs](https://github.com/KiaroSama/Numera-Core-Browser/actions/workflows/rust.yml)
 
-The `numera-core-contracts-v1-*` artifacts contain the versioned schemas, fixtures, theme tokens and conformance harness. The Windows and Linux jobs tested the extracted contract against their respective native CLIs and produced the same contract ZIP bytes. [Verified artifacts](docs/evidence/development-artifacts-44904768647.json) · [Contract changelog](contracts/CHANGELOG.md)
+The `numera-core-contracts-v1-*` artifacts contain the versioned schemas, fixtures, theme tokens and conformance harness. The Windows and Linux jobs tested the extracted contract against their respective native CLIs and produced the same contract ZIP bytes. [Verified artifacts](docs/evidence/development-artifacts-44907851253.json) · [Contract changelog](contracts/CHANGELOG.md)
+
+Successful `main` builds publish a `development-artifact-provenance` bundle. Verify the inner CLI tar or contract ZIP with `gh attestation verify`, the extracted bundle, and the expected workflow, ref and source commit. The evidence records exact subject digests and the signer workflow. [Provenance and downloads](docs/evidence/development-artifacts-44907851253.json) · [GitHub verification reference](https://cli.github.com/manual/gh_attestation_verify)
 
 ## Source layout
 

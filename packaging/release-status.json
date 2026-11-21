@@ -19,14 +19,14 @@
     "No signed updater or paired manager smoke suite"
   ],
   "development_cli": {
-    "source_commit": "1d60da611b931c52bbbc5cd2709d2b523c072c6b",
-    "run_id": 44904768647,
+    "source_commit": "4878e48bb36929061f1e0aa8607ca547171a834f",
+    "run_id": 44907851253,
     "channel": "unsigned-development-control-plane",
     "targets": [
       "windows-x86_64",
       "linux-x86_64"
     ],
-    "evidence": "docs/evidence/development-artifacts-44904768647.json",
+    "evidence": "docs/evidence/development-artifacts-44907851253.json",
     "browser_included": false,
     "clean_machine_installation": "NOT_RUN",
     "retention_days": 7,
@@ -34,12 +34,19 @@
   },
   "development_contract": {
     "artifact": "numera-core-contracts-v1",
-    "source_commit": "1d60da611b931c52bbbc5cd2709d2b523c072c6b",
-    "run_id": 44904768647,
-    "sha256": "9b90ce280254cd15387125609a18fe39d6d5100e1d3db1cdaded91e0c41aa8e4",
+    "source_commit": "4878e48bb36929061f1e0aa8607ca547171a834f",
+    "run_id": 44907851253,
+    "sha256": "158f5214c52f3dd34a3785e5216ababccb01485a49b8505ebfdc045bbbe51347",
     "native_producer_conformance": "PASS",
     "paired_manager_browser": "NOT_RUN",
-    "evidence": "docs/evidence/development-artifacts-44904768647.json"
+    "evidence": "docs/evidence/development-artifacts-44907851253.json"
+  },
+  "development_provenance": {
+    "status": "PASS",
+    "run_id": 44907851253,
+    "bundle_artifact_id": 14708891004,
+    "scope": ["linux-cli-tar", "windows-cli-tar", "canonical-contract-zip"],
+    "evidence": "docs/evidence/development-artifacts-44907851253.json"
   },
   "native_source_experiments": [
     {
