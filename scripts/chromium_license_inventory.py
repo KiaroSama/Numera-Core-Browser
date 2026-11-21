@@ -4,12 +4,48 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import subprocess
 import sys
+from urllib.parse import urlsplit
 
 from chromium_cache_probe import RELEASES, REPOSITORY, compile_graph, install_tool
 from engine_build import now, sha256, write_json
 from logging_util import log
+
+
+def git_source_inventory(root, source, output, pin, environment):
+    inventory = output / 'git-source-revisions.json'
+    raw = root / 'git-source-revisions.unverified'
+    with (output / 'source-inventory.log').open('wb') as diagnostics:
+        subprocess.run([sys.executable, str(root / 'depot_tools/gclient.py'), 'revinfo', '--actual',
+                        '--ignore-dep-type', 'cipd', '--ignore-dep-type', 'gcs', '--output-json', str(raw)],
+                       cwd=source.parent, env=environment, stdout=diagnostics, stderr=subprocess.STDOUT,
+                       timeout=180, check=True)
+    if not 0 < raw.stat().st_size <= 4 * 1024**2:
+        raise RuntimeError('The Chromium checkout revision inventory is out of bounds')
+    revisions = json.loads(raw.read_text(encoding='utf-8'))
+    raw.unlink()
+    checked_out = {}
+    for name, item in sorted(revisions.items()):
+        origin, revision = item['url'], item['rev']
+        if origin is None and revision is None:
+            continue  # gclient includes disabled platform dependencies.
+        url = urlsplit(origin)
+        if (not re.fullmatch(r'src(?:/[A-Za-z0-9_.+\-]+)*', name)
+                or any(part in {'.', '..'} for part in name.split('/'))
+                or url.scheme != 'https' or not url.hostname or url.username is not None
+                or url.password is not None or url.query or url.fragment
+                or not re.fullmatch(r'[0-9a-f]{40}', revision or '')):
+            raise RuntimeError('The native source inventory contains an invalid checkout record')
+        checked_out[name] = {'url': origin, 'revision': revision}
+    if len(checked_out) < 2 or checked_out.get('src', {}).get('revision') != pin['revision']:
+        raise RuntimeError('The source inventory does not match the pinned Chromium checkout')
+    deps = source / 'DEPS'
+    write_json(inventory, {'schema_revision': 1, 'chromium_revision': pin['revision'],
+               'workspace_dependencies_sha256': sha256(deps), 'git_checkouts': checked_out,
+               'scope': 'Actual Git revisions. CIPD and GCS are recorded in the pinned DEPS reference.'})
+    return {'git_checkouts': len(checked_out), 'sha256': sha256(inventory), 'deps_sha256': sha256(deps)}
 
 
 def main():
@@ -41,6 +77,7 @@ def main():
         native = source / 'out/Numera'
         license_tool = source / 'tools/licenses/licenses.py'
         report.update(gn_args_sha256=sha256(native / 'args.gn'), license_tool_sha256=sha256(license_tool))
+        report['source_inventory'] = git_source_inventory(root, source, output, pin, environment)
         targets = {'chromium': '//chrome:chrome', 'chromedriver': '//chrome/test/chromedriver:chromedriver_server'}
         if host == 'Linux':
             targets['chrome-sandbox'] = '//sandbox/linux:chrome_sandbox'
