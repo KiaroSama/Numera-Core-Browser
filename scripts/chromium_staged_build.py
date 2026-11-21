@@ -11,7 +11,8 @@ import time
 
 import psutil
 from chromedriver_fixture import smoke_clients, smoke_driver
-from chromium_cache_probe import REPOSITORY, RELEASES, compile_graph, install_tool, pack_cache, restore_cache
+from chromium_cache_probe import (REPOSITORY, RELEASES, STAGED_CACHE_CONFIG, compile_graph,
+                                  install_tool, pack_cache, restore_cache)
 from engine_build import CheckRun, install_linux_sandbox, now, publish_check, read_progress, sha256, smoke, stop_tree, write_json
 from logging_util import log
 
@@ -119,7 +120,7 @@ def main():
     try:
         wrapper, ninja = [install_tool(tools, spec) for spec in RELEASES[host]]
         config = tools / 'local-cache.conf'
-        config.write_text('direct_mode = false\ncompiler_check = content\nmax_size = 2550M\n', encoding='utf-8')
+        config.write_text(STAGED_CACHE_CONFIG, encoding='utf-8')
         environment = {k: v for k, v in os.environ.items() if not k.upper().startswith(('CCACHE_', 'SCCACHE_')) and k not in
                        {'GH_TOKEN', 'GITHUB_TOKEN', 'ACTIONS_RUNTIME_TOKEN', 'ACTIONS_ID_TOKEN_REQUEST_TOKEN'}}
         environment.update(CCACHE_DIR=str(entries), CCACHE_CONFIGPATH=str(config), CCACHE_TEMPDIR=str(temp_cache),
@@ -142,7 +143,7 @@ def main():
                    'host': host, 'scratch': str(root), 'targets': targets,
                    'source_lock_sha256': sha256(Path('upstream/chromium/lock.json')),
                    'gn_args_sha256': sha256(native_output / 'args.gn'), 'commands_sha256': sha256(graph_commands),
-                   'ccache_sha256': sha256(wrapper), 'ccache_config_sha256': sha256(config),
+                   'cache_tool': 'ccache', 'cache_tool_sha256': sha256(wrapper), 'cache_config_sha256': sha256(config),
                    'ninja_sha256': sha256(ninja), 'clang_sha256': sha256(clang)}
         if host == 'Windows':
             sdk = json.loads((root / 'windows-sdk.json').read_text(encoding='utf-8-sig'))
@@ -152,8 +153,9 @@ def main():
         if args.segment > 1:
             report['stage'] = 'restore'
             previous = transfer / 'checkpoint.tar'
+            report['runner_images'] = {}
             restore_cache(entries, previous, os.environ.get('EXPECTED_CHECKPOINT_SHA'), context,
-                          limit=CACHE_LIMIT, max_entries=MAX_ENTRIES)
+                          limit=CACHE_LIMIT, max_entries=MAX_ENTRIES, linux_runner_images=report['runner_images'])
             previous.unlink()
             # Rebuild local occupancy accounting after transport excluded ccache stats.
             ccache_command(wrapper, environment, '--cleanup')

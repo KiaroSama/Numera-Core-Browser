@@ -22,6 +22,9 @@ REPOSITORY = 'KiaroSama/Numera-Core-Browser'
 ARCHIVE_LIMIT = 32 * 1024 * 1024
 MANIFEST_NAME = 'manifest.json'
 PROBE_CACHE_CONFIG = 'direct_mode = false\ncompiler_check = content\nmax_size = 24M\n'
+STAGED_CACHE_CONFIG = 'direct_mode = false\ncompiler_check = content\nmax_size = 2550M\n'
+PREPROCESSED_CONFIG_HASHES = {hashlib.sha256(config.encode('utf-8')).hexdigest()
+                              for config in (PROBE_CACHE_CONFIG, STAGED_CACHE_CONFIG)}
 WINDOWS_SCCACHE = ('mozilla/sccache', 'v0.19.0', 'sccache-v0.19.0-x86_64-pc-windows-msvc.tar.gz',
                    '130e4f8eb672e76590e9993c2ab890c4763b88238577bb11d8062158c7698353', 9830016, 'sccache.exe')
 RELEASES = {
@@ -113,7 +116,7 @@ def pack_cache(root, archive, context, object_hash, *, limit=ARCHIVE_LIMIT, max_
 
 
 def restore_cache(root, archive, expected, context, *, limit=ARCHIVE_LIMIT, max_entries=512,
-                  probe_image_evidence=None):
+                  linux_runner_images=None):
     if not re.fullmatch(r'[0-9a-f]{64}', expected or '') or archive.stat().st_size > limit or sha256(archive) != expected:
         raise RuntimeError('Checkpoint does not match this attempt’s seed digest')
     with tarfile.open(archive, 'r:') as bundle:
@@ -129,18 +132,17 @@ def restore_cache(root, archive, expected, context, *, limit=ARCHIVE_LIMIT, max_
         changed = {k for k in context.keys() | producer.keys()
                    if k not in context or k not in producer or producer[k] != context[k]}
         if changed:
-            # The single-object probe independently verifies the hit and the
-            # byte-identical result. Each request must first preprocess the
-            # fresh checkout, so the host image label is only provenance here.
-            compatible_probe = (probe_image_evidence is not None and changed == {'runner_image'}
+            # Only preprocessed Linux ccache entries may cross runner images.
+            # The fresh compiler and its preprocessed input determine each hit.
+            compatible_image = (linux_runner_images is not None and changed == {'runner_image'}
                                 and context.get('host') == 'Linux' and context.get('cache_tool') == 'ccache'
-                                and context.get('cache_config_sha256') == hashlib.sha256(PROBE_CACHE_CONFIG.encode()).hexdigest()
+                                and context.get('cache_config_sha256') in PREPROCESSED_CONFIG_HASHES
                                 and all(isinstance(item.get('runner_image'), str) and item['runner_image']
                                         for item in (producer, context)))
-            if not compatible_probe:
+            if not compatible_image:
                 raise RuntimeError('Checkpoint build context changed: ' + ', '.join(sorted(changed)))
-        if probe_image_evidence is not None:
-            probe_image_evidence.update(seed=producer.get('runner_image'), resume=context.get('runner_image'))
+        if linux_runner_images is not None:
+            linux_runner_images.update(seed=producer.get('runner_image'), resume=context.get('runner_image'))
         names.remove(MANIFEST_NAME)
         if set(manifest['files']) != set(names):
             raise RuntimeError('Checkpoint inventory is incomplete')
@@ -312,7 +314,7 @@ def main():
                 raise RuntimeError('Fresh runner unexpectedly contains the compiled probe object')
             report['runner_images'] = {}
             seed_hash = restore_cache(cache, transfer, os.environ.get('EXPECTED_CHECKPOINT_SHA'), context,
-                                      probe_image_evidence=report['runner_images'])
+                                      linux_runner_images=report['runner_images'])
         if cache_tool == 'sccache':
             subprocess.run([str(wrapper), '--start-server'], env=environment, timeout=20, check=True)
             server_started = True
