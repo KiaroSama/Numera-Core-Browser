@@ -89,7 +89,9 @@
       "target": "ubuntu-24.04",
       "run_id": 44910574065,
       "source_commit": "fac5ff3ee5927109b2802456d523d4cba2422693",
-      "status": "queued",
+      "status": "completed",
+      "conclusion": "failure",
+      "reason": "GitHub rejected the dispatch input when passing a numeric segment to the reusable workflow",
       "reviewed_checkpoint": "docs/evidence/chromium-staged-44846110371-segment-2.json",
       "cache_mode": "read-only-replay"
     },
@@ -97,10 +99,26 @@
       "target": "windows-2025-vs2026",
       "run_id": 44910588735,
       "source_commit": "fac5ff3ee5927109b2802456d523d4cba2422693",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "reason": "Superseded before the first job by the corrected reusable workflow input type"
+    },
+    {
+      "target": "ubuntu-24.04",
+      "run_id": 44910785784,
+      "source_commit": "ef0188e341784bfc5cd82ee100269218072e838e",
+      "status": "in_progress",
+      "reviewed_checkpoint": "docs/evidence/chromium-staged-44846110371-segment-2.json",
+      "cache_mode": "read-only-replay"
+    },
+    {
+      "target": "windows-2025-vs2026",
+      "run_id": 44910829932,
+      "source_commit": "ef0188e341784bfc5cd82ee100269218072e838e",
       "status": "pending"
     }
   ],
-  "source_experiment_status_observed_at": "2026-11-21T13:47:25+00:00",
+  "source_experiment_status_observed_at": "2026-11-21T13:50:20+00:00",
   "active_targets": [
     "windows-x86_64",
     "linux-x86_64"
