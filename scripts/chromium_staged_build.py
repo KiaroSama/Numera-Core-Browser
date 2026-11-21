@@ -14,6 +14,7 @@ import psutil
 from chromedriver_fixture import smoke_clients, smoke_driver
 from chromium_cache_probe import (REPOSITORY, RELEASES, STAGED_CACHE_CONFIG, compile_graph,
                                   install_tool, pack_cache, restore_cache, sccache_server)
+from chromium_portable_fixture import smoke_portable_runtime
 from engine_build import CheckRun, install_linux_sandbox, now, publish_check, read_progress, sha256, smoke, stop_tree, write_json
 from logging_util import log
 
@@ -120,7 +121,7 @@ def main():
     report = {'schema_revision': 1, 'result': 'BLOCKED', 'stage': 'prepare', 'segment': args.segment,
               'commit': os.environ['GITHUB_SHA'], 'host': host, 'release_ready': False, 'source_build': 'NOT_RUN',
               'renderer_fixture': 'NOT_RUN', 'driver_fixture': 'NOT_RUN', 'automation_client_smokes': 'NOT_RUN',
-              'automation_suites': 'NOT_RUN',
+              'automation_suites': 'NOT_RUN', 'portable_runtime_fixture': 'NOT_RUN',
               'compile_budget_minutes': args.minutes,
               'debug_build': True, 'elapsed_seconds': 0, 'disk_free_bytes': shutil.disk_usage(root.parent).free,
               'peak_tree_rss_bytes': 0}
@@ -213,13 +214,15 @@ def main():
         report['webdriver'] = smoke_driver(binary, driver, root, output, environment, stop_tree)
         report.update(stage='automation-client-fixtures', driver_fixture='PASS', automation_client_smokes='RUNNING')
         report['automation_clients'] = smoke_clients(binary, driver, root, output, environment, stop_tree)
-        report.update(result='PASS', stage='source-and-native-fixtures-complete', automation_client_smokes='PASS')
+        report.update(stage='portable-runtime-fixture', automation_client_smokes='PASS', portable_runtime_fixture='RUNNING')
+        report['portable_runtime'] = smoke_portable_runtime(source, root, output, host, environment)
+        report.update(result='PASS', stage='source-and-native-fixtures-complete', portable_runtime_fixture='PASS')
         write_outputs('PASS')
     except Exception as error:
         report.update(result='BLOCKED', error_type=type(error).__name__)
         if isinstance(error, RuntimeError):
             report['diagnostic'] = str(error)
-        for key in ('source_build', 'renderer_fixture', 'driver_fixture', 'automation_client_smokes'):
+        for key in ('source_build', 'renderer_fixture', 'driver_fixture', 'automation_client_smokes', 'portable_runtime_fixture'):
             if report[key] == 'RUNNING':
                 report[key] = 'BLOCKED'
         raise
