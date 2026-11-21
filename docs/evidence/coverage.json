@@ -2,7 +2,7 @@
   "schema_revision": 1,
   "timestamp": "2026-11-10T17:33:44.732611+00:00",
   "current_review": {
-    "observed_at": "2026-11-21T19:18:15+00:00",
+    "observed_at": "2026-11-21T19:26:18+00:00",
     "active_targets": [
       "windows-x86_64",
       "linux-x86_64"
@@ -93,9 +93,9 @@
             "platforms": [
               "windows-x86_64"
             ],
-            "evidence": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44913495180",
-            "source_commit": "d87a4c0fe6376d14db485df14352d6194c74d098",
-            "workflow_run": 44913495180
+            "evidence": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44940532355",
+            "source_commit": "cadcf1aa10e8eea38256295041fd2b0945b8853c",
+            "workflow_run": 44940532355
           },
           {
             "name": "Reviewed stable Chromium 158 branding patch and native GN graph",
@@ -129,9 +129,9 @@
             "platforms": [
               "windows-x86_64"
             ],
-            "evidence": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44913495180",
-            "source_commit": "d87a4c0fe6376d14db485df14352d6194c74d098",
-            "workflow_run": 44913495180
+            "evidence": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44940532355",
+            "source_commit": "cadcf1aa10e8eea38256295041fd2b0945b8853c",
+            "workflow_run": 44940532355
           },
           {
             "name": "Actual Git checkout provenance and pinned DEPS verification",
@@ -143,6 +143,16 @@
             "evidence": "docs/evidence/chromium-source-inventory-44913884524.json",
             "source_commit": "98fed12c70a1ad689f98f91352bd791f8a98f1d3",
             "workflow_run": 44913884524
+          },
+          {
+            "name": "First Windows full-graph checkpoint preservation",
+            "result": "PASS",
+            "platforms": [
+              "windows-x86_64"
+            ],
+            "evidence": "docs/evidence/chromium-staged-44913495180-segment-1.json",
+            "source_commit": "d87a4c0fe6376d14db485df14352d6194c74d098",
+            "workflow_run": 44913495180
           }
         ]
       },

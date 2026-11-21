@@ -139,9 +139,13 @@
       "run_id": 44913495180,
       "source_commit": "d87a4c0fe6376d14db485df14352d6194c74d098",
       "build_tooling_and_transport_tests": "PASS",
-      "status": "in_progress",
+      "status": "completed",
       "source_build": "PARTIAL",
-      "last_verified_checkpoint": "docs/evidence/chromium-staged-44913495180-segment-1.json"
+      "last_verified_checkpoint": "docs/evidence/chromium-staged-44913495180-segment-1.json",
+      "conclusion": "cancelled",
+      "first_native_job_conclusion": "success",
+      "continuation_run_id": 44940532355,
+      "reason": "Superseded during second-segment preparation after preserving the verified first checkpoint"
     },
     {
       "target": "ubuntu-24.04",
@@ -152,9 +156,20 @@
       "reviewed_checkpoint": "docs/evidence/chromium-staged-44846110371-segment-2.json",
       "declared_runtime_layout_evidence": "docs/evidence/chromium-runtime-layout-44925530814.json",
       "native_job_id": 136936265504
+    },
+    {
+      "target": "windows-2025-vs2026",
+      "run_id": 44940532355,
+      "source_commit": "cadcf1aa10e8eea38256295041fd2b0945b8853c",
+      "status": "in_progress",
+      "native_job_id": 136957369438,
+      "reviewed_checkpoint": "docs/evidence/chromium-staged-44913495180-segment-1.json",
+      "checkpoint_transport_restore": "PASS",
+      "build_tooling_and_transport_tests": "PASS",
+      "scope": "Continue the full Windows graph with archive, headed and viewport fixtures"
     }
   ],
-  "source_experiment_status_observed_at": "2026-11-21T19:21:17+00:00",
+  "source_experiment_status_observed_at": "2026-11-21T19:26:18+00:00",
   "active_targets": [
     "windows-x86_64",
     "linux-x86_64"
