@@ -23,6 +23,9 @@ on:
       reviewed_checkpoint_segment:
         type: string
         default: '2'
+      reviewed_upstream_evidence:
+        type: string
+        default: ''
       read_only_replay:
         type: boolean
         default: false
@@ -111,6 +114,7 @@ jobs:
           EXPECTED_CHECKPOINT_SHA: ${{ inputs.checkpoint_sha }}
           REVIEWED_CHECKPOINT_RUN: ${{ inputs.reviewed_checkpoint_run }}
           REVIEWED_CHECKPOINT_SEGMENT: ${{ inputs.reviewed_checkpoint_segment }}
+          REVIEWED_UPSTREAM_EVIDENCE: ${{ inputs.reviewed_upstream_evidence }}
           READ_ONLY_REPLAY: ${{ inputs.read_only_replay }}
           GH_TOKEN: ${{ github.token }}
         shell: pwsh

@@ -16,6 +16,10 @@ on:
         type: choice
         options: ['1', '2', '3', '4']
         default: '2'
+      reviewed_upstream_evidence:
+        description: Evidence filename for a candidate checkpoint with a different source lock
+        type: string
+        default: ''
 permissions:
   contents: read
   actions: read
@@ -35,4 +39,5 @@ jobs:
       minutes: 275
       reviewed_checkpoint_run: ${{ inputs.reviewed_checkpoint_run }}
       reviewed_checkpoint_segment: ${{ inputs.reviewed_checkpoint_segment }}
+      reviewed_upstream_evidence: ${{ inputs.reviewed_upstream_evidence }}
       read_only_replay: true

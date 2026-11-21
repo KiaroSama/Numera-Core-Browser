@@ -42,6 +42,16 @@ def reviewed_stable_lock(lock, evidence):
                 upstream_revision=pins['windows']['revision'], status='candidate-not-built', approved=False)
 
 
+def prepare_candidate_lock(lock, evidence_filename, output):
+    if not re.fullmatch(r'upstream-review-\d{4}-\d{2}-\d{2}\.json', evidence_filename):
+        raise RuntimeError('Select a reviewed upstream evidence filename from docs/evidence')
+    review = Path('docs/evidence') / evidence_filename
+    reviewed_lock = reviewed_stable_lock(lock, json.loads(review.read_text(encoding='utf-8')))
+    path = output / 'candidate-source-lock.json'
+    path.write_text(json.dumps(reviewed_lock, indent=2) + '\n', encoding='utf-8', newline='\n')
+    return path, reviewed_lock, {'file': review.as_posix(), 'sha256': sha256(review)}
+
+
 def git_source_inventory(root, source, output, pin, environment):
     inventory = output / 'git-source-revisions.json'
     raw = root / 'git-source-revisions.unverified'
@@ -106,9 +116,8 @@ def chromium_notices(source, output, host, revision, environment):
     return reports
 
 
-def linked_build_materials(root, source, output, host, environment):
+def linked_build_materials(root, source, output, host, environment, lock_path):
     output.mkdir()
-    lock_path = Path('upstream/chromium/lock.json')
     lock = json.loads(lock_path.read_text(encoding='utf-8'))
     pin = lock['platform_pins'][host.lower()]
     inventory = git_source_inventory(root, source, output, pin, environment)
@@ -149,14 +158,8 @@ def main():
     review_lock = None
     review_record = None
     if args.reviewed_candidate:
-        if not re.fullmatch(r'upstream-review-\d{4}-\d{2}-\d{2}\.json', args.reviewed_candidate):
-            raise RuntimeError('Select a reviewed upstream evidence filename from docs/evidence')
-        review = Path('docs/evidence') / args.reviewed_candidate
-        lock = reviewed_stable_lock(lock, json.loads(review.read_text(encoding='utf-8')))
-        review_lock = output / 'candidate-source-lock.json'
-        review_lock.write_text(json.dumps(lock, indent=2) + '\n', encoding='utf-8', newline='\n')
+        review_lock, lock, review_record = prepare_candidate_lock(lock, args.reviewed_candidate, output)
         lock_path = review_lock
-        review_record = {'file': review.as_posix(), 'sha256': sha256(review)}
     pin = lock['platform_pins'][host.lower()]
     report = {'schema_revision': 1, 'source_commit': os.environ['GITHUB_SHA'], 'host': host,
               'runner_image': os.environ['ImageVersion'], 'chromium_revision': pin['revision'],

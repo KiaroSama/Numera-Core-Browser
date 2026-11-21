@@ -16,7 +16,7 @@ from chromedriver_fixture import smoke_clients, smoke_driver
 from chromium_cache_probe import (REPOSITORY, RELEASES, STAGED_CACHE_CONFIG, compile_graph,
                                   install_tool, pack_cache, restore_cache, sccache_server)
 from chromium_headed_fixture import smoke_headed_browser
-from chromium_license_inventory import linked_build_materials
+from chromium_license_inventory import linked_build_materials, prepare_candidate_lock
 from chromium_portable_fixture import smoke_portable_runtime
 from engine_build import CheckRun, install_linux_sandbox, now, publish_check, read_progress, sha256, smoke, stop_tree, write_json
 from logging_util import log
@@ -184,6 +184,16 @@ def main():
               'peak_tree_rss_bytes': 0}
     checks = CheckRun(job_name=('first', 'second', 'third', 'fourth')[args.segment - 1] + ' / native') if os.environ.get('GH_TOKEN') else None
     try:
+        lock_path = Path('upstream/chromium/lock.json')
+        candidate = os.environ.get('REVIEWED_UPSTREAM_EVIDENCE', '')
+        review_lock = None
+        if candidate:
+            lock = json.loads(lock_path.read_text(encoding='utf-8'))
+            review_lock, _, report['candidate_source_review'] = prepare_candidate_lock(lock, candidate, output)
+            lock_path = review_lock
+        lock_sha256 = sha256(lock_path)
+        if reviewed is not None and reviewed['context']['source_lock_sha256'] != lock_sha256:
+            raise RuntimeError('The reviewed checkpoint belongs to a different Chromium source lock')
         wrapper, ninja = [install_tool(tools, spec) for spec in RELEASES[host]]
         cache_tool = wrapper.stem
         config = tools / 'local-cache.conf'
@@ -200,7 +210,7 @@ def main():
             temp_cache.mkdir()
             environment.update(CCACHE_DIR=str(entries), CCACHE_CONFIGPATH=str(config), CCACHE_TEMPDIR=str(temp_cache))
         environment['PATH'] = os.pathsep.join((str(tools), str(root / 'depot_tools'), environment['PATH']))
-        compile_graph(root, environment, output, cache_tool)
+        compile_graph(root, environment, output, cache_tool, review_lock=review_lock)
         source = root / 'checkout/src'
         native_output = source / 'out/Numera'
         targets = ['chrome', 'chromedriver'] + (['chrome_sandbox'] if host == 'Linux' else [])
@@ -215,7 +225,7 @@ def main():
         context = {'head': os.environ['GITHUB_SHA'], 'run_id': os.environ['GITHUB_RUN_ID'],
                    'run_attempt': os.environ['GITHUB_RUN_ATTEMPT'], 'runner_image': os.environ['ImageVersion'],
                    'host': host, 'scratch': str(root), 'targets': targets,
-                   'source_lock_sha256': sha256(Path('upstream/chromium/lock.json')),
+                   'source_lock_sha256': lock_sha256,
                    'gn_args_sha256': sha256(native_output / 'args.gn'), 'commands_sha256': sha256(graph_commands),
                    'cache_tool': cache_tool, 'cache_tool_sha256': sha256(wrapper), 'cache_config_sha256': sha256(config),
                    'ninja_sha256': sha256(ninja), 'clang_sha256': sha256(clang)}
@@ -282,7 +292,8 @@ def main():
         report.update(stage='headed-browser-fixture', portable_runtime_fixture='PASS', headed_browser_fixture='RUNNING')
         report['headed_browser'] = smoke_headed_browser(binary, driver, root, output, environment)
         report.update(stage='linked-build-materials', headed_browser_fixture='PASS', linked_build_materials='RUNNING')
-        report['build_materials'] = linked_build_materials(root, source, output / 'linked-build-materials', host, environment)
+        report['build_materials'] = linked_build_materials(root, source, output / 'linked-build-materials',
+                                                           host, environment, lock_path)
         material_digests = report['build_materials']['inputs_sha256']
         if (material_digests['chromium-source-lock.json'] != context['source_lock_sha256']
                 or material_digests['chromium-args.gn'] != context['gn_args_sha256']):

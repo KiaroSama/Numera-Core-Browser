@@ -16,6 +16,10 @@ on:
         type: choice
         options: ['1', '2', '3', '4']
         default: '2'
+      reviewed_upstream_evidence:
+        description: Optional evidence filename for a reviewed stable Chromium candidate
+        type: string
+        default: ''
 permissions:
   contents: read
   actions: read
@@ -35,6 +39,7 @@ jobs:
       minutes: 275
       reviewed_checkpoint_run: ${{ inputs.reviewed_checkpoint_run }}
       reviewed_checkpoint_segment: ${{ inputs.reviewed_checkpoint_segment }}
+      reviewed_upstream_evidence: ${{ inputs.reviewed_upstream_evidence }}
   second:
     needs: first
     if: needs.first.outputs.result == 'PARTIAL'
@@ -45,6 +50,7 @@ jobs:
       minutes: 275
       previous: 1
       checkpoint_sha: ${{ needs.first.outputs.checkpoint_sha }}
+      reviewed_upstream_evidence: ${{ inputs.reviewed_upstream_evidence }}
   third:
     needs: second
     if: needs.second.outputs.result == 'PARTIAL'
@@ -55,6 +61,7 @@ jobs:
       minutes: 275
       previous: 2
       checkpoint_sha: ${{ needs.second.outputs.checkpoint_sha }}
+      reviewed_upstream_evidence: ${{ inputs.reviewed_upstream_evidence }}
   fourth:
     needs: third
     if: needs.third.outputs.result == 'PARTIAL'
@@ -65,3 +72,4 @@ jobs:
       minutes: 275
       previous: 3
       checkpoint_sha: ${{ needs.third.outputs.checkpoint_sha }}
+      reviewed_upstream_evidence: ${{ inputs.reviewed_upstream_evidence }}
