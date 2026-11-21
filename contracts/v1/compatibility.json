@@ -8,14 +8,14 @@
       "family": "chromium",
       "package_id": "numera-chromium",
       "scope": "initial milestone",
-      "owned_build": "NOT_RUN",
+      "owned_build": "PARTIAL",
       "browser_gui": "unsupported",
       "device_modes": {"desktop": "unsupported", "android-emulated": "unsupported", "ios-emulated": "unsupported"},
       "automation": [
-        {"client": "playwright", "transport": "CDP", "status": "unsupported", "planned": true, "limitation": "Chromium-only lower-fidelity attachment; no real Numera engine tests"},
+        {"client": "playwright", "transport": "CDP", "status": "unsupported", "planned": true, "limitation": "Owned headless Linux fixture passed through connectOverCDP. Managed CDP is unavailable."},
         {"client": "playwright", "transport": "native version-paired protocol", "status": "unsupported", "planned": true, "limitation": "Transport is not implemented"},
-        {"client": "puppeteer", "transport": "CDP", "status": "unsupported", "planned": true, "limitation": "No real Numera engine tests"},
-        {"client": "selenium", "transport": "ChromeDriver/WebDriver", "status": "unsupported", "planned": true, "limitation": "No version-paired driver or lifecycle tests"}
+        {"client": "puppeteer", "transport": "CDP", "status": "unsupported", "planned": true, "limitation": "Owned headless Linux fixture passed over CDP. Managed CDP is unavailable."},
+        {"client": "selenium", "transport": "ChromeDriver/WebDriver", "status": "unsupported", "planned": true, "limitation": "Owned headless Linux fixture passed with the matching ChromeDriver. Managed session lifecycle is unavailable."}
       ]
     },
     {
@@ -47,5 +47,5 @@
     {"os": "windows", "arch": "x86_64", "status": "NOT_RUN"},
     {"os": "linux", "arch": "x86_64", "status": "NOT_RUN"}
   ],
-  "note": "Control-plane Linux tests are recorded separately. A schema, listening socket or downloaded stock browser cannot pass these engine gates."
+  "note": "The owned Linux source build and headless client fixtures passed. Windows source verification is in progress. Native target status describes packaged browser and manager integration. See the repository coverage matrix for exact runs."
 }

@@ -21,12 +21,12 @@ pub fn capabilities() -> Value {
             "protocol.ndjson": {"status":"supported","evidence":"C02/contracts-and-process-conformance"},
             "launch.plan": {"status":"partial","limitations":["Validates configuration only; no installed engine or native settings application"],"evidence":"C03/planning"},
             "browser.navigation": {"status":"unsupported","limitations":["No approved owned engine package"]},
-            "browser.gui": {"status":"unsupported","limitations":["Requires source-built browser chrome"]},
+            "browser.gui": {"status":"unsupported","limitations":["This CLI cannot start an approved browser GUI"]},
             "session.launch": {"status":"unsupported","limitations":["No approved engine or durable supervisor"]},
-            "automation.playwright.cdp": {"status":"unsupported","limitations":["No real-engine conformance evidence"]},
+            "automation.playwright.cdp": {"status":"unsupported","limitations":["No managed Chromium CDP endpoint"]},
             "automation.playwright.native": {"status":"unsupported","limitations":["No version-paired native transport"]},
-            "automation.puppeteer": {"status":"unsupported","limitations":["No real-engine conformance evidence"]},
-            "automation.selenium": {"status":"unsupported","limitations":["No version-paired driver or real-engine evidence"]},
+            "automation.puppeteer": {"status":"unsupported","limitations":["No managed Chromium CDP endpoint"]},
+            "automation.selenium": {"status":"unsupported","limitations":["No approved engine and ChromeDriver package for managed sessions"]},
             "updates.trusted": {"status":"unsupported","limitations":["No signed root, approved release, staging or rollback implementation"]},
             "mobile.emulation": {"status":"unsupported","limitations":["Validation is not engine-applied emulation"]}
         }
@@ -41,7 +41,7 @@ pub fn doctor() -> Value {
         "protocol":{"namespace":NAMESPACE,"major":PROTOCOL,"schema_revision":SCHEMA_REVISION},
         "host":{"os":std::env::consts::OS,"arch":std::env::consts::ARCH},
         "engines":core_engines::inventory(),
-        "limitations":["Source-build feasibility must be measured on authorized GitHub runners", "No real browser or automation suite has passed", "No engine download, installation or update is performed"]})
+        "limitations":["No approved browser package is installed", "Native browser launch and managed automation are unavailable in this CLI", "Engine download, installation and updates are unavailable in this CLI"]})
 }
 
 fn absolute_lexical(path: &str) -> bool {
