@@ -53,6 +53,12 @@ jobs:
         with:
           node-version: '24.22.3'
           package-manager-cache: false
+      - name: Install the Linux window inspection tools
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y --no-install-recommends x11-utils=7.7+6build2
       - name: Install locked browser fixture tools
         run: |
           python -m pip install --disable-pip-version-check -r requirements-engine-build.txt
