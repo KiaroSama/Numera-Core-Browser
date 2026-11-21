@@ -121,10 +121,20 @@
       "target": "windows-2025-vs2026",
       "run_id": 44910829932,
       "source_commit": "ef0188e341784bfc5cd82ee100269218072e838e",
+      "status": "completed",
+      "conclusion": "failure",
+      "source_build": "NOT_RUN",
+      "failure_class": "windows-upstream-publication-fixture"
+    },
+    {
+      "target": "windows-2025-vs2026",
+      "run_id": 44913495180,
+      "source_commit": "d87a4c0fe6376d14db485df14352d6194c74d098",
+      "build_tooling_and_transport_tests": "PASS",
       "status": "in_progress"
     }
   ],
-  "source_experiment_status_observed_at": "2026-11-21T14:16:15+00:00",
+  "source_experiment_status_observed_at": "2026-11-21T14:22:51+00:00",
   "active_targets": [
     "windows-x86_64",
     "linux-x86_64"
