@@ -44,6 +44,9 @@ jobs:
           persist-credentials: false
       - name: Install pinned telemetry dependency
         run: python -m pip install --disable-pip-version-check -r requirements-engine-build.txt
+      - name: Validate build tooling and the loopback fixture transport
+        if: inputs.segment == 1
+        run: python -m unittest discover -s scripts/tests -v
       - name: Restore only the predecessor cache from this workflow attempt
         if: inputs.previous > 0
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9

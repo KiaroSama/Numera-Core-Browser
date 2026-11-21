@@ -10,6 +10,7 @@ import subprocess
 import time
 
 import psutil
+from chromedriver_fixture import smoke_driver
 from chromium_cache_probe import REPOSITORY, RELEASES, compile_graph, install_tool, pack_cache, restore_cache
 from engine_build import CheckRun, install_linux_sandbox, now, publish_check, read_progress, sha256, smoke, stop_tree, write_json
 from logging_util import log
@@ -109,7 +110,8 @@ def main():
     temp_cache.mkdir()
     report = {'schema_revision': 1, 'result': 'BLOCKED', 'stage': 'prepare', 'segment': args.segment,
               'commit': os.environ['GITHUB_SHA'], 'host': host, 'release_ready': False, 'source_build': 'NOT_RUN',
-              'renderer_fixture': 'NOT_RUN', 'automation_suites': 'NOT_RUN', 'compile_budget_minutes': args.minutes,
+              'renderer_fixture': 'NOT_RUN', 'driver_fixture': 'NOT_RUN', 'automation_suites': 'NOT_RUN',
+              'compile_budget_minutes': args.minutes,
               'debug_build': True, 'elapsed_seconds': 0, 'disk_free_bytes': shutil.disk_usage(root.parent).free,
               'peak_tree_rss_bytes': 0}
     checks = CheckRun(job_name=('first', 'second', 'third', 'fourth')[args.segment - 1] + ' / native') if os.environ.get('GH_TOKEN') else None
@@ -182,13 +184,15 @@ def main():
         if host == 'Linux':
             report['linux_sandbox_helper'] = install_linux_sandbox(native_output, root, environment)
         smoke(binary, root, output, environment)
-        report.update(result='PASS', stage='source-and-renderer-complete', renderer_fixture='PASS')
+        report.update(stage='webdriver-fixture', renderer_fixture='PASS', driver_fixture='RUNNING')
+        report['webdriver'] = smoke_driver(binary, driver, root, output, environment, stop_tree)
+        report.update(result='PASS', stage='source-and-native-fixtures-complete', driver_fixture='PASS')
         write_outputs('PASS')
     except Exception as error:
         report.update(result='BLOCKED', error_type=type(error).__name__)
         if isinstance(error, RuntimeError):
             report['diagnostic'] = str(error)
-        for key in ('source_build', 'renderer_fixture'):
+        for key in ('source_build', 'renderer_fixture', 'driver_fixture'):
             if report[key] == 'RUNNING':
                 report[key] = 'BLOCKED'
         raise
