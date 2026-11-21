@@ -2,7 +2,7 @@
   "schema_revision": 1,
   "timestamp": "2026-11-10T17:33:44.732611+00:00",
   "current_review": {
-    "observed_at": "2026-11-21T20:17:50+00:00",
+    "observed_at": "2026-11-21T22:04:34+00:00",
     "active_targets": [
       "windows-x86_64",
       "linux-x86_64"
@@ -475,11 +475,11 @@
           },
           {
             "name": "Owned portable archive extraction and relocation",
-            "result": "IN_PROGRESS",
+            "result": "PASS",
             "platforms": [
               "linux-x86_64"
             ],
-            "evidence": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44927476670",
+            "evidence": "docs/evidence/chromium-portable-44927476670.json",
             "source_commit": "3758ca8596be7374ab5874df97bac35966e51813",
             "workflow_run": 44927476670
           }

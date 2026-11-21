@@ -125,7 +125,7 @@ def extract_portable_archive(staged, scratch, inventory):
 
 
 def verify_portable_archive(package, archive, inventory, host, environment):
-    binary = Path('target/debug') / ('numera-core.exe' if host == 'Windows' else 'numera-core')
+    binary = Path('target/release') / ('numera-core.exe' if host == 'Windows' else 'numera-core')
     binary = binary.resolve(strict=True)
     result = json.loads(subprocess.check_output(
         [str(binary), '--json', 'engines', 'verify-archive', str(package), archive['sha256']],

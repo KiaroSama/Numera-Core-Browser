@@ -19,14 +19,14 @@
     "No signed updater or paired manager smoke suite"
   ],
   "development_cli": {
-    "source_commit": "4bb3beb18566843cd6a7409b87019694c15e58f5",
-    "run_id": 44944966057,
+    "source_commit": "fe937c2e6cab71ab473a039ccf66639e0dc3c2bc",
+    "run_id": 44946324377,
     "channel": "unsigned-development-control-plane",
     "targets": [
       "windows-x86_64",
       "linux-x86_64"
     ],
-    "evidence": "docs/evidence/development-artifacts-44944966057.json",
+    "evidence": "docs/evidence/development-artifacts-44946324377.json",
     "browser_included": false,
     "clean_machine_installation": "NOT_RUN",
     "retention_days": 7,
@@ -34,19 +34,23 @@
   },
   "development_contract": {
     "artifact": "numera-core-contracts-v1",
-    "source_commit": "4bb3beb18566843cd6a7409b87019694c15e58f5",
-    "run_id": 44944966057,
-    "sha256": "3640292304eb1184ffa296dcded568b9d716042e2947950545606cabc23d1b02",
+    "source_commit": "fe937c2e6cab71ab473a039ccf66639e0dc3c2bc",
+    "run_id": 44946324377,
+    "sha256": "0a0c8c3f1a343b6c27358f84f2a9b41c39a18517b44f13a977d6702544c55078",
     "native_producer_conformance": "PASS",
     "paired_manager_browser": "NOT_RUN",
-    "evidence": "docs/evidence/development-artifacts-44944966057.json"
+    "evidence": "docs/evidence/development-artifacts-44946324377.json"
   },
   "development_provenance": {
     "status": "PASS",
-    "run_id": 44944966057,
-    "bundle_artifact_id": 14722983719,
-    "scope": ["linux-cli-tar", "windows-cli-tar", "canonical-contract-zip"],
-    "evidence": "docs/evidence/development-artifacts-44944966057.json"
+    "run_id": 44946324377,
+    "bundle_artifact_id": 14723907146,
+    "scope": [
+      "linux-cli-tar",
+      "windows-cli-tar",
+      "canonical-contract-zip"
+    ],
+    "evidence": "docs/evidence/development-artifacts-44946324377.json"
   },
   "native_source_experiments": [
     {
@@ -151,11 +155,16 @@
       "target": "ubuntu-24.04",
       "run_id": 44927476670,
       "source_commit": "3758ca8596be7374ab5874df97bac35966e51813",
-      "status": "in_progress",
+      "status": "completed",
       "scope": "Owned runtime archive extraction and native relocation",
       "reviewed_checkpoint": "docs/evidence/chromium-staged-44846110371-segment-2.json",
       "declared_runtime_layout_evidence": "docs/evidence/chromium-runtime-layout-44925530814.json",
-      "native_job_id": 136936265504
+      "native_job_id": 136936265504,
+      "conclusion": "success",
+      "source_build": "PASS",
+      "portable_runtime": "PASS",
+      "archive_uploaded": false,
+      "evidence": "docs/evidence/chromium-portable-44927476670.json"
     },
     {
       "target": "windows-2025-vs2026",
@@ -169,7 +178,7 @@
       "scope": "Continue the full Windows graph with archive, headed and viewport fixtures"
     }
   ],
-  "source_experiment_status_observed_at": "2026-11-21T19:26:18+00:00",
+  "source_experiment_status_observed_at": "2026-11-21T22:04:34+00:00",
   "active_targets": [
     "windows-x86_64",
     "linux-x86_64"

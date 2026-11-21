@@ -1,0 +1,132 @@
+{
+  "schema_revision": 1,
+  "workflow_run": 44927476670,
+  "workflow_job": 136936265504,
+  "workflow_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44927476670",
+  "workflow_conclusion": "success",
+  "source_commit": "3758ca8596be7374ab5874df97bac35966e51813",
+  "target": "ubuntu-24.04",
+  "source_checkpoint": "docs/evidence/chromium-staged-44846110371-segment-2.json",
+  "chromium_version": "157.0.8103.78",
+  "actions": {
+    "completed": 56773,
+    "total": 56773
+  },
+  "compile_and_link_seconds": 12963.99,
+  "compiler_cache": {
+    "preprocessed_cache_hit": 39176,
+    "local_storage_write": 7783
+  },
+  "browser": {
+    "sha256": "a31a779b0cb4b41c360ae29e93e827f2226c12a33c1a4d9d7f7dceaef9453371",
+    "bytes": 1102923312
+  },
+  "driver": {
+    "sha256": "df2fc7da286de0445e61695a4a41c0cf337af31a785f10bfd812fc43eb67d318",
+    "bytes": 14172544
+  },
+  "automation_clients": {
+    "result": "PASS",
+    "node": "24.22.3",
+    "browserVersion": "157.0.8103.78",
+    "tests": {
+      "selenium": {
+        "version": "4.53.0",
+        "transport": "WebDriver",
+        "checks": [
+          "navigation",
+          "unicode-input",
+          "click-and-wait",
+          "nested-frame",
+          "png-screenshot"
+        ]
+      },
+      "puppeteer": {
+        "version": "25.18.1",
+        "transport": "Chrome DevTools Protocol",
+        "checks": [
+          "navigation",
+          "unicode-input",
+          "click-and-wait",
+          "nested-frame",
+          "png-screenshot"
+        ]
+      },
+      "playwright": {
+        "version": "1.65.1",
+        "transport": "connectOverCDP",
+        "checks": [
+          "navigation",
+          "unicode-input",
+          "click-and-wait",
+          "nested-frame",
+          "png-screenshot"
+        ]
+      }
+    },
+    "scope": "Controlled headless navigation, Unicode input, frame, click and screenshot for each client"
+  },
+  "portable_runtime": {
+    "result": "PASS",
+    "scope": "Extracted relocated runtime and profile, controlled renderer and WebDriver tests",
+    "archive": {
+      "format": "tar.gz",
+      "files": 5558,
+      "bytes": 1727595904,
+      "sha256": "504c495b04d0bf17fbd7c4898f6d793760953c0e072eabcd1092cedb8d9be9b0"
+    },
+    "runtime_inventory_sha256": "6a68458b43a11651bcce619dea2fc6259ede5be6ed33cddf7e4d6dd7f911f567",
+    "webdriver": {
+      "result": "PASS",
+      "driver_version": "157.0.8103.78",
+      "scope": "ChromeDriver W3C HTTP session and a controlled local document"
+    },
+    "sandbox_helper": {
+      "source_target": "chrome_sandbox",
+      "sha256": "0f5196ae181eec450044ed2da6ff97d08642e260ddac7f2a8b54cf5ab589496f",
+      "owner_uid": 0,
+      "mode": "4755",
+      "scope": "Owned-source SUID developer fixture; no global AppArmor/sysctl or browser sandbox disabling",
+      "staged_source": "chrome_sandbox",
+      "fixture_location": "Separate space-free privileged fixture directory"
+    },
+    "expanded_bytes": 8346317525,
+    "relocated_renderer_png_sha256": "07b4dc000a596a6489d683e4b4fddd56211871294f9f20133b3c32dbf0599512",
+    "archive_upload": "NOT_RUN"
+  },
+  "diagnostic_artifact": {
+    "id": 14727012251,
+    "sha256": "sha256:1df833c725977f44852e41737c7dc24401c25bce7a9bec42077cb5772028d32d",
+    "bytes": 1019184,
+    "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44927476670/artifacts/14727012251",
+    "expires_at": "2026-11-28T22:01:07Z",
+    "verified_members": [
+      "automation-clients.json",
+      "automation-clients.log",
+      "automation-driver.log",
+      "chromedriver-fixture.log",
+      "graph.log",
+      "native-build.log",
+      "portable-runtime-inventory.json",
+      "portable-runtime/chromedriver-fixture.log",
+      "portable-runtime/renderer.png",
+      "portable-runtime/smoke-renderer.stderr",
+      "portable-runtime/smoke-renderer.stdout",
+      "portable-runtime/smoke-screenshot.stderr",
+      "portable-runtime/smoke-screenshot.stdout",
+      "portable-runtime/smoke-version.stderr",
+      "portable-runtime/smoke-version.stdout",
+      "renderer.png",
+      "report.json",
+      "smoke-renderer.stderr",
+      "smoke-renderer.stdout",
+      "smoke-screenshot.stderr",
+      "smoke-screenshot.stdout",
+      "smoke-version.stderr",
+      "smoke-version.stdout"
+    ]
+  },
+  "headed_browser_fixture": "NOT_RUN",
+  "production_installation": "NOT_RUN",
+  "release_ready": false
+}

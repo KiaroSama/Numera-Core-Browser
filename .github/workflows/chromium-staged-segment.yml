@@ -79,8 +79,10 @@ jobs:
         run: |
           python -m unittest discover -s scripts/tests -v
           node --test tests/native-automation/loopback.test.mjs
-      - name: Build the native Rust verifier and process ownership fixture
-        run: cargo build --locked -p core-cli -p core-process --bins
+      - name: Build the optimized native Rust archive verifier
+        run: cargo build --locked -p core-cli --release
+      - name: Build the native Rust process ownership fixture
+        run: cargo build --locked -p core-process --bin numera-process-fixture
       - name: Resolve the reviewed checkpoint from main
         if: inputs.reviewed_checkpoint_run != ''
         id: reviewed
