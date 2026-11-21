@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Attempt the full native Chromium graph in bounded jobs with verified local cache handoffs."""
 import argparse
+from contextlib import nullcontext
 import json
 import os
 from pathlib import Path
@@ -12,7 +13,7 @@ import time
 import psutil
 from chromedriver_fixture import smoke_clients, smoke_driver
 from chromium_cache_probe import (REPOSITORY, RELEASES, STAGED_CACHE_CONFIG, compile_graph,
-                                  install_tool, pack_cache, restore_cache)
+                                  install_tool, pack_cache, restore_cache, sccache_server)
 from engine_build import CheckRun, install_linux_sandbox, now, publish_check, read_progress, sha256, smoke, stop_tree, write_json
 from logging_util import log
 
@@ -22,12 +23,21 @@ CACHE_ACCOUNTING_GUARD = 2_500_000_000
 MAX_ENTRIES = 100_000
 
 
-def ccache_command(tool, environment, *args):
+def cache_command(tool, environment, *args):
     return subprocess.check_output([str(tool), *args], env=environment, timeout=120)
 
 
 def statistics(tool, environment):
-    return json.loads(ccache_command(tool, environment, '--print-stats', '--format=json'))
+    if tool.stem == 'ccache':
+        return json.loads(cache_command(tool, environment, '--print-stats', '--format=json'))
+    result = json.loads(cache_command(tool, environment, '--show-stats', '--stats-format=json'))
+    disk = result['cache_location']
+    if not disk.startswith('Local disk: ') or result['max_cache_size'] != 4 * 1024**3:
+        raise RuntimeError('The staged sccache server did not confirm the expected local storage policy')
+    details = result['stats']
+    return {'preprocessed_cache_hit': sum(details['cache_hits']['counts'].values()),
+            'local_storage_write': details['cache_writes'], 'cache_size_kibibyte': (result['cache_size'] or 0) // 1024,
+            'backend_statistics': details}
 
 
 def compile_segment(ninja, wrapper, source, targets, environment, output, report, minutes, checks=None):
@@ -35,7 +45,7 @@ def compile_segment(ninja, wrapper, source, targets, environment, output, report
     available = psutil.virtual_memory().available
     workers = max(1, min(os.cpu_count() or 1, 4, available // (3 * 1024**3)))
     report['parallelism'] = workers
-    ccache_command(wrapper, environment, '--zero-stats')
+    cache_command(wrapper, environment, '--zero-stats')
     command = [str(ninja), '-C', 'out/Numera', '-j', str(workers), *targets]
     native_log = output / 'native-build.log'
     started = time.monotonic()
@@ -107,8 +117,6 @@ def main():
     tools.mkdir(exist_ok=False)
     entries = tools / 'entries'
     entries.mkdir()
-    temp_cache = tools / 'temp'
-    temp_cache.mkdir()
     report = {'schema_revision': 1, 'result': 'BLOCKED', 'stage': 'prepare', 'segment': args.segment,
               'commit': os.environ['GITHUB_SHA'], 'host': host, 'release_ready': False, 'source_build': 'NOT_RUN',
               'renderer_fixture': 'NOT_RUN', 'driver_fixture': 'NOT_RUN', 'automation_client_smokes': 'NOT_RUN',
@@ -119,14 +127,22 @@ def main():
     checks = CheckRun(job_name=('first', 'second', 'third', 'fourth')[args.segment - 1] + ' / native') if os.environ.get('GH_TOKEN') else None
     try:
         wrapper, ninja = [install_tool(tools, spec) for spec in RELEASES[host]]
+        cache_tool = wrapper.stem
         config = tools / 'local-cache.conf'
-        config.write_text(STAGED_CACHE_CONFIG, encoding='utf-8')
         environment = {k: v for k, v in os.environ.items() if not k.upper().startswith(('CCACHE_', 'SCCACHE_')) and k not in
                        {'GH_TOKEN', 'GITHUB_TOKEN', 'ACTIONS_RUNTIME_TOKEN', 'ACTIONS_ID_TOKEN_REQUEST_TOKEN'}}
-        environment.update(CCACHE_DIR=str(entries), CCACHE_CONFIGPATH=str(config), CCACHE_TEMPDIR=str(temp_cache),
-                           DEPOT_TOOLS_UPDATE='0', DEPOT_TOOLS_WIN_TOOLCHAIN='0', NINJA_STATUS='[%f/%t] ')
+        environment.update(DEPOT_TOOLS_UPDATE='0', DEPOT_TOOLS_WIN_TOOLCHAIN='0', NINJA_STATUS='[%f/%t] ')
+        if cache_tool == 'sccache':
+            config.write_bytes(b'')
+            environment.update(SCCACHE_CONF=str(config), SCCACHE_DIR=str(entries), SCCACHE_CACHE_SIZE='4G',
+                               SCCACHE_SERVER_PORT='4234', SCCACHE_DIRECT='false')
+        else:
+            config.write_text(STAGED_CACHE_CONFIG, encoding='utf-8')
+            temp_cache = tools / 'temp'
+            temp_cache.mkdir()
+            environment.update(CCACHE_DIR=str(entries), CCACHE_CONFIGPATH=str(config), CCACHE_TEMPDIR=str(temp_cache))
         environment['PATH'] = os.pathsep.join((str(tools), str(root / 'depot_tools'), environment['PATH']))
-        compile_graph(root, environment, output)
+        compile_graph(root, environment, output, cache_tool)
         source = root / 'checkout/src'
         native_output = source / 'out/Numera'
         targets = ['chrome', 'chromedriver'] + (['chrome_sandbox'] if host == 'Linux' else [])
@@ -143,38 +159,44 @@ def main():
                    'host': host, 'scratch': str(root), 'targets': targets,
                    'source_lock_sha256': sha256(Path('upstream/chromium/lock.json')),
                    'gn_args_sha256': sha256(native_output / 'args.gn'), 'commands_sha256': sha256(graph_commands),
-                   'cache_tool': 'ccache', 'cache_tool_sha256': sha256(wrapper), 'cache_config_sha256': sha256(config),
+                   'cache_tool': cache_tool, 'cache_tool_sha256': sha256(wrapper), 'cache_config_sha256': sha256(config),
                    'ninja_sha256': sha256(ninja), 'clang_sha256': sha256(clang)}
         if host == 'Windows':
             sdk = json.loads((root / 'windows-sdk.json').read_text(encoding='utf-8-sig'))
             context['sdk'] = {k: sdk[k] for k in ('directory_version', 'debugging_tools_version', 'requested_release')}
+            context['sccache_policy'] = {key: environment[key] for key in ('SCCACHE_CACHE_SIZE', 'SCCACHE_DIRECT')}
         report['context'] = context
         graph_commands.unlink()
+        previous_inventory = {} if cache_tool == 'sccache' else None
         if args.segment > 1:
             report['stage'] = 'restore'
             previous = transfer / 'checkpoint.tar'
             report['runner_images'] = {}
             restore_cache(entries, previous, os.environ.get('EXPECTED_CHECKPOINT_SHA'), context,
-                          limit=CACHE_LIMIT, max_entries=MAX_ENTRIES, linux_runner_images=report['runner_images'])
+                          limit=CACHE_LIMIT, max_entries=MAX_ENTRIES, linux_runner_images=report['runner_images'],
+                          restored_entries=previous_inventory)
             previous.unlink()
-            # Rebuild local occupancy accounting after transport excluded ccache stats.
-            ccache_command(wrapper, environment, '--cleanup')
+            if cache_tool == 'ccache':
+                # Rebuild occupancy accounting after transport excluded ccache stats.
+                cache_command(wrapper, environment, '--cleanup')
         report.update(stage='compile-link', source_build='RUNNING', result='RUNNING')
-        reason = compile_segment(ninja, wrapper, source, targets, environment, output, report, args.minutes, checks)
-        values = statistics(wrapper, environment)
+        with sccache_server(wrapper, environment) if cache_tool == 'sccache' else nullcontext():
+            reason = compile_segment(ninja, wrapper, source, targets, environment, output, report, args.minutes, checks)
+            values = statistics(wrapper, environment)
         report.update(compiler_cache=values, segment_stop=reason)
+        if args.segment > 1 and values['preprocessed_cache_hit'] < 1:
+            raise RuntimeError('Fresh runner did not reuse any transferred Chromium compile outputs')
         if reason == 'time-budget':
             if args.segment == SEGMENTS:
                 raise RuntimeError('The full graph did not finish within the four configured job segments')
-            if args.segment > 1 and values['preprocessed_cache_hit'] < 1:
-                raise RuntimeError('Fresh runner did not reuse any transferred Chromium compile outputs')
             if values['local_storage_write'] < 1:
                 raise RuntimeError('The segment did not add transferable compiler outputs')
-            if values['cleanups_performed'] or values['cache_size_kibibyte'] * 1024 >= CACHE_ACCOUNTING_GUARD:
+            if values.get('cleanups_performed', 0) or values['cache_size_kibibyte'] * 1024 >= CACHE_ACCOUNTING_GUARD:
                 raise RuntimeError('The compiler cache did not fit the bounded checkpoint allowance')
             report['stage'] = 'checkpoint'
             archive = transfer / 'checkpoint.tar'
-            pack_cache(entries, archive, context, None, limit=CACHE_LIMIT, max_entries=MAX_ENTRIES)
+            pack_cache(entries, archive, context, None, limit=CACHE_LIMIT, max_entries=MAX_ENTRIES,
+                       required_entries=previous_inventory)
             report.update(result='PARTIAL', source_build='PARTIAL', cache_archive_bytes=archive.stat().st_size,
                           cache_archive_sha256=sha256(archive))
             write_outputs('PARTIAL', report['cache_archive_sha256'])

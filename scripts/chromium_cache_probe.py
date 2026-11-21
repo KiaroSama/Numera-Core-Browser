@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Measure reuse of one real Chromium object on fresh standard hosted jobs."""
 import argparse
+from contextlib import contextmanager, nullcontext
 import hashlib
 import io
 import json
@@ -25,8 +26,6 @@ PROBE_CACHE_CONFIG = 'direct_mode = false\ncompiler_check = content\nmax_size = 
 STAGED_CACHE_CONFIG = 'direct_mode = false\ncompiler_check = content\nmax_size = 2550M\n'
 PREPROCESSED_CONFIG_HASHES = {hashlib.sha256(config.encode('utf-8')).hexdigest()
                               for config in (PROBE_CACHE_CONFIG, STAGED_CACHE_CONFIG)}
-WINDOWS_SCCACHE = ('mozilla/sccache', 'v0.19.0', 'sccache-v0.19.0-x86_64-pc-windows-msvc.tar.gz',
-                   '130e4f8eb672e76590e9993c2ab890c4763b88238577bb11d8062158c7698353', 9830016, 'sccache.exe')
 RELEASES = {
     'Linux': (
         ('ccache/ccache', 'v4.14.3', 'ccache-4.14.3-linux-x86_64-musl-static.tar.gz',
@@ -35,8 +34,8 @@ RELEASES = {
          '5749cbc4e668273514150a80e387a957f933c6ed3f5f11e03fb30955e2bbead6', 134040, 'ninja'),
     ),
     'Windows': (
-        ('ccache/ccache', 'v4.14.3', 'ccache-4.14.3-windows-x86_64.zip',
-         'c845c3d65be81954c75659145a522a793a27586bf940c5dcfe18af33fa1a67dd', 1855889, 'ccache.exe'),
+        ('mozilla/sccache', 'v0.19.0', 'sccache-v0.19.0-x86_64-pc-windows-msvc.tar.gz',
+         '130e4f8eb672e76590e9993c2ab890c4763b88238577bb11d8062158c7698353', 9830016, 'sccache.exe'),
         ('ninja-build/ninja', 'v1.13.2', 'ninja-win.zip',
          '07fc8261b42b20e71d1720b39068c2e14ffcee6396b76fb7a795fb460b78dc65', 291570, 'ninja.exe'),
     ),
@@ -95,15 +94,18 @@ def compile_graph(root, environment, output, cache_tool='ccache'):
         raise RuntimeError('Pinned Chromium graph preparation failed; inspect graph.log')
 
 
-def pack_cache(root, archive, context, object_hash, *, limit=ARCHIVE_LIMIT, max_entries=512):
+def pack_cache(root, archive, context, object_hash, *, limit=ARCHIVE_LIMIT, max_entries=512,
+               required_entries=None):
     entries = sorted(root.rglob('*'))
     if any(p.is_symlink() or not (p.is_dir() or p.is_file()) for p in entries):
         raise RuntimeError('Unexpected link or special file in local compiler cache')
     files = [p for p in entries if p.is_file() and p.name not in {'CACHEDIR.TAG', '.cleaned', 'stats'}]
     if not files or len(files) > max_entries or sum(p.stat().st_size for p in files) >= limit - 1024 * 1024:
         raise RuntimeError('Compiler cache is empty or exceeds the bounded probe allowance')
-    manifest = {'context': context, 'object_sha256': object_hash,
-                'files': {p.relative_to(root).as_posix(): sha256(p) for p in files}}
+    inventory = {p.relative_to(root).as_posix(): sha256(p) for p in files}
+    if required_entries and not required_entries.items() <= inventory.items():
+        raise RuntimeError('Previously restored cache entries were evicted or changed')
+    manifest = {'context': context, 'object_sha256': object_hash, 'files': inventory}
     contents = json.dumps(manifest, sort_keys=True).encode('utf-8')
     with tarfile.open(archive, 'x') as bundle:
         info = tarfile.TarInfo(MANIFEST_NAME)
@@ -116,7 +118,7 @@ def pack_cache(root, archive, context, object_hash, *, limit=ARCHIVE_LIMIT, max_
 
 
 def restore_cache(root, archive, expected, context, *, limit=ARCHIVE_LIMIT, max_entries=512,
-                  linux_runner_images=None):
+                  linux_runner_images=None, restored_entries=None):
     if not re.fullmatch(r'[0-9a-f]{64}', expected or '') or archive.stat().st_size > limit or sha256(archive) != expected:
         raise RuntimeError('Checkpoint does not match this attempt’s seed digest')
     with tarfile.open(archive, 'r:') as bundle:
@@ -156,6 +158,8 @@ def restore_cache(root, archive, expected, context, *, limit=ARCHIVE_LIMIT, max_
             path.parent.mkdir(parents=True, exist_ok=True)
             with path.open('xb') as output:
                 shutil.copyfileobj(bundle.extractfile(name), output)
+    if restored_entries is not None:
+        restored_entries.update(manifest['files'])
     return manifest['object_sha256']
 
 
@@ -178,12 +182,12 @@ def ccache_target_results(path, target):
     return results.get(callers.pop(), [])
 
 
-def ninja_build(ninja, environment, source, targets, path, phase):
+def ninja_build(ninja, environment, source, targets, path, phase, *, timeout=600):
     with path.open('wb') as stream:
         command = [str(ninja), '-C', 'out/Numera', '-j', '4', *targets]
         child = subprocess.Popen(command, cwd=source, env=environment, stdout=stream, stderr=subprocess.STDOUT)
         try:
-            exit_code = child.wait(timeout=600)
+            exit_code = child.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
             raise RuntimeError(f'{phase} object build timed out') from None
         finally:
@@ -224,6 +228,16 @@ def native_object(ninja, cache, environment, source, target, output, phase):
     return sha256(obj), values
 
 
+@contextmanager
+def sccache_server(wrapper, environment):
+    subprocess.run([str(wrapper), '--start-server'], env=environment, timeout=20, check=True)
+    try:
+        yield
+    finally:
+        subprocess.run([str(wrapper), '--stop-server'], env=environment, timeout=20, check=True,
+                       stdout=subprocess.DEVNULL)
+
+
 def prepare_windows_inputs(ninja, wrapper, source, target, output, environment, tools):
     # Build the target's real Ninja prerequisites in a disposable separate cache.
     # The second server measures exactly one invocation for the actual object.
@@ -236,13 +250,19 @@ def prepare_windows_inputs(ninja, wrapper, source, target, output, environment, 
     inputs = [line.strip().lstrip('|').strip() for line in lines[2:end]]
     if not inputs or len(inputs) > 128 or any(not item or item.startswith('-') for item in inputs):
         raise RuntimeError('Unexpected direct dependencies for the probe object')
-    preparation = dict(environment, SCCACHE_DIR=str(tools / 'prerequisite-entries'), SCCACHE_SERVER_PORT='4233')
-    subprocess.run([str(wrapper), '--start-server'], env=preparation, timeout=20, check=True)
-    try:
-        ninja_build(ninja, preparation, source, inputs, output / 'object-prerequisites.log', 'object-prerequisites')
-    finally:
-        subprocess.run([str(wrapper), '--stop-server'], env=preparation, timeout=20, check=True,
-                       stdout=subprocess.DEVNULL)
+    preparation = dict(environment, SCCACHE_DIR=str(tools / 'prerequisite-entries'),
+                       SCCACHE_CACHE_SIZE='128M', SCCACHE_SERVER_PORT='4233')
+    with sccache_server(wrapper, preparation):
+        try:
+            ninja_build(ninja, preparation, source, inputs, output / 'object-prerequisites.log',
+                        'object-prerequisites', timeout=24 * 60)
+        finally:
+            try:
+                stats = subprocess.check_output([str(wrapper), '--show-stats', '--stats-format=json'],
+                                                env=preparation, timeout=20)
+                write_json(output / 'object-prerequisites-statistics.json', json.loads(stats))
+            except (OSError, ValueError, subprocess.SubprocessError):
+                log('Could not record prerequisite cache statistics', severity='WARNING', component='compiler-cache-probe')
     if (source / 'out/Numera' / target).exists():
         raise RuntimeError('Preparing the Windows inputs unexpectedly built the target object')
 
@@ -271,10 +291,8 @@ def main():
                    {'GH_TOKEN', 'GITHUB_TOKEN', 'ACTIONS_RUNTIME_TOKEN', 'ACTIONS_ID_TOKEN_REQUEST_TOKEN'}}
     environment.update(DEPOT_TOOLS_UPDATE='0', DEPOT_TOOLS_WIN_TOOLCHAIN='0')
     environment['PATH'] = os.pathsep.join((str(tools), str(root / 'depot_tools'), environment['PATH']))
-    server_started = False
     try:
-        releases = (WINDOWS_SCCACHE, RELEASES[host][1]) if host == 'Windows' else RELEASES[host]
-        wrapper, ninja = [install_tool(tools, spec) for spec in releases]
+        wrapper, ninja = [install_tool(tools, spec) for spec in RELEASES[host]]
         cache_tool = wrapper.stem
         config = tools / 'local-cache.conf'
         if cache_tool == 'sccache':
@@ -315,33 +333,29 @@ def main():
             report['runner_images'] = {}
             seed_hash = restore_cache(cache, transfer, os.environ.get('EXPECTED_CHECKPOINT_SHA'), context,
                                       linux_runner_images=report['runner_images'])
-        if cache_tool == 'sccache':
-            subprocess.run([str(wrapper), '--start-server'], env=environment, timeout=20, check=True)
-            server_started = True
+        with sccache_server(wrapper, environment) if cache_tool == 'sccache' else nullcontext():
+            if args.phase == 'seed':
+                digest, cold = native_object(ninja, wrapper, environment, source, target, output, 'cold')
+                if not {'cache_miss', 'local_storage_write'} <= set(cold['target_results']):
+                    raise RuntimeError('Cold Chromium compilation did not populate an initially empty cache')
+            else:
+                digest, warm = native_object(ninja, wrapper, environment, source, target, output, 'restored')
+                if not {'preprocessed_cache_hit', 'local_storage_hit'} <= set(warm['target_results']) or digest != seed_hash:
+                    raise RuntimeError('Different runner did not reuse the seed object')
+                input_file = source / 'base/logging.cc'
+                with input_file.open('ab') as edited:
+                    edited.write(b'\nextern "C" int NumeraCacheProbeValue();\nextern "C" int NumeraCacheProbeValue() { return 17; }\n')
+                changed, edited = native_object(ninja, wrapper, environment, source, target, output, 'changed-source')
+                if 'cache_miss' not in edited['target_results'] or 'preprocessed_cache_hit' in edited['target_results'] or changed == digest:
+                    raise RuntimeError('A changed Chromium input failed to invalidate the cached output')
+                report.update(object_sha256=digest, changed_object_sha256=changed, restored_cache_hits=1,
+                              changed_source_cache_misses=1)
         if args.phase == 'seed':
-            digest, cold = native_object(ninja, wrapper, environment, source, target, output, 'cold')
-            if not {'cache_miss', 'local_storage_write'} <= set(cold['target_results']):
-                raise RuntimeError('Cold Chromium compilation did not populate an initially empty cache')
-            if server_started:
-                subprocess.run([str(wrapper), '--stop-server'], env=environment, timeout=20, check=True)
-                server_started = False
             transfer.parent.mkdir(parents=True, exist_ok=False)
             pack_cache(cache, transfer, context, digest)
             report.update(checkpoint_bytes=transfer.stat().st_size, checkpoint_sha256=sha256(transfer), object_sha256=digest)
             with Path(os.environ['GITHUB_OUTPUT']).open('a', encoding='utf-8') as exported:
                 exported.write('checkpoint_sha=' + report['checkpoint_sha256'] + '\n')
-        else:
-            digest, warm = native_object(ninja, wrapper, environment, source, target, output, 'restored')
-            if not {'preprocessed_cache_hit', 'local_storage_hit'} <= set(warm['target_results']) or digest != seed_hash:
-                raise RuntimeError('Different runner did not reuse the seed object')
-            input_file = source / 'base/logging.cc'
-            with input_file.open('ab') as edited:
-                edited.write(b'\nextern "C" int NumeraCacheProbeValue();\nextern "C" int NumeraCacheProbeValue() { return 17; }\n')
-            changed, edited = native_object(ninja, wrapper, environment, source, target, output, 'changed-source')
-            if 'cache_miss' not in edited['target_results'] or 'preprocessed_cache_hit' in edited['target_results'] or changed == digest:
-                raise RuntimeError('A changed Chromium input failed to invalidate the cached output')
-            report.update(object_sha256=digest, changed_object_sha256=changed, restored_cache_hits=1,
-                          changed_source_cache_misses=1)
         report['result'] = 'PASS'
         log(f'{args.phase} passed for a real Chromium object', component='compiler-cache-probe')
     except Exception as error:
@@ -350,12 +364,7 @@ def main():
             report['diagnostic'] = str(error)
         raise
     finally:
-        try:
-            if server_started:
-                subprocess.run([str(wrapper), '--stop-server'], env=environment, timeout=20, check=False,
-                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        finally:
-            write_json(output / 'report.json', report)
+        write_json(output / 'report.json', report)
 
 
 if __name__ == '__main__':

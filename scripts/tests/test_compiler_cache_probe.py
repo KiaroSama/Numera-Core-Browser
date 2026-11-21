@@ -29,9 +29,15 @@ class CacheProvenance(unittest.TestCase):
             images = {}
             resume_context = dict(seed_context, runner_image='resume')
             output = root / 'restored'
-            probe.restore_cache(output, archive, digest, resume_context, linux_runner_images=images)
+            inventory = {}
+            probe.restore_cache(output, archive, digest, resume_context, linux_runner_images=images,
+                                restored_entries=inventory)
             self.assertEqual(images, {'seed': 'seed', 'resume': 'resume'})
             self.assertEqual((output / 'result').read_bytes(), b'compiler result')
+            self.assertEqual(inventory, {'result': probe.sha256(cache / 'result')})
+            (output / 'result').write_bytes(b'changed contents')
+            with self.assertRaisesRegex(RuntimeError, r'evicted or changed'):
+                probe.pack_cache(output, root / 'next-checkpoint.tar', resume_context, None, required_entries=inventory)
             with self.assertRaisesRegex(RuntimeError, r'clang_sha256, runner_image'):
                 probe.restore_cache(root / 'reject', archive, digest, dict(resume_context, clang_sha256='other-clang'),
                                     linux_runner_images={})

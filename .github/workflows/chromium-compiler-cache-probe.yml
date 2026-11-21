@@ -18,7 +18,7 @@ jobs:
       github.repository == 'KiaroSama/Numera-Core-Browser' && github.event.repository.private == false &&
       github.ref == 'refs/heads/main' && (inputs.target == 'ubuntu-24.04' || inputs.target == 'windows-2025-vs2026')
     runs-on: ${{ inputs.target }}
-    timeout-minutes: 55
+    timeout-minutes: ${{ inputs.target == 'windows-2025-vs2026' && 80 || 55 }}
     outputs:
       checkpoint_sha: ${{ steps.seed.outputs.checkpoint_sha }}
     steps:
@@ -48,7 +48,7 @@ jobs:
   resume:
     needs: seed
     runs-on: ${{ inputs.target }}
-    timeout-minutes: 55
+    timeout-minutes: ${{ inputs.target == 'windows-2025-vs2026' && 80 || 55 }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
