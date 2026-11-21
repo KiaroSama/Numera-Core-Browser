@@ -61,6 +61,8 @@ def retain_development_bundle(root, evidence, report, source_proof, environment)
         raise RuntimeError('The staged download does not match the tested Chromium runtime')
 
     patch = Path('upstream/chromium/patches/0001-product-name.patch')
+    attachments = {path.relative_to(output).as_posix(): sha256(path) for path in sorted(output.rglob('*'))
+                   if path.is_file() and path not in {runtime, source}}
     manifest = {'schema_revision': 1, 'package': 'numera-chromium', 'build_mode': 'development',
                 'target': 'x86_64-unknown-linux-gnu' if report['host'] == 'Linux' else 'x86_64-pc-windows-msvc',
                 'chromium_version': materials['chromium_version'], 'chromium_revision': materials['chromium_revision'],
@@ -69,7 +71,8 @@ def retain_development_bundle(root, evidence, report, source_proof, environment)
                 'runtime': {'file': runtime.name, **archive},
                 'numera_source': {'file': source.name, 'sha256': sha256(source)},
                 'upstream_source': proof['source_archive'], 'source_evidence': 'source-evidence',
-                'runtime_inventory_sha256': sha256(output / 'runtime-inventory.json'),
+                'attachments_sha256': attachments,
+                'runtime_inventory_sha256': attachments['runtime-inventory.json'],
                 'publisher_signature': 'NOT_CONFIGURED', 'trusted_release': False,
                 'validation': {'portable_runtime': 'PASS', 'native_headed_browser': 'PASS',
                                'browser_clients': 'PASS', 'rust_process_ownership': 'PASS',
