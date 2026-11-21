@@ -1,0 +1,141 @@
+{
+  "schema_revision": 1,
+  "workflow_run": 44938030680,
+  "workflow_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44938030680",
+  "source_commit": "a29ef3fb92efe9167e921804b8f901c73791e848",
+  "workflow_conclusion": "success",
+  "scope": "Native graph generation, source checkout inventory, runtime declarations and Chromium notice generation on reviewed stable candidates.",
+  "engine_compilation": "NOT_RUN",
+  "release_approval": false,
+  "version_review": "docs/evidence/upstream-review-2026-11-21.json",
+  "source_lock_verification": {
+    "equivalent_json_on_both_runners": true,
+    "lf_normalized_sha256": "11e1ef7bee2f71df6b7ac496316f8100fc20af5f6729746e782e9e4cb6dab589",
+    "observed_formats": {
+      "linux": "UTF-8 LF",
+      "windows": "UTF-8 CRLF"
+    }
+  },
+  "platforms": [
+    {
+      "id": 14720334535,
+      "name": "chromium-license-evidence-ubuntu-24.04",
+      "transport_bytes": 868926,
+      "transport_sha256": "sha256:18bd8bd7f34b11df1822b56f90f9f2f1ef84c7ef3c33925105ca407f55d94345",
+      "report": {
+        "schema_revision": 1,
+        "source_commit": "a29ef3fb92efe9167e921804b8f901c73791e848",
+        "host": "Linux",
+        "runner_image": "20261116.376.1",
+        "chromium_revision": "14d6f648e8cd7ad750a4044200ce94d3321be260",
+        "chromium_version": "158.0.8127.36",
+        "source_lock_sha256": "11e1ef7bee2f71df6b7ac496316f8100fc20af5f6729746e782e9e4cb6dab589",
+        "targets": {
+          "chromium": {
+            "gn_label": "//chrome:chrome",
+            "packages": 346,
+            "notice_sha256": "9766ebfdd0f1078966eb14e1ac9e4c90e13a9e0da8eef23d1d25db526a758d3b",
+            "spdx_sha256": "75c3e3f316c80d983bd4201ca828e96fac664b18a1f389e0494c46bf648af1e7"
+          },
+          "chromedriver": {
+            "gn_label": "//chrome/test/chromedriver:chromedriver_server",
+            "packages": 237,
+            "notice_sha256": "426f56082ff1408c90daf6ff915d822ea739f2bbb0ee416aed2789ab68d906a7",
+            "spdx_sha256": "79abfebef7c115092d28a48c7cb5e18e7ced7a6c02d1fe51c643ab162b6be771"
+          },
+          "chrome-sandbox": {
+            "gn_label": "//sandbox/linux:chrome_sandbox",
+            "packages": 3,
+            "notice_sha256": "5d70e4fd91dcb613d11982570526ceef9d4e2576c233ae7cf2156a2b1e69d62e",
+            "spdx_sha256": "51057e5c15f9911ebccd984b996edaaceb6d8ce4276c3927577f005697bdc81b"
+          }
+        },
+        "engine_compilation": "NOT_RUN",
+        "redistribution_approval": false,
+        "result": "PASS",
+        "candidate_source_review": {
+          "file": "docs/evidence/upstream-review-2026-11-21.json",
+          "sha256": "d868ae509634e847ce864422896390bf3a80ac9fcbd7842949146870f45d26e8"
+        },
+        "gn_args_sha256": "408e167a7f67ca45d128210357045c90211bc05cdafce9df18fa52afcffea7dc",
+        "license_tool_sha256": "81538d9fadd2960761c1610c1700434389a5284e4b91e5920f3b95bc992db35c",
+        "runtime_layout": {
+          "sha256": "f36cc5c350928ee7735fac219c9fa47b3fd22d2629381e249bbcf2b01bcf4d7a",
+          "paths": 5578,
+          "file_contents": "NOT_RUN"
+        },
+        "source_inventory": {
+          "git_checkouts": 169,
+          "sha256": "362cfe91539b599af03515381e3e349b6d2fb9577438508e4b684cdcbdc53126",
+          "deps_sha256": "db3d3a3f508dd4210446814aa977d6ef9e4a046194b04a94ad6a0d3ea5f39017"
+        },
+        "timestamp": "2026-11-21T19:07:44.876972+00:00"
+      },
+      "job_id": 136948869057,
+      "expires_at": "2026-11-28T19:07:45Z",
+      "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44938030680/artifacts/14720334535",
+      "official_deps": {
+        "url": "https://chromium.googlesource.com/chromium/src/+/14d6f648e8cd7ad750a4044200ce94d3321be260/DEPS?format=TEXT",
+        "bytes": 191941,
+        "sha256": "db3d3a3f508dd4210446814aa977d6ef9e4a046194b04a94ad6a0d3ea5f39017"
+      }
+    },
+    {
+      "id": 14720859518,
+      "name": "chromium-license-evidence-windows-2025-vs2026",
+      "transport_bytes": 779450,
+      "transport_sha256": "sha256:37555c322c03a3e77d48c5aa9c48a4709a5e9cf8a88347a804a2ea17df63b430",
+      "report": {
+        "schema_revision": 1,
+        "source_commit": "a29ef3fb92efe9167e921804b8f901c73791e848",
+        "host": "Windows",
+        "runner_image": "20261116.315.1",
+        "chromium_revision": "b8c2be851f62f6a394ec57955d7f31335d7cb6d4",
+        "chromium_version": "158.0.8127.37",
+        "source_lock_sha256": "56aab0db2f28a605cb4c85cac6524af0dc9ae25e98d06019b26bfdd58fb5ca6b",
+        "targets": {
+          "chromium": {
+            "gn_label": "//chrome:chrome",
+            "packages": 342,
+            "notice_sha256": "63f4f86c78c333b2804e8693f34b972c6a9ffe9ee3deaab4253f972859925f4b",
+            "spdx_sha256": "74708c4aaffc1211526630e74de87b41a1fd16871bbde465f55a7c0e865c0d2c"
+          },
+          "chromedriver": {
+            "gn_label": "//chrome/test/chromedriver:chromedriver_server",
+            "packages": 225,
+            "notice_sha256": "7ab4d9c51bc040703d8fa6a8d4f16f0b9da1e6035b298cd55209fda589ac3f25",
+            "spdx_sha256": "8cb2ebd5bd05865c247e4ad52124f889bb1febe489f1f1a2fc3913ac60199abe"
+          }
+        },
+        "engine_compilation": "NOT_RUN",
+        "redistribution_approval": false,
+        "result": "PASS",
+        "candidate_source_review": {
+          "file": "docs/evidence/upstream-review-2026-11-21.json",
+          "sha256": "d868ae509634e847ce864422896390bf3a80ac9fcbd7842949146870f45d26e8"
+        },
+        "gn_args_sha256": "ed77d85ceb6cb8e5c1d5c3753cc61af2f7cf9e4a86224629be516c13629b9da5",
+        "license_tool_sha256": "81538d9fadd2960761c1610c1700434389a5284e4b91e5920f3b95bc992db35c",
+        "runtime_layout": {
+          "sha256": "085919ae9de68c7c021ece31dc60138bb29eef67c80f0a768c3dbc34f0a71ff3",
+          "paths": 6118,
+          "file_contents": "NOT_RUN"
+        },
+        "source_inventory": {
+          "git_checkouts": 158,
+          "sha256": "4086f0ecc758648b68de2b079f00f6d714e050ada2370ac69aeb7cbf4cf8571d",
+          "deps_sha256": "db3d3a3f508dd4210446814aa977d6ef9e4a046194b04a94ad6a0d3ea5f39017"
+        },
+        "timestamp": "2026-11-21T19:15:42.663384+00:00"
+      },
+      "job_id": 136948868816,
+      "expires_at": "2026-11-28T19:15:44Z",
+      "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44938030680/artifacts/14720859518",
+      "official_deps": {
+        "url": "https://chromium.googlesource.com/chromium/src/+/b8c2be851f62f6a394ec57955d7f31335d7cb6d4/DEPS?format=TEXT",
+        "bytes": 191941,
+        "sha256": "db3d3a3f508dd4210446814aa977d6ef9e4a046194b04a94ad6a0d3ea5f39017"
+      }
+    }
+  ]
+}

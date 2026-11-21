@@ -104,7 +104,7 @@ def main():
         review = Path('docs/evidence') / args.reviewed_candidate
         lock = reviewed_stable_lock(lock, json.loads(review.read_text(encoding='utf-8')))
         review_lock = output / 'candidate-source-lock.json'
-        write_json(review_lock, lock)
+        review_lock.write_text(json.dumps(lock, indent=2) + '\n', encoding='utf-8', newline='\n')
         lock_path = review_lock
         review_record = {'file': review.as_posix(), 'sha256': sha256(review)}
     pin = lock['platform_pins'][host.lower()]

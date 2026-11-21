@@ -2,7 +2,7 @@
   "schema_revision": 1,
   "timestamp": "2026-11-10T17:33:44.732611+00:00",
   "current_review": {
-    "observed_at": "2026-11-21T19:06:05+00:00",
+    "observed_at": "2026-11-21T19:18:15+00:00",
     "active_targets": [
       "windows-x86_64",
       "linux-x86_64"
@@ -96,6 +96,17 @@
             "evidence": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44913495180",
             "source_commit": "d87a4c0fe6376d14db485df14352d6194c74d098",
             "workflow_run": 44913495180
+          },
+          {
+            "name": "Reviewed stable Chromium 158 branding patch and native GN graph",
+            "result": "PASS",
+            "platforms": [
+              "windows-x86_64",
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/chromium-candidate-158-44938030680.json",
+            "source_commit": "a29ef3fb92efe9167e921804b8f901c73791e848",
+            "workflow_run": 44938030680
           }
         ]
       },
