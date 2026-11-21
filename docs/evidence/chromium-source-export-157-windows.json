@@ -1,0 +1,105 @@
+{
+  "schema_revision": 1,
+  "scope": "Official Chromium source export and five Windows-only checkout snapshots compared with native source inputs.",
+  "host": "Windows",
+  "arch": "x86-64",
+  "chromium_version": "157.0.8103.79",
+  "chromium_revision": "6dc9bc3bdaea5c35ed6d41fceab2f7a3a2227c4f",
+  "source_lock_sha256": "a0899efb63de8badf27b640b9bfba4f702aaaa74cd2381c19f7fd6c5ac81bf12",
+  "native_inventory": {
+    "run_id": 44925530814,
+    "artifact_id": 14715608215,
+    "git_checkouts_sha256": "5bb9dff21d87f46d8a7e51a3f33bcf57716971e17e693c6c8d952481a40bcaf4",
+    "git_checkouts": 157
+  },
+  "source_archive": {
+    "url": "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-157.0.8103.79.tar.xz?generation=1794445584219815",
+    "hashes_url": "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-157.0.8103.79.tar.xz.hashes",
+    "generation": "1794445584219815",
+    "bytes": 4514563192,
+    "sha256": "256b77d82104799a2d3aa0a389cddc1af706ee2037205233566d7d3f1cfbb17b",
+    "gcs_md5_verified": true
+  },
+  "branding_patch_check": "PASS",
+  "official_export_recipe": "https://chromium.googlesource.com/chromium/tools/build/+/HEAD/recipes/recipes/publish_tarball.py",
+  "content_checks": {
+    "deps_identical_to_pinned_git": true,
+    "branding_matches_pinned_git": true,
+    "version_matches": true,
+    "regular_files": 1194266,
+    "directories": 159344,
+    "expanded_regular_file_bytes": 24248537593,
+    "verified_upstream_files_sha256": {
+      "DEPS": "70f36c59069488921a7d83b5ad0dfb3d221211be2be966f28ed84ef6ceeb8daa",
+      "LICENSE": "368cca1106be99d39ecd32a38d8305585d802a475effb66380b91ffc9bcf709b",
+      "chrome/VERSION": "d5e15649cc773a6a5e24e15eb3ebca42b6a86cfa211683e75a4c38d7fe0011b6",
+      "chrome/app/chromium_strings.grd": "a8fb46cd865b6b7fbf829da098e98c6833b74bdcf2522c78183c30dde2cef942",
+      "tools/licenses/licenses.py": "b312c62523e955b1893923e8b45c13092eb58a6df22504c4e045205bf1904063"
+    },
+    "reviewed_dependency_checkouts": 156,
+    "present_checkout_directories": 156,
+    "absent_checkout_directories": [],
+    "ffmpeg_compared_regular_files": 11351,
+    "ffmpeg_byte_identical_regular_files": 11351,
+    "ffmpeg_omitted_regular_files": [],
+    "ffmpeg_changed_files": []
+  },
+  "supplemental_git_archives": {
+    "src/third_party/gperf": {
+      "url": "https://chromium.googlesource.com/chromium/deps/gperf.git",
+      "revision": "e9eeea862a18e77b945d98eff7e1bf065d3daf8e",
+      "archive_bytes": 1021977,
+      "archive_sha256": "d4245ed8b9e4c06abf7f9a52e96bdcdedf35bcba250f9b1ced3bb2f3b236d6f0",
+      "archive_url": "https://chromium.googlesource.com/chromium/deps/gperf/+archive/e9eeea862a18e77b945d98eff7e1bf065d3daf8e.tar.gz",
+      "regular_files": 186,
+      "matching_release_export": 0,
+      "changed_release_export": 0,
+      "missing_from_release_export": 186
+    },
+    "src/third_party/microsoft_dxheaders/src": {
+      "url": "https://chromium.googlesource.com/external/github.com/microsoft/DirectX-Headers.git",
+      "revision": "07b94cba474be6cdfd934febdbd0b21ca0524187",
+      "archive_bytes": 516246,
+      "archive_sha256": "cfec3e3992be4c610b1bfa86c0d3620836c29886c8586cedea125e1b62ea8e2f",
+      "archive_url": "https://chromium.googlesource.com/external/github.com/microsoft/DirectX-Headers/+archive/07b94cba474be6cdfd934febdbd0b21ca0524187.tar.gz",
+      "regular_files": 81,
+      "matching_release_export": 0,
+      "changed_release_export": 0,
+      "missing_from_release_export": 81
+    },
+    "src/third_party/microsoft_multimedia_redirection/src": {
+      "url": "https://chromium.googlesource.com/external/github.com/microsoft/multimedia-redirection.git",
+      "revision": "8b1d8893d126547309f1bab8d8232418aa7c7109",
+      "archive_bytes": 31711,
+      "archive_sha256": "2463bf35086d92bb083b7728ab1273b547849850e69b650d8fb489631cc6b74b",
+      "archive_url": "https://chromium.googlesource.com/external/github.com/microsoft/multimedia-redirection/+archive/8b1d8893d126547309f1bab8d8232418aa7c7109.tar.gz",
+      "regular_files": 15,
+      "matching_release_export": 0,
+      "changed_release_export": 0,
+      "missing_from_release_export": 15
+    },
+    "src/third_party/microsoft_webauthn/src": {
+      "url": "https://chromium.googlesource.com/external/github.com/microsoft/webauthn.git",
+      "revision": "ef82c157125a0490e05f6ea82a7adb1b8e1bad08",
+      "archive_bytes": 20166,
+      "archive_sha256": "e6fb16f8721421a3b94469279903d956e448187905a4a0198cbf183032662863",
+      "archive_url": "https://chromium.googlesource.com/external/github.com/microsoft/webauthn/+archive/ef82c157125a0490e05f6ea82a7adb1b8e1bad08.tar.gz",
+      "regular_files": 8,
+      "matching_release_export": 0,
+      "changed_release_export": 0,
+      "missing_from_release_export": 8
+    },
+    "src/third_party/perl": {
+      "url": "https://chromium.googlesource.com/chromium/deps/perl.git",
+      "revision": "a2bd4470d3485e6eda532eee416a71d16db2d7ba",
+      "archive_bytes": 143543255,
+      "archive_sha256": "4024e817b09c39d13b27ab34c31bd7760c71c01d9e736db44fa710862e0c715e",
+      "archive_url": "https://chromium.googlesource.com/chromium/deps/perl/+archive/a2bd4470d3485e6eda532eee416a71d16db2d7ba.tar.gz",
+      "regular_files": 12015,
+      "matching_release_export": 0,
+      "changed_release_export": 0,
+      "missing_from_release_export": 12015
+    }
+  },
+  "engine_release_approved": false
+}

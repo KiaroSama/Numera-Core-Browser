@@ -28,6 +28,8 @@ def read_source_export(filename, host, source_lock_sha256):
             or not re.fullmatch(r'[0-9a-f]{64}', export['sha256']) or export['bytes'] < 1
             or export['url'] != f'{archive}?generation={generation}' or export['hashes_url'] != f'{archive}.hashes'):
         raise RuntimeError('Verified source export contains inconsistent upstream content metadata')
+    if host == 'Windows' and not proof.get('supplemental_git_archives'):
+        raise RuntimeError('Verified Windows source export must include platform checkout references')
     return path, proof
 
 
@@ -36,12 +38,25 @@ def retain_development_bundle(root, evidence, report, source_proof, environment)
     materials = report['build_materials']
     portable = report['portable_runtime']
     archive = portable['archive']
+    git_inventory = evidence / 'linked-build-materials/git-source-revisions.json'
     if (materials['chromium_revision'] != proof['chromium_revision']
             or materials['chromium_version'] != proof['chromium_version']
             or materials['source_inventory']['sha256'] != proof['native_inventory']['git_checkouts_sha256']
+            or sha256(git_inventory) != proof['native_inventory']['git_checkouts_sha256']
             or materials['source_inventory']['deps_sha256'] != proof['content_checks']['verified_upstream_files_sha256']['DEPS']
             or portable['archive_verification']['archive_sha256'] != archive['sha256']):
         raise RuntimeError('The tested Chromium runtime and its retained source inputs differ')
+    supplements = proof.get('supplemental_git_archives', {})
+    if supplements:
+        checkouts = json.loads(git_inventory.read_text(encoding='utf-8'))['git_checkouts']
+        for name, dependency in supplements.items():
+            checkout = checkouts.get(name)
+            if checkout is None or any(checkout[key] != dependency[key] for key in ('url', 'revision')):
+                raise RuntimeError('The native checkout differs from its supplemental source reference')
+            archive_url = checkout['url'].removesuffix('.git') + '/+archive/' + checkout['revision'] + '.tar.gz'
+            if (dependency['archive_url'] != archive_url or dependency['archive_bytes'] < 1
+                    or not re.fullmatch(r'[0-9a-f]{64}', dependency['archive_sha256'])):
+                raise RuntimeError('A supplemental checkout archive has invalid content metadata')
     inventory = json.loads((evidence / 'portable-runtime-inventory.json').read_text(encoding='utf-8'))
     if any('widevine' in name.lower() for name in inventory['files']):
         raise RuntimeError('The development bundle may only contain reviewed Chromium components')
