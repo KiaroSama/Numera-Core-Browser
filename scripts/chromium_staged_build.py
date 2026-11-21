@@ -28,8 +28,8 @@ PRODUCER_IDENTITY = ('head', 'run_id', 'run_attempt')
 
 
 def reviewed_checkpoint(directory, run_id, segment, host):
-    if not re.fullmatch(r'[1-9][0-9]{0,17}', run_id) or segment not in {'1', '2', '3'}:
-        raise RuntimeError('Select a reviewed run ID and checkpoint segment from 1 to 3')
+    if not re.fullmatch(r'[1-9][0-9]{0,17}', run_id) or segment not in map(str, range(1, SEGMENTS + 1)):
+        raise RuntimeError(f'Select a reviewed run ID and checkpoint segment from 1 to {SEGMENTS}')
     path = directory / f'chromium-staged-{run_id}-segment-{segment}.json'
     try:
         evidence = json.loads(path.read_text(encoding='utf-8'))
@@ -250,8 +250,6 @@ def main():
         if reason == 'time-budget':
             if read_only_replay:
                 raise RuntimeError('The read-only replay exhausted its compile budget')
-            if args.segment == SEGMENTS:
-                raise RuntimeError('The full graph did not finish within the four configured job segments')
             if values['local_storage_write'] < 1:
                 raise RuntimeError('The segment did not add transferable compiler outputs')
             if values.get('cleanups_performed', 0) or values['cache_size_kibibyte'] * 1024 >= CACHE_ACCOUNTING_GUARD:

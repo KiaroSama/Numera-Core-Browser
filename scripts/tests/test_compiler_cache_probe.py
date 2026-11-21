@@ -39,6 +39,26 @@ class CacheProvenance(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'cache key'):
                 reviewed_checkpoint(path.parent, '44846110371', '2', 'Linux')
 
+    def test_terminal_partial_segment_can_supply_a_reviewed_checkpoint(self):
+        evidence = Path(__file__).resolve().parents[2] / 'docs/evidence'
+        data = json.loads((evidence / 'chromium-staged-44846110371-segment-2.json').read_text(encoding='utf-8'))
+        run = '44999999999'
+        data['run_id'] = int(run)
+        data['report'].update(segment=4)
+        data['report']['context']['run_id'] = run
+        data['cache']['exact_key'] = f'chromium-staged-{run}-1-4-ubuntu-24.04'
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            path = directory / f'chromium-staged-{run}-segment-4.json'
+            path.write_text(json.dumps(data), encoding='utf-8')
+            checkpoint = reviewed_checkpoint(directory, run, '4', 'Linux')
+            self.assertEqual(checkpoint['key'], data['cache']['exact_key'])
+            self.assertEqual(checkpoint['sha256'], data['report']['cache_archive_sha256'])
+            data['report']['source_build'] = 'BLOCKED'
+            path.write_text(json.dumps(data), encoding='utf-8')
+            with self.assertRaisesRegex(RuntimeError, 'metadata does not match'):
+                reviewed_checkpoint(directory, run, '4', 'Linux')
+
     def test_linux_staged_resume_only_allows_runner_image_drift(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

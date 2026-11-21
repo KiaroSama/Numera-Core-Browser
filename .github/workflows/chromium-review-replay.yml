@@ -14,7 +14,7 @@ on:
       reviewed_checkpoint_segment:
         description: Segment of the verified native checkpoint recorded on main
         type: choice
-        options: ['1', '2', '3']
+        options: ['1', '2', '3', '4']
         default: '2'
 permissions:
   contents: read

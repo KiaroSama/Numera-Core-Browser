@@ -76,7 +76,7 @@ jobs:
         shell: pwsh
         run: |
           $Key = python scripts/chromium_staged_build.py --segment $env:BUILD_SEGMENT --checkpoint-key
-          if ($LASTEXITCODE -ne 0 -or $Key -notmatch '^chromium-staged-\d+-\d+-[123]-(ubuntu-24\.04|windows-2025-vs2026)$') {
+          if ($LASTEXITCODE -ne 0 -or $Key -notmatch '^chromium-staged-\d+-\d+-[1-4]-(ubuntu-24\.04|windows-2025-vs2026)$') {
             throw 'Cannot resolve the reviewed checkpoint cache key'
           }
           "key=$Key" >> $env:GITHUB_OUTPUT
@@ -130,3 +130,7 @@ jobs:
           path: build/chromium-staged-evidence
           retention-days: 7
           if-no-files-found: warn
+      - name: Require a linked build by the fourth segment
+        if: inputs.segment == 4 && steps.build.outputs.result == 'PARTIAL'
+        shell: pwsh
+        run: throw 'The final segment saved a partial checkpoint. The owned Chromium build is incomplete.'
