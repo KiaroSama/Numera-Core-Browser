@@ -117,21 +117,34 @@ def verify_native_window(browser_pid, environment):
     raise RuntimeError('The headed browser did not expose the controlled native window')
 
 
+@contextmanager
+def local_session(port, binary, profile, *, headed=False, preferences=None):
+    arguments = ['--no-first-run', '--no-default-browser-check', '--user-data-dir=' + str(profile)]
+    if not headed:
+        arguments.insert(0, '--headless=new')
+    options = {'binary': str(binary), 'args': arguments}
+    if preferences is not None:
+        options['prefs'] = preferences
+    data = json_command(port, 'POST', '/session', {'capabilities': {'alwaysMatch': {
+        'browserName': 'chrome', 'goog:chromeOptions': options
+    }}}, timeout=45)
+    session_id = data.get('sessionId') if isinstance(data, dict) else None
+    if not isinstance(session_id, str) or not re.fullmatch(r'[0-9a-fA-F]{32,64}', session_id):
+        raise RuntimeError('Native ChromeDriver returned an invalid session identifier')
+    session = '/session/' + session_id
+    try:
+        yield session, data
+    except BaseException:
+        with suppress(OSError, ValueError, RuntimeError, http.client.HTTPException):
+            json_command(port, 'DELETE', session, timeout=5)
+        raise
+    else:
+        json_command(port, 'DELETE', session, timeout=10)
+
+
 def smoke_driver(binary, driver, scratch, output, environment, stop_tree, *, headed=False):
-    session = None
     with local_driver(driver, output / 'chromedriver-fixture.log', environment, stop_tree) as (port, version):
-        try:
-            profile = scratch / 'driver-fixture-profile'
-            arguments = ['--no-first-run', '--no-default-browser-check', '--user-data-dir=' + str(profile)]
-            if not headed:
-                arguments.insert(0, '--headless=new')
-            session_data = json_command(port, 'POST', '/session', {'capabilities': {'alwaysMatch': {
-                'browserName': 'chrome', 'goog:chromeOptions': {'binary': str(binary), 'args': arguments}
-            }}}, timeout=45)
-            session_id = session_data.get('sessionId') if isinstance(session_data, dict) else None
-            if not isinstance(session_id, str) or not re.fullmatch(r'[0-9a-fA-F]{32,64}', session_id):
-                raise RuntimeError('Native ChromeDriver returned an invalid session identifier')
-            session = '/session/' + session_id
+        with local_session(port, binary, scratch / 'driver-fixture-profile', headed=headed) as (session, session_data):
             fixture = Path('tests/fixtures/engine-smoke.html').resolve(strict=True).as_uri()
             json_command(port, 'POST', session + '/url', {'url': fixture})
             actual = json_command(port, 'POST', session + '/execute/sync', {
@@ -145,10 +158,6 @@ def smoke_driver(binary, driver, scratch, output, environment, stop_tree, *, hea
                 report['native_window'] = verify_native_window(process_id, environment)
                 report['scope'] = 'Headed W3C navigation and an OS window owned by the browser process'
             return report
-        finally:
-            if session is not None:
-                with suppress(OSError, ValueError, RuntimeError, http.client.HTTPException):
-                    json_command(port, 'DELETE', session, timeout=5)
 
 
 def smoke_clients(binary, driver, scratch, output, environment, stop_tree):

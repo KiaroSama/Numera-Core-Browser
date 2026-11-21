@@ -63,10 +63,12 @@ class PortableRuntimeFixture(unittest.TestCase):
                   patch.object(fixture, 'verify_portable_archive', return_value={'result': 'PASS'}) as verified,
                   patch.object(fixture, 'smoke', side_effect=render),
                   patch.object(fixture, 'smoke_driver', return_value={'result': 'PASS'}) as webdriver,
+                  patch.object(fixture, 'smoke_profile_data', return_value={'result': 'PASS'}) as data,
                   patch.object(fixture, 'smoke_browser_ownership', side_effect=check_ownership) as ownership):
                 report = fixture.smoke_portable_runtime(source, scratch, output, 'Linux', original_environment)
             installed.assert_called_once()
             ownership.assert_called_once()
+            self.assertEqual(data.call_args.args[:2], (runtime / 'chrome', runtime / 'chromedriver'))
             self.assertEqual(webdriver.call_args.args[1], runtime / 'chromedriver')
             self.assertEqual(report['process_ownership']['result'], 'PASS')
             self.assertEqual(original_environment['CHROME_DEVEL_SANDBOX'], '/original/helper')

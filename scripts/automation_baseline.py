@@ -9,6 +9,7 @@ import shutil
 from chromedriver_fixture import smoke_clients, smoke_driver
 from chromium_headed_fixture import smoke_headed_browser
 from chromium_ownership_fixture import smoke_browser_ownership
+from chromium_profile_fixture import smoke_profile_data
 from engine_build import now, sha256, smoke, stop_tree, write_json
 
 
@@ -47,6 +48,7 @@ def main():
         report['automation_clients'] = smoke_clients(browser, driver, profile_root, output, environment, stop_tree)
         report['headed_browser'] = smoke_headed_browser(browser, driver, profile_root, output, environment)
         report['chromium_ownership'] = smoke_browser_ownership(browser, profile_root, output, environment)
+        report['profile_data'] = smoke_profile_data(browser, driver, profile_root, output, environment, stop_tree)
         report['result'] = 'PASS'
     finally:
         report['timestamp'] = now()
