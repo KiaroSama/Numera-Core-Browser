@@ -6,32 +6,64 @@ import platform
 import re
 import subprocess
 import time
+from urllib.parse import urlsplit
+from urllib.request import url2pathname
 
 import psutil
 from engine_build import stop_tree
 
 
-def browser_rendered(port_file, fixture):
+def local_file_url_path(url):
+    parts = urlsplit(url)
+    if parts.scheme == 'file' and parts.netloc in {'', 'localhost'} and not parts.query and not parts.fragment:
+        return Path(url2pathname(parts.path))
+    return None
+
+
+def observe_browser(port_file, fixture):
     try:
         with port_file.open('rb') as file:
             port = file.readline(8).strip()
-        if not re.fullmatch(rb'[1-9][0-9]{0,4}', port) or not 1 <= int(port) <= 65535:
-            return False
+    except FileNotFoundError:
+        return 'waiting for the debugger port file', False
+    except OSError:
+        return 'debugger port file was unreadable', False
+    if not re.fullmatch(rb'[1-9][0-9]{0,4}', port) or not 1 <= int(port) <= 65535:
+        return 'debugger port file held an invalid port', False
+    try:
         request = http.client.HTTPConnection('127.0.0.1', int(port), timeout=2)
         try:
             request.request('GET', '/json/list')
             response = request.getresponse()
             data = response.read(65_537)
             if response.status != 200 or len(data) > 65_536:
-                return False
+                return 'debugger returned an invalid target response', False
             targets = json.loads(data)
-            return isinstance(targets, list) and any(
-                isinstance(item, dict) and item.get('type') == 'page' and item.get('url') == fixture
-                and item.get('title') == 'Numera source build fixture' for item in targets)
+            if isinstance(targets, list):
+                expected = local_file_url_path(fixture)
+                for item in targets:
+                    if (isinstance(item, dict) and item.get('type') == 'page'
+                            and item.get('title') == 'Numera source build fixture'
+                            and isinstance(item.get('url'), str) and expected is not None
+                            and local_file_url_path(item['url']) == expected):
+                        return 'rendered', item['url'] != fixture
+            return 'debugger responded without the controlled page', False
         finally:
             request.close()
     except (OSError, ValueError, http.client.HTTPException):
-        return False
+        return 'debugger did not return usable target data', False
+
+
+def capture_startup_sites(source, output):
+    if source.is_file():
+        with source.open('rb') as stream:
+            stream.seek(max(0, source.stat().st_size - 64 * 1024))
+            logs = stream.read(64 * 1024)
+        # Keep fixed severity and source locations. Browser-supplied text can contain private paths.
+        sites = re.findall(rb':(WARNING|ERROR|FATAL):([A-Za-z0-9_.\\/]+):(\d+)\]', logs)
+        records = [{'level': level.decode('ascii'), 'location': path.decode('ascii'), 'line': int(line)}
+                   for level, path, line in sites[-30:]]
+        (output / 'chromium-startup-sites.json').write_text(json.dumps(records) + '\n', encoding='utf-8')
 
 
 def smoke_browser_ownership(browser, scratch, output, environment):
@@ -46,10 +78,12 @@ def smoke_browser_ownership(browser, scratch, output, environment):
                                   env=environment, stdin=subprocess.PIPE, stdout=log, stderr=subprocess.STDOUT)
         try:
             deadline = time.monotonic() + 45
-            while not browser_rendered(port_file, fixture):
+            observation, equivalent_url = observe_browser(port_file, fixture)
+            while observation != 'rendered':
                 if worker.poll() is not None or time.monotonic() >= deadline:
-                    raise RuntimeError('The Rust ownership fixture did not observe Chromium rendering the local page')
+                    raise RuntimeError(f'The Rust ownership fixture did not observe the controlled page ({observation})')
                 time.sleep(0.1)
+                observation, equivalent_url = observe_browser(port_file, fixture)
             observed = psutil.Process(worker.pid).children(recursive=True)
             if len(observed) < 2:
                 raise RuntimeError('The Chromium ownership fixture did not observe a browser tree')
@@ -68,5 +102,7 @@ def smoke_browser_ownership(browser, scratch, output, environment):
                 except subprocess.TimeoutExpired:
                     stop_tree(worker)
                     worker.wait(timeout=5)
+            capture_startup_sites(root / 'chromium-startup.log', output)
     return {'result': 'PASS', 'rendered': 'PASS', 'owned_tree_shutdown': 'PASS',
-            'observed_processes': len(observed), 'profile_path': 'Unicode with spaces'}
+            'observed_processes': len(observed), 'profile_path': 'Unicode with spaces',
+            'normalized_file_url': equivalent_url}

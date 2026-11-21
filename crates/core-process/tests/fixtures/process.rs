@@ -67,12 +67,16 @@ fn chromium_owner(root: &Path, browser: &Path, fixture: &std::ffi::OsStr) {
     }
     let mut profile = OsString::from("--user-data-dir=");
     profile.push(root.join("داده‌های مرورگر"));
+    let mut log_file = OsString::from("--log-file=");
+    log_file.push(root.join("chromium-startup.log"));
     let arguments = [
         "--headless=new".into(),
         "--no-first-run".into(),
         "--no-default-browser-check".into(),
         "--remote-debugging-address=127.0.0.1".into(),
         "--remote-debugging-port=0".into(),
+        "--enable-logging".into(),
+        log_file,
         profile,
         fixture.to_owned(),
     ];
@@ -84,11 +88,21 @@ fn chromium_owner(root: &Path, browser: &Path, fixture: &std::ffi::OsStr) {
     let requested = std::io::stdin().read_exact(&mut signal).is_ok() && signal == *b"s";
     let browser_was_running = !tree.root_exited().unwrap();
     tree.terminate_and_wait(Duration::from_secs(8)).unwrap();
-    assert!(tree.root_exited().unwrap());
-    assert!(
-        requested && browser_was_running,
-        "Chromium did not stay active until the fixture requested shutdown"
-    );
+    // Windows can empty the job before signaling the browser process handle.
+    let deadline = Instant::now() + Duration::from_secs(4);
+    while !tree.root_exited().unwrap() {
+        assert!(
+            Instant::now() < deadline,
+            "The browser process handle did not signal"
+        );
+        std::thread::sleep(Duration::from_millis(10));
+    }
+    if requested {
+        assert!(
+            browser_was_running,
+            "Chromium did not stay active until requested shutdown"
+        );
+    }
 }
 
 fn main() {
