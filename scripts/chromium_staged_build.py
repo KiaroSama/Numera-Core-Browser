@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import shutil
 import subprocess
 import time
@@ -22,6 +23,42 @@ SEGMENTS = 4
 CACHE_LIMIT = 2_650_000_000
 CACHE_ACCOUNTING_GUARD = 2_500_000_000
 MAX_ENTRIES = 100_000
+CHECKPOINT_RUNNERS = {'Linux': 'ubuntu-24.04', 'Windows': 'windows-2025-vs2026'}
+PRODUCER_IDENTITY = ('head', 'run_id', 'run_attempt')
+
+
+def reviewed_checkpoint(directory, run_id, segment, host):
+    if not re.fullmatch(r'[1-9][0-9]{0,17}', run_id) or segment not in {'1', '2', '3'}:
+        raise RuntimeError('Select a reviewed run ID and checkpoint segment from 1 to 3')
+    path = directory / f'chromium-staged-{run_id}-segment-{segment}.json'
+    try:
+        evidence = json.loads(path.read_text(encoding='utf-8'))
+        report = evidence['report']
+        context = report['context']
+        digest = report['cache_archive_sha256']
+        key = evidence['cache']['exact_key']
+        job_id = evidence['job_id']
+        runner = CHECKPOINT_RUNNERS[host]
+        producer_head = context['head']
+        producer_attempt = context['run_attempt']
+        matches_run = (evidence['run_id'] == int(run_id) and report['segment'] == int(segment)
+                       and report['host'] == host and context['host'] == host and context['run_id'] == run_id)
+        matches_result = report['result'] == report['source_build'] == 'PARTIAL' and producer_head == report['commit']
+        valid_ids = (re.fullmatch(r'[0-9a-f]{40}', producer_head) and re.fullmatch(r'[0-9a-f]{64}', digest)
+                     and re.fullmatch(r'[1-9][0-9]*', producer_attempt) and type(job_id) is int and job_id > 0)
+    except (KeyError, OSError, TypeError, ValueError) as error:
+        raise RuntimeError('No complete reviewed checkpoint evidence exists for this runner') from error
+    if not (matches_run and matches_result and valid_ids):
+        raise RuntimeError('Reviewed checkpoint metadata does not match the requested native graph')
+    if key != f'chromium-staged-{run_id}-{producer_attempt}-{segment}-{runner}':
+        raise RuntimeError('Reviewed checkpoint has an unexpected cache key')
+    return {'context': context, 'sha256': digest, 'key': key, 'job_id': job_id}
+
+
+def restore_reviewed_context(context, checkpoint):
+    # The producing job supplies its identity only. Build inputs must still
+    # match the fresh graph, toolchain, configuration and platform.
+    return dict(context, **{key: checkpoint['context'][key] for key in PRODUCER_IDENTITY})
 
 
 def cache_command(tool, environment, *args):
@@ -102,6 +139,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--segment', required=True, type=int, choices=range(1, SEGMENTS + 1))
     parser.add_argument('--minutes', type=int, choices=range(10, 276), default=275)
+    parser.add_argument('--checkpoint-key', action='store_true')
     args = parser.parse_args()
     host = platform.system()
     event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text(encoding='utf-8'))
@@ -109,6 +147,18 @@ def main():
             or os.environ.get('GITHUB_REPOSITORY') != REPOSITORY or event['repository']['private'] is not False
             or os.environ.get('RUNNER_ARCH') != 'X64' or host not in RELEASES):
         raise RuntimeError('The staged build requires the authorized public Windows or Linux x86-64 job')
+    reviewed = None
+    reviewed_run = os.environ.get('REVIEWED_CHECKPOINT_RUN', '')
+    if reviewed_run:
+        if args.segment != 1:
+            raise RuntimeError('Only the first segment can start from a reviewed earlier run')
+        reviewed = reviewed_checkpoint(Path('docs/evidence'), reviewed_run,
+                                       os.environ.get('REVIEWED_CHECKPOINT_SEGMENT', ''), host)
+    if args.checkpoint_key:
+        if reviewed is None:
+            raise RuntimeError('A reviewed run is required to resolve a cache key')
+        print(reviewed['key'])
+        return
     output = Path('build/chromium-staged-evidence').resolve()
     output.mkdir(parents=True, exist_ok=False)
     transfer = Path('build/chromium-staged-cache').resolve()
@@ -169,11 +219,17 @@ def main():
         report['context'] = context
         graph_commands.unlink()
         previous_inventory = {} if cache_tool == 'sccache' else None
-        if args.segment > 1:
+        if args.segment > 1 or reviewed is not None:
             report['stage'] = 'restore'
             previous = transfer / 'checkpoint.tar'
             report['runner_images'] = {}
-            restore_cache(entries, previous, os.environ.get('EXPECTED_CHECKPOINT_SHA'), context,
+            digest, expected_context = os.environ.get('EXPECTED_CHECKPOINT_SHA'), context
+            if reviewed is not None:
+                digest = reviewed['sha256']
+                expected_context = restore_reviewed_context(context, reviewed)
+                report['reviewed_checkpoint'] = {key: reviewed[key] for key in ('sha256', 'key', 'job_id')}
+                report['reviewed_checkpoint']['source_commit'] = reviewed['context']['head']
+            restore_cache(entries, previous, digest, expected_context,
                           limit=CACHE_LIMIT, max_entries=MAX_ENTRIES, linux_runner_images=report['runner_images'],
                           restored_entries=previous_inventory)
             previous.unlink()
@@ -185,7 +241,7 @@ def main():
             reason = compile_segment(ninja, wrapper, source, targets, environment, output, report, args.minutes, checks)
             values = statistics(wrapper, environment)
         report.update(compiler_cache=values, segment_stop=reason)
-        if args.segment > 1 and values['preprocessed_cache_hit'] < 1:
+        if (args.segment > 1 or reviewed is not None) and values['preprocessed_cache_hit'] < 1:
             raise RuntimeError('Fresh runner did not reuse any transferred Chromium compile outputs')
         if reason == 'time-budget':
             if args.segment == SEGMENTS:

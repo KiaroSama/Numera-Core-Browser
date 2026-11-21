@@ -7,6 +7,14 @@ on:
         type: choice
         options: [ubuntu-24.04, windows-2025-vs2026]
         default: ubuntu-24.04
+      reviewed_checkpoint_run:
+        description: Optionally start from a prior verified checkpoint recorded on main
+        type: string
+        default: ''
+      reviewed_checkpoint_segment:
+        description: Segment of the prior run to restore when a run ID is provided
+        type: number
+        default: 2
 permissions:
   contents: read
   actions: read
@@ -24,6 +32,8 @@ jobs:
       target: ${{ inputs.target }}
       segment: 1
       minutes: 275
+      reviewed_checkpoint_run: ${{ inputs.reviewed_checkpoint_run }}
+      reviewed_checkpoint_segment: ${{ inputs.reviewed_checkpoint_segment }}
   second:
     needs: first
     if: needs.first.outputs.result == 'PARTIAL'

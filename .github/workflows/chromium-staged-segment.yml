@@ -17,6 +17,12 @@ on:
       checkpoint_sha:
         type: string
         default: ''
+      reviewed_checkpoint_run:
+        type: string
+        default: ''
+      reviewed_checkpoint_segment:
+        type: number
+        default: 2
     outputs:
       result:
         description: Whether this segment built the source or saved a partial checkpoint
@@ -54,6 +60,27 @@ jobs:
       - name: Validate build tooling and the loopback fixture transport
         if: inputs.segment == 1
         run: python -m unittest discover -s scripts/tests -v
+      - name: Resolve the reviewed checkpoint from main
+        if: inputs.reviewed_checkpoint_run != ''
+        id: reviewed
+        env:
+          BUILD_SEGMENT: ${{ inputs.segment }}
+          REVIEWED_CHECKPOINT_RUN: ${{ inputs.reviewed_checkpoint_run }}
+          REVIEWED_CHECKPOINT_SEGMENT: ${{ inputs.reviewed_checkpoint_segment }}
+        shell: pwsh
+        run: |
+          $Key = python scripts/chromium_staged_build.py --segment $env:BUILD_SEGMENT --checkpoint-key
+          if ($LASTEXITCODE -ne 0 -or $Key -notmatch '^chromium-staged-\d+-\d+-[123]-(ubuntu-24\.04|windows-2025-vs2026)$') {
+            throw 'Cannot resolve the reviewed checkpoint cache key'
+          }
+          "key=$Key" >> $env:GITHUB_OUTPUT
+      - name: Restore the reviewed prior workflow checkpoint
+        if: steps.reviewed.outputs.key != ''
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: build/chromium-staged-cache/checkpoint.tar
+          key: ${{ steps.reviewed.outputs.key }}
+          fail-on-cache-miss: true
       - name: Restore only the predecessor cache from this workflow attempt
         if: inputs.previous > 0
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
@@ -67,6 +94,8 @@ jobs:
           BUILD_SEGMENT: ${{ inputs.segment }}
           BUILD_MINUTES: ${{ inputs.minutes }}
           EXPECTED_CHECKPOINT_SHA: ${{ inputs.checkpoint_sha }}
+          REVIEWED_CHECKPOINT_RUN: ${{ inputs.reviewed_checkpoint_run }}
+          REVIEWED_CHECKPOINT_SEGMENT: ${{ inputs.reviewed_checkpoint_segment }}
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
         run: python scripts/chromium_staged_build.py --segment $env:BUILD_SEGMENT --minutes $env:BUILD_MINUTES

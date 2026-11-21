@@ -1,5 +1,6 @@
 """Check the native graph monitor and incremental cache provenance."""
 import hashlib
+import json
 from pathlib import Path
 import subprocess
 import sys
@@ -11,9 +12,33 @@ from unittest.mock import patch
 SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
 import chromium_cache_probe as probe
+from chromium_staged_build import reviewed_checkpoint, restore_reviewed_context
 
 
 class CacheProvenance(unittest.TestCase):
+    def test_reviewed_checkpoint_rebinds_producer_identity_without_replacing_build_inputs(self):
+        evidence = Path(__file__).resolve().parents[2] / 'docs/evidence'
+        checkpoint = reviewed_checkpoint(evidence, '44846110371', '2', 'Linux')
+        source = checkpoint['context']
+        self.assertEqual(checkpoint['key'], 'chromium-staged-44846110371-1-2-ubuntu-24.04')
+        consumer = dict(source, head='5' * 40, run_id='44999999999', run_attempt='1', commands_sha256='a' * 64)
+        expected = restore_reviewed_context(consumer, checkpoint)
+        self.assertEqual(expected['head'], source['head'])
+        self.assertEqual(expected['run_id'], source['run_id'])
+        self.assertEqual(expected['commands_sha256'], consumer['commands_sha256'])
+        self.assertEqual(consumer['run_id'], '44999999999')
+        for run, segment, host in [('44846110371', '2', 'Windows'), ('44846110371', '4', 'Linux'),
+                                   ('../44846110371', '2', 'Linux')]:
+            with self.subTest(run=run, segment=segment, host=host), self.assertRaises(RuntimeError):
+                reviewed_checkpoint(evidence, run, segment, host)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'chromium-staged-44846110371-segment-2.json'
+            data = json.loads((evidence / path.name).read_text(encoding='utf-8'))
+            data['cache']['exact_key'] = 'a-different-checkpoint'
+            path.write_text(json.dumps(data), encoding='utf-8')
+            with self.assertRaisesRegex(RuntimeError, 'cache key'):
+                reviewed_checkpoint(path.parent, '44846110371', '2', 'Linux')
+
     def test_linux_staged_resume_only_allows_runner_image_drift(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
