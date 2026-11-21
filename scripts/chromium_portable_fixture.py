@@ -6,16 +6,21 @@ import stat
 import subprocess
 
 from chromedriver_fixture import smoke_driver
-from engine_build import sha256, smoke, stop_tree, write_json
+from engine_build import install_linux_sandbox, sha256, smoke, stop_tree, write_json
+
+
+def runtime_dependency_path(line):
+    relative = PurePosixPath(line)
+    if (relative.is_absolute() or not relative.parts or '..' in relative.parts
+            or '\\' in line or ':' in line or any(ord(char) < 32 for char in line)):
+        raise RuntimeError('GN runtime dependency is outside the owned build directory')
+    return relative
 
 
 def resolve_runtime_files(build, dependencies):
     files = {}
     for line in dependencies:
-        relative = PurePosixPath(line)
-        if (relative.is_absolute() or not relative.parts or '..' in relative.parts
-                or '\\' in line or ':' in line or any(ord(char) < 32 for char in line)):
-            raise RuntimeError('GN runtime dependency is outside the owned build directory')
+        relative = runtime_dependency_path(line)
         path = build.joinpath(*relative.parts)
         if path.resolve(strict=True) != path:
             raise RuntimeError('GN runtime dependency follows an unexpected link')
@@ -34,17 +39,21 @@ def resolve_runtime_files(build, dependencies):
     return sorted(files.values())
 
 
-def stage_portable_runtime(source, scratch, output, host, environment):
-    build = source / 'out/Numera'
-    if build.resolve(strict=True) != build:
-        raise RuntimeError('Chromium build output follows an unexpected link')
+def describe_portable_runtime(source, host, environment):
     gn = source / ('buildtools/win/gn.exe' if host == 'Windows' else 'buildtools/linux64/gn')
     targets = ['//chrome:chrome_initial', '//chrome/test/chromedriver:chromedriver_server']
     binary = 'chrome.exe' if host == 'Windows' else 'chrome'
     driver = 'chromedriver.exe' if host == 'Windows' else 'chromedriver'
     required = {binary, driver}
     if host == 'Linux':
+        # The strip action has no runtime dependency list. The linked target
+        # supplies the dependencies, while the portable runtime uses the stripped executable.
+        targets[1] += '.unstripped'
         required.add('chrome_sandbox')
+        intermediates = {'chromedriver.unstripped'}
+    else:
+        # Windows reorders imports into the final top-level chrome.exe.
+        intermediates = {'initialexe/chrome.exe', 'initialexe/chrome.exe.pdb'}
     dependencies = set(required)
     for target in targets:
         inventory = subprocess.check_output([str(gn), 'desc', 'out/Numera', target, 'runtime_deps'],
@@ -52,12 +61,18 @@ def stage_portable_runtime(source, scratch, output, host, environment):
         if not 0 < len(inventory) <= 1024 * 1024:
             raise RuntimeError('Unexpected GN runtime dependency list size')
         dependencies.update(line for line in inventory.decode('utf-8').splitlines() if line)
-    if host == 'Windows':
-        # The Windows build reorders imports into the final top-level chrome.exe.
-        dependencies = {name for name in dependencies if PurePosixPath(name).as_posix()
-                        not in {'initialexe/chrome.exe', 'initialexe/chrome.exe.pdb'}}
-    files = resolve_runtime_files(build, dependencies)
-    if not required <= set(files):
+    dependencies = {runtime_dependency_path(name).as_posix() for name in dependencies} - intermediates
+    return {'binary': binary, 'driver': driver, 'required': sorted(required), 'dependencies': sorted(dependencies),
+            'gn_sha256': sha256(gn), 'gn_targets': targets}
+
+
+def stage_portable_runtime(source, scratch, output, host, environment):
+    build = source / 'out/Numera'
+    if build.resolve(strict=True) != build:
+        raise RuntimeError('Chromium build output follows an unexpected link')
+    layout = describe_portable_runtime(source, host, environment)
+    files = resolve_runtime_files(build, layout['dependencies'])
+    if not set(layout['required']) <= set(files):
         raise RuntimeError('Runtime dependency list is missing required executable files')
     runtime = scratch / 'Numera portable مسیر' / 'runtime'
     bytes_required = sum((build / name).stat().st_size for name in files)
@@ -75,8 +90,9 @@ def stage_portable_runtime(source, scratch, output, host, environment):
             raise RuntimeError('Relocated runtime file does not match the source-built file')
         manifest[name] = {'sha256': digest, 'bytes': staged.stat().st_size}
     write_json(output / 'portable-runtime-inventory.json', {'files': manifest, 'bytes': bytes_required,
-               'gn_sha256': sha256(gn), 'gn_targets': targets, 'publisher_signing': 'NOT_CONFIGURED'})
-    return runtime, binary, driver
+               'gn_sha256': layout['gn_sha256'], 'gn_targets': layout['gn_targets'],
+               'publisher_signing': 'NOT_CONFIGURED'})
+    return runtime, layout['binary'], layout['driver']
 
 
 def smoke_portable_runtime(source, scratch, output, host, environment):
@@ -89,12 +105,24 @@ def smoke_portable_runtime(source, scratch, output, host, environment):
     evidence.mkdir()
     profile = runtime.parent / 'داده‌های مرورگر'
     profile.mkdir()
+    relocated_environment = dict(environment)
+    sandbox_helper = None
+    if host == 'Linux':
+        # Chromium's SUID launcher splits wrapper paths on spaces. Install the
+        # staged helper bytes into a separate, space-free fixture directory.
+        helper_directory = scratch / 'portable-sandbox'
+        helper_directory.mkdir()
+        sandbox_helper = install_linux_sandbox(runtime, helper_directory, relocated_environment)
     # Unavailable original output exposes stale absolute runtime dependencies.
     build.rename(original)
     try:
-        smoke(runtime / binary, profile, evidence, environment)
-        result = smoke_driver(runtime / binary, runtime / driver, profile, evidence, environment, stop_tree)
+        smoke(runtime / binary, profile, evidence, relocated_environment)
+        result = smoke_driver(runtime / binary, runtime / driver, profile, evidence, relocated_environment, stop_tree)
     finally:
         original.rename(build)
-    return {'result': 'PASS', 'scope': 'Relocated runtime and profile, controlled renderer and WebDriver tests',
-            'runtime_inventory_sha256': sha256(output / 'portable-runtime-inventory.json'), 'webdriver': result}
+    report = {'result': 'PASS', 'scope': 'Relocated runtime and profile, controlled renderer and WebDriver tests',
+              'runtime_inventory_sha256': sha256(output / 'portable-runtime-inventory.json'), 'webdriver': result}
+    if sandbox_helper is not None:
+        report['sandbox_helper'] = {**sandbox_helper, 'staged_source': 'chrome_sandbox',
+                                    'fixture_location': 'Separate space-free privileged fixture directory'}
+    return report

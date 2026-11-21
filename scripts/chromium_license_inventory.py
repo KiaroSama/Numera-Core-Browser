@@ -10,6 +10,7 @@ import sys
 from urllib.parse import urlsplit
 
 from chromium_cache_probe import RELEASES, REPOSITORY, compile_graph, install_tool
+from chromium_portable_fixture import describe_portable_runtime
 from engine_build import now, sha256, write_json
 from logging_util import log
 
@@ -77,6 +78,11 @@ def main():
         native = source / 'out/Numera'
         license_tool = source / 'tools/licenses/licenses.py'
         report.update(gn_args_sha256=sha256(native / 'args.gn'), license_tool_sha256=sha256(license_tool))
+        runtime_layout = describe_portable_runtime(source, host, environment)
+        layout_file = output / 'runtime-layout.json'
+        write_json(layout_file, runtime_layout)
+        report['runtime_layout'] = {'sha256': sha256(layout_file), 'paths': len(runtime_layout['dependencies']),
+                                    'file_contents': 'NOT_RUN'}
         report['source_inventory'] = git_source_inventory(root, source, output, pin, environment)
         targets = {'chromium': '//chrome:chrome', 'chromedriver': '//chrome/test/chromedriver:chromedriver_server'}
         if host == 'Linux':

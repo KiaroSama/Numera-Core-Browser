@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 import tempfile
 import sys
@@ -9,6 +10,60 @@ import chromium_portable_fixture as fixture
 
 
 class PortableRuntimeFixture(unittest.TestCase):
+    def test_linux_uses_linked_driver_dependencies_and_the_stripped_executable(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            scratch = Path(tmp).resolve()
+            source = scratch / 'src'
+            build = source / 'out/Numera'
+            build.mkdir(parents=True)
+            output = scratch / 'evidence'
+            output.mkdir()
+            gn = source / 'buildtools/linux64/gn'
+            gn.parent.mkdir(parents=True)
+            gn.write_bytes(b'controlled GN fixture')
+            names = {'chrome', 'chromedriver', 'chrome_sandbox', 'libdriver-component.so'}
+            for name in names:
+                (build / name).write_bytes(name.encode('utf-8'))
+
+            def describe(command, **kwargs):
+                self.assertEqual(command[1:3], ['desc', 'out/Numera'])
+                self.assertEqual(kwargs['cwd'], source)
+                if command[3] == '//chrome:chrome_initial':
+                    return b'./chrome\n'
+                if command[3] == '//chrome/test/chromedriver:chromedriver_server.unstripped':
+                    return b'./chromedriver.unstripped\n./libdriver-component.so\n'
+                return b''  # The stripped executable's action has no runtime_deps.
+
+            runtime = scratch / 'Numera portable مسیر' / 'runtime'
+            original_environment = {'CHROME_DEVEL_SANDBOX': '/original/helper'}
+            helper = scratch / 'portable-sandbox' / 'numera-source-sandbox'
+
+            def install(staged, destination, environment):
+                self.assertEqual(staged, runtime)
+                self.assertEqual(destination, helper.parent)
+                self.assertTrue(destination.is_dir())
+                self.assertEqual((staged / 'chrome_sandbox').read_bytes(), b'chrome_sandbox')
+                environment['CHROME_DEVEL_SANDBOX'] = str(helper)
+                return {'mode': '4755'}
+
+            def render(browser, profile, evidence, environment):
+                self.assertFalse(build.exists())
+                self.assertEqual(browser, runtime / 'chrome')
+                self.assertEqual(environment['CHROME_DEVEL_SANDBOX'], str(helper))
+
+            with (patch.object(fixture.subprocess, 'check_output', side_effect=describe),
+                  patch.object(fixture, 'install_linux_sandbox', side_effect=install) as installed,
+                  patch.object(fixture, 'smoke', side_effect=render),
+                  patch.object(fixture, 'smoke_driver', return_value={'result': 'PASS'}) as webdriver):
+                report = fixture.smoke_portable_runtime(source, scratch, output, 'Linux', original_environment)
+            installed.assert_called_once()
+            self.assertEqual(webdriver.call_args.args[1], runtime / 'chromedriver')
+            self.assertEqual(original_environment['CHROME_DEVEL_SANDBOX'], '/original/helper')
+            self.assertEqual(report['sandbox_helper']['mode'], '4755')
+            self.assertEqual({path.name for path in runtime.iterdir()}, names)
+            inventory = json.loads((output / 'portable-runtime-inventory.json').read_text(encoding='utf-8'))
+            self.assertEqual(set(inventory['files']), names)
+
     def test_source_output_is_restored_when_relocated_smoke_fails(self):
         with tempfile.TemporaryDirectory() as tmp:
             scratch = Path(tmp).resolve()
