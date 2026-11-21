@@ -1,0 +1,91 @@
+{
+  "schema_revision": 1,
+  "workflow_run": 44905192477,
+  "workflow_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44905192477",
+  "conclusion": "success",
+  "source_commit": "124a35a5cb3f1286a87b46a5209610dce19f92ac",
+  "targets": [
+    {
+      "id": 14706939948,
+      "name": "chromium-license-evidence-ubuntu-24.04",
+      "transport_bytes": 820062,
+      "transport_sha256": "sha256:9e27d6c0c3192d936e1c671de2d9c60e3652941cfb76d88b3a53ec961719769e",
+      "report": {
+        "schema_revision": 1,
+        "source_commit": "124a35a5cb3f1286a87b46a5209610dce19f92ac",
+        "host": "Linux",
+        "runner_image": "20261116.376.1",
+        "chromium_revision": "4b3d0dabb8250b6f152d2d85d79e7706e309d087",
+        "chromium_version": "157.0.8103.78",
+        "source_lock_sha256": "a0899efb63de8badf27b640b9bfba4f702aaaa74cd2381c19f7fd6c5ac81bf12",
+        "targets": {
+          "chromium": {
+            "gn_label": "//chrome:chrome",
+            "packages": 336,
+            "notice_sha256": "bf6dbf470443ab86afa52acc80b672d9e809d38ff3009330abfcc0376fcd3eb7",
+            "spdx_sha256": "d009effe055c517103fece7658d499c5531f6f45b76fa164ef1cb8c463ed78f4"
+          },
+          "chromedriver": {
+            "gn_label": "//chrome/test/chromedriver:chromedriver_server",
+            "packages": 229,
+            "notice_sha256": "9c4600cd85a0b5c4b40b704b19d8d8d0e292ada3b9b91679e1d12e92dc2c1ad2",
+            "spdx_sha256": "5555539dbf6d1614d8fbb8d8fa59697160b53806d96f8e6b195dee82b2c99647"
+          },
+          "chrome-sandbox": {
+            "gn_label": "//sandbox/linux:chrome_sandbox",
+            "packages": 3,
+            "notice_sha256": "5d70e4fd91dcb613d11982570526ceef9d4e2576c233ae7cf2156a2b1e69d62e",
+            "spdx_sha256": "79e0dd2a3504fad5ad99bc0a7c8c73267b27dc69a41cae7a2adc970dec8839e0"
+          }
+        },
+        "engine_compilation": "NOT_RUN",
+        "redistribution_approval": false,
+        "result": "PASS",
+        "gn_args_sha256": "408e167a7f67ca45d128210357045c90211bc05cdafce9df18fa52afcffea7dc",
+        "license_tool_sha256": "b312c62523e955b1893923e8b45c13092eb58a6df22504c4e045205bf1904063",
+        "timestamp": "2026-11-21T12:53:22.616715+00:00"
+      },
+      "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44905192477/artifacts/14706939948",
+      "native_job_id": 136849156347
+    },
+    {
+      "id": 14708855503,
+      "name": "chromium-license-evidence-windows-2025-vs2026",
+      "transport_bytes": 735027,
+      "transport_sha256": "sha256:6cef75dfcfbd1b804eb54b71bf522b10c318718364f4ed9891a95cba0a816be9",
+      "report": {
+        "schema_revision": 1,
+        "source_commit": "124a35a5cb3f1286a87b46a5209610dce19f92ac",
+        "host": "Windows",
+        "runner_image": "20261116.315.1",
+        "chromium_revision": "6dc9bc3bdaea5c35ed6d41fceab2f7a3a2227c4f",
+        "chromium_version": "157.0.8103.79",
+        "source_lock_sha256": "a0899efb63de8badf27b640b9bfba4f702aaaa74cd2381c19f7fd6c5ac81bf12",
+        "targets": {
+          "chromium": {
+            "gn_label": "//chrome:chrome",
+            "packages": 338,
+            "notice_sha256": "8164a9e92e6cdf068905601dff4f5b5a3c00d560e284ee7aa9f53dcbeab83e2a",
+            "spdx_sha256": "0b365db772d5416fb4f8ac32ad1045e3efb5a2b67ec9403ecd46445b3b9c1e39"
+          },
+          "chromedriver": {
+            "gn_label": "//chrome/test/chromedriver:chromedriver_server",
+            "packages": 223,
+            "notice_sha256": "1e78c722c9bc68c05fab6e82b85a406fb61648a0fefb7700f390772296231e3c",
+            "spdx_sha256": "5024a34ed80cda3b8dd942dd27afc4b6de0560f3a816798052c793a306d50687"
+          }
+        },
+        "engine_compilation": "NOT_RUN",
+        "redistribution_approval": false,
+        "result": "PASS",
+        "gn_args_sha256": "ed77d85ceb6cb8e5c1d5c3753cc61af2f7cf9e4a86224629be516c13629b9da5",
+        "license_tool_sha256": "b312c62523e955b1893923e8b45c13092eb58a6df22504c4e045205bf1904063",
+        "timestamp": "2026-11-21T13:06:21.809161+00:00"
+      },
+      "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44905192477/artifacts/14708855503",
+      "native_job_id": 136849156645
+    }
+  ],
+  "coverage": "Pinned development GN target license metadata and notice texts. Final package source-closure and redistribution review are separate.",
+  "redistribution_approved": false
+}

@@ -15,5 +15,11 @@
     "license_choices": {"jszip@3.10.2": "MIT"}
   },
   "bundled_engine_binaries": [],
-  "engine_redistribution_review": "BLOCKED: no engine release or complete component inventory exists"
+  "chromium_graph_inventory": {
+    "evidence": "docs/evidence/chromium-licenses-44905192477.json",
+    "targets": ["windows-x86_64", "linux-x86_64"],
+    "result": "PASS",
+    "redistribution_approved": false
+  },
+  "engine_redistribution_review": "PENDING: audit the exact packaged runtime and deliver complete corresponding source"
 }

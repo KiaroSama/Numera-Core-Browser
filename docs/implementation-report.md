@@ -41,6 +41,8 @@ The staged Linux run is building the pinned source graph on fresh standard GitHu
 
 The Windows staged run is queued behind Linux under the shared repository cache allowance. Its compiler path has already passed a [separate fresh-runner replay](evidence/chromium-cache-resume-44848971290.json) of one actual Chromium object, with byte-identical output and a cache miss after an input change. [Native Windows run](https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44856553847)
 
+The pinned Chromium license tool generated notice text and SPDX JSON using the native GN graphs for both platforms. The verified browser inventories report 336 entries on Linux and 338 on Windows, with separate ChromeDriver and Linux sandbox inventories. Review of the exact packaged files and complete corresponding source remains a release gate. [Verified graph inventories](evidence/chromium-licenses-44905192477.json)
+
 ## Open gates
 
 | Gate | Status | Remaining acceptance |

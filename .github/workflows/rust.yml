@@ -93,3 +93,37 @@ jobs:
           name: dependency-security
           path: build/security-audit.json
           if-no-files-found: error
+  attest-development:
+    needs: [native, dependency-security]
+    if: >-
+      github.repository == 'KiaroSama/Numera-Core-Browser' && github.event.repository.private == false &&
+      github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          pattern: development-cli-*
+          path: build/attestation-input
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: numera-core-contracts-v1-ubuntu-24.04
+          path: build/attestation-input/contracts
+      - name: Prepare the exact tested development artifact subjects
+        shell: bash
+        run: |
+          mkdir -p build/attestation-subjects
+          mv build/attestation-input/development-cli-ubuntu-24.04/development-cli.tar.gz build/attestation-subjects/numera-core-cli-linux-x86_64.tar.gz
+          mv build/attestation-input/development-cli-windows-2025/development-cli.tar.gz build/attestation-subjects/numera-core-cli-windows-x86_64.tar.gz
+          cd build/attestation-input/contracts
+          sha256sum --check numera-core-contracts-v1.sha256
+          mv numera-core-contracts-v1.zip ../../attestation-subjects/
+      - name: Attest the tested development packages and contract
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
+        with:
+          subject-path: build/attestation-subjects/*
