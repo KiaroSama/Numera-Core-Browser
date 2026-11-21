@@ -139,7 +139,9 @@
       "run_id": 44913495180,
       "source_commit": "d87a4c0fe6376d14db485df14352d6194c74d098",
       "build_tooling_and_transport_tests": "PASS",
-      "status": "in_progress"
+      "status": "in_progress",
+      "source_build": "PARTIAL",
+      "last_verified_checkpoint": "docs/evidence/chromium-staged-44913495180-segment-1.json"
     },
     {
       "target": "ubuntu-24.04",
@@ -152,7 +154,7 @@
       "native_job_id": 136936265504
     }
   ],
-  "source_experiment_status_observed_at": "2026-11-21T18:10:00+00:00",
+  "source_experiment_status_observed_at": "2026-11-21T19:21:17+00:00",
   "active_targets": [
     "windows-x86_64",
     "linux-x86_64"

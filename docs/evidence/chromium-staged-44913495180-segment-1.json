@@ -1,0 +1,135 @@
+{
+  "run_id": 44913495180,
+  "artifact_id": 14720129976,
+  "verified_zip_sha256": "sha256:5f0f4d9b961c7692b5e929496f42a3cb7bab3213519b3b97c3b8419fcdc05ef1",
+  "zip_bytes": 131889,
+  "members": [
+    "graph.log",
+    "native-build.log",
+    "report.json"
+  ],
+  "report": {
+    "schema_revision": 1,
+    "result": "PARTIAL",
+    "stage": "checkpoint",
+    "segment": 1,
+    "commit": "d87a4c0fe6376d14db485df14352d6194c74d098",
+    "host": "Windows",
+    "release_ready": false,
+    "source_build": "PARTIAL",
+    "read_only_replay": false,
+    "renderer_fixture": "NOT_RUN",
+    "driver_fixture": "NOT_RUN",
+    "automation_client_smokes": "NOT_RUN",
+    "automation_suites": "NOT_RUN",
+    "portable_runtime_fixture": "NOT_RUN",
+    "compile_budget_minutes": 275,
+    "debug_build": true,
+    "elapsed_seconds": 16502.469,
+    "disk_free_bytes": 119878762496,
+    "peak_tree_rss_bytes": 1057800192,
+    "context": {
+      "head": "d87a4c0fe6376d14db485df14352d6194c74d098",
+      "run_id": "44913495180",
+      "run_attempt": "1",
+      "runner_image": "20261116.315.1",
+      "host": "Windows",
+      "scratch": "D:\\a\\_temp\\numera-chromium-staged",
+      "targets": [
+        "chrome",
+        "chromedriver"
+      ],
+      "source_lock_sha256": "a0899efb63de8badf27b640b9bfba4f702aaaa74cd2381c19f7fd6c5ac81bf12",
+      "gn_args_sha256": "ed77d85ceb6cb8e5c1d5c3753cc61af2f7cf9e4a86224629be516c13629b9da5",
+      "commands_sha256": "6a16f8e2eb5e266e84aa6da56bcff145dd3450c0a7853abe6f35dd9d36f48260",
+      "cache_tool": "sccache",
+      "cache_tool_sha256": "ba5542107b245431e37011110c1929d635e3a8e52cc98d35c4b01d0aa328b5a5",
+      "cache_config_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "ninja_sha256": "e52a7ad9538d9618c67a0bd777964e2eec8a30f68b810a2f6adce1f2daf847b8",
+      "clang_sha256": "4da6bc64ba680144071eddd49e70e4e9ab75a683ecf471cb298760adbe275094",
+      "sdk": {
+        "directory_version": "10.0.28000.0",
+        "debugging_tools_version": "10.0.28000.2957 (WinBuild.160101.0800)",
+        "requested_release": "10.0.28000.2957"
+      },
+      "sccache_policy": {
+        "SCCACHE_CACHE_SIZE": "4G",
+        "SCCACHE_DIRECT": "false"
+      }
+    },
+    "parallelism": 4,
+    "native_action_progress": {
+      "completed": 10666,
+      "total": 57774
+    },
+    "compiler_cache": {
+      "preprocessed_cache_hit": 242,
+      "local_storage_write": 8746,
+      "cache_size_kibibyte": 510336,
+      "backend_statistics": {
+        "compile_requests": 8992,
+        "requests_unsupported_compiler": 0,
+        "requests_not_compile": 0,
+        "requests_not_cacheable": 0,
+        "requests_executed": 8992,
+        "cache_errors": {
+          "counts": {},
+          "adv_counts": {}
+        },
+        "cache_hits": {
+          "counts": {
+            "C/C++": 242
+          },
+          "adv_counts": {
+            "c++ [msvc]": 242
+          }
+        },
+        "cache_misses": {
+          "counts": {
+            "C/C++": 8746
+          },
+          "adv_counts": {
+            "c++ [msvc]": 8343,
+            "c [msvc]": 403
+          }
+        },
+        "cache_timeouts": 0,
+        "cache_read_errors": 0,
+        "non_cacheable_compilations": 0,
+        "forced_recaches": 0,
+        "cache_write_errors": 0,
+        "cache_writes": 8746,
+        "cache_write_duration": {
+          "secs": 7,
+          "nanos": 445868900
+        },
+        "cache_read_hit_duration": {
+          "secs": 0,
+          "nanos": 74366000
+        },
+        "compilations": 8746,
+        "compiler_write_duration": {
+          "secs": 56509,
+          "nanos": 779650700
+        },
+        "compile_fails": 0,
+        "not_cached": {},
+        "dist_compiles": {},
+        "dist_errors": 0,
+        "multi_level": null
+      }
+    },
+    "segment_stop": "time-budget",
+    "cache_archive_bytes": 539432960,
+    "cache_archive_sha256": "68b4409c17dfc4032b6c238e0cc5c3ec45b7125a0abd3eb0c8f092a1366194f0",
+    "timestamp": "2026-11-21T19:19:31.182618+00:00"
+  },
+  "job_id": 136874065379,
+  "cache": {
+    "id": 10900671797,
+    "exact_key": "chromium-staged-44913495180-1-1-windows-2025-vs2026",
+    "compressed_bytes": 521462406,
+    "created_at": "2026-11-21T19:19:44.020063Z"
+  },
+  "artifact_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44913495180/artifacts/14720129976"
+}
