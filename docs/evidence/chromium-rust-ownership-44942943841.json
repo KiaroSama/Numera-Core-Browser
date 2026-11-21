@@ -1,0 +1,73 @@
+{
+  "schema_revision": 1,
+  "workflow_run": 44942943841,
+  "workflow_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44942943841",
+  "source_commit": "2835e5cb43cade07d9606222d0494da0de2a7423",
+  "workflow_conclusion": "success",
+  "scope": "Controlled runner-installed Chromium-family browser launch and termination through native Rust ownership.",
+  "engine_compilation": "NOT_RUN",
+  "production_session_supervision": "NOT_RUN",
+  "prior_windows_diagnostics": [
+    {
+      "run_id": 44941407401,
+      "artifact_id": 14721368928,
+      "finding": "Missing controlled page after the readiness timeout and a separate root-handle shutdown race."
+    },
+    {
+      "run_id": 44941939814,
+      "artifact_id": 14721683647,
+      "finding": "Root shutdown passed cleanup. DevToolsActivePort remained absent and Chromium reported errors resolving Windows shell folders."
+    },
+    {
+      "run_id": 44942381968,
+      "artifact_id": 14721579795,
+      "finding": "The test passed a parenthesized Windows environment key rejected by the native launcher."
+    }
+  ],
+  "platforms": [
+    {
+      "id": 14722411448,
+      "size": 27080,
+      "host": "Linux",
+      "job": 136963931344,
+      "result": "PASS",
+      "ownership": {
+        "result": "PASS",
+        "rendered": "PASS",
+        "owned_tree_shutdown": "PASS",
+        "observed_processes": 17,
+        "profile_path": "Unicode with spaces",
+        "normalized_file_url": false
+      },
+      "transport_sha256": "sha256:f5a06dbe96734caeb6e6049a5f73106d294fcc2da48eaaf67919f8ad5d53ba56",
+      "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44942943841/artifacts/14722411448",
+      "expires_at": "2026-11-28T19:49:46Z",
+      "runner_image": "20261116.376.1",
+      "browser_version": "157.0.8103.78",
+      "browser_sha256": "aea09d69ce7f24d5901f6bfb15dd44d0c856e793e0a498f8d8393ec7d2c308ec",
+      "owned_engine_used": false
+    },
+    {
+      "id": 14721419115,
+      "size": 19629,
+      "host": "Windows",
+      "job": 136963931596,
+      "result": "PASS",
+      "ownership": {
+        "result": "PASS",
+        "rendered": "PASS",
+        "owned_tree_shutdown": "PASS",
+        "observed_processes": 9,
+        "profile_path": "Unicode with spaces",
+        "normalized_file_url": false
+      },
+      "transport_sha256": "sha256:049e4798913e1bce963241433400103586b3961ac63ffb4d37d778e6e79aa63c",
+      "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44942943841/artifacts/14721419115",
+      "expires_at": "2026-11-28T19:50:04Z",
+      "runner_image": "20261116.315.1",
+      "browser_version": "157.0.8103.79",
+      "browser_sha256": "a527591d96df1f30bdabf5599d257b8b80c83d90c405ff997ddbc202ba5e9ada",
+      "owned_engine_used": false
+    }
+  ]
+}

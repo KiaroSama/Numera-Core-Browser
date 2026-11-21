@@ -2,7 +2,7 @@
   "schema_revision": 1,
   "timestamp": "2026-11-10T17:33:44.732611+00:00",
   "current_review": {
-    "observed_at": "2026-11-21T19:26:18+00:00",
+    "observed_at": "2026-11-21T19:52:42+00:00",
     "active_targets": [
       "windows-x86_64",
       "linux-x86_64"
@@ -375,6 +375,17 @@
             "evidence": "docs/evidence/development-artifacts-44934635290.json",
             "source_commit": "5089de860d4f2094181a31e154bf9f5063bccdae",
             "workflow_run": 44934635290
+          },
+          {
+            "name": "Native Rust process ownership for stock Chromium-family rendering and shutdown",
+            "result": "PASS",
+            "platforms": [
+              "windows-x86_64",
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/chromium-rust-ownership-44942943841.json",
+            "source_commit": "2835e5cb43cade07d9606222d0494da0de2a7423",
+            "workflow_run": 44942943841
           }
         ]
       },
