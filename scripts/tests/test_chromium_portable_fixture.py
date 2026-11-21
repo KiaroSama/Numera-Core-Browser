@@ -51,13 +51,23 @@ class PortableRuntimeFixture(unittest.TestCase):
                 self.assertEqual(browser, runtime / 'chrome')
                 self.assertEqual(environment['CHROME_DEVEL_SANDBOX'], str(helper))
 
+            def check_ownership(browser, scratch, evidence, environment):
+                self.assertFalse(build.exists())
+                self.assertEqual(scratch, runtime.parent)
+                self.assertEqual(evidence, output / 'portable-runtime')
+                render(browser, scratch, evidence, environment)
+                return {'result': 'PASS'}
+
             with (patch.object(fixture.subprocess, 'check_output', side_effect=describe),
                   patch.object(fixture, 'install_linux_sandbox', side_effect=install) as installed,
                   patch.object(fixture, 'smoke', side_effect=render),
-                  patch.object(fixture, 'smoke_driver', return_value={'result': 'PASS'}) as webdriver):
+                  patch.object(fixture, 'smoke_driver', return_value={'result': 'PASS'}) as webdriver,
+                  patch.object(fixture, 'smoke_browser_ownership', side_effect=check_ownership) as ownership):
                 report = fixture.smoke_portable_runtime(source, scratch, output, 'Linux', original_environment)
             installed.assert_called_once()
+            ownership.assert_called_once()
             self.assertEqual(webdriver.call_args.args[1], runtime / 'chromedriver')
+            self.assertEqual(report['process_ownership']['result'], 'PASS')
             self.assertEqual(original_environment['CHROME_DEVEL_SANDBOX'], '/original/helper')
             self.assertEqual(report['sandbox_helper']['mode'], '4755')
             package = scratch / 'numera-portable-runtime.tar.gz'

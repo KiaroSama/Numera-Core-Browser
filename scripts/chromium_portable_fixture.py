@@ -9,6 +9,7 @@ import subprocess
 import tarfile
 
 from chromedriver_fixture import smoke_driver
+from chromium_ownership_fixture import smoke_browser_ownership
 from engine_build import install_linux_sandbox, sha256, smoke, stop_tree, write_json
 
 
@@ -148,10 +149,12 @@ def smoke_portable_runtime(source, scratch, output, host, environment):
     try:
         smoke(runtime / binary, profile, evidence, relocated_environment)
         result = smoke_driver(runtime / binary, runtime / driver, profile, evidence, relocated_environment, stop_tree)
+        ownership = smoke_browser_ownership(runtime / binary, runtime.parent, evidence, relocated_environment)
     finally:
         original.rename(build)
-    report = {'result': 'PASS', 'scope': 'Extracted relocated runtime and profile, controlled renderer and WebDriver tests',
-              'archive': archive, 'runtime_inventory_sha256': sha256(inventory_path), 'webdriver': result}
+    report = {'result': 'PASS', 'scope': 'Extracted runtime, controlled rendering, WebDriver and native process ownership',
+              'archive': archive, 'runtime_inventory_sha256': sha256(inventory_path), 'webdriver': result,
+              'process_ownership': ownership}
     if sandbox_helper is not None:
         report['sandbox_helper'] = {**sandbox_helper, 'staged_source': 'chrome_sandbox',
                                     'fixture_location': 'Separate space-free privileged fixture directory'}
