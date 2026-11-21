@@ -1,0 +1,65 @@
+{
+  "run_id": 44843752992,
+  "artifact_id": 14684355437,
+  "verified_transport_digest": "sha256:98d4e918d6fdc10e62b8d006c31262a7825ebadeeb61d49dbeebe3799734a237",
+  "report": {
+    "phase": "resume",
+    "runner": "Linux",
+    "source_commit": "4fb6996677a1c2f32fd7e6f58e6c99849421178c",
+    "result": "PASS",
+    "engine_source_acceptance": "NOT_RUN",
+    "release_ready": false,
+    "context": {
+      "run_id": "44843752992",
+      "run_attempt": "1",
+      "runner_image": "20261116.376.1",
+      "host": "Linux",
+      "head": "4fb6996677a1c2f32fd7e6f58e6c99849421178c",
+      "scratch": "/home/runner/work/_temp/numera-compiler-cache-probe",
+      "target": "obj/base/base/logging.o",
+      "lock_sha256": "a0899efb63de8badf27b640b9bfba4f702aaaa74cd2381c19f7fd6c5ac81bf12",
+      "gn_args_sha256": "408e167a7f67ca45d128210357045c90211bc05cdafce9df18fa52afcffea7dc",
+      "cache_tool": "ccache",
+      "cache_tool_sha256": "d8c63ad7be5029fdbea0e326255a07a1618de8dca12809cee0219dbedc74e4de",
+      "cache_config_sha256": "d68f327b85156f3b44f73bd4e592178c5fa6fcaee12bc4373b316f6c2e2bde60",
+      "ninja_sha256": "607e668f90dd6cd82e1a42ae572647ad1b1fd43063964295b9547836d8c15d99",
+      "clang_sha256": "8091a95554f24a2affa32c80e884c3d36960c5d971560d3410391ffc36af19a7",
+      "command_sha256": "c589cf64094e549172de3c9bf5daac6a197cf476c0504ffc7ef6e038221507cc",
+      "input_sha256": "4d69842dafef18f5409b5f88a5716f84f7009b0ed1ea34a21eb4aa7559d7b696"
+    },
+    "runner_images": {
+      "seed": "20261116.376.1",
+      "resume": "20261116.376.1"
+    },
+    "object_sha256": "8fa5fb2debe725c5043abd5ac431ae989d2a8476eead7e184f6da26d7d6328c0",
+    "changed_object_sha256": "9dfad63481665c8a309c99a3946e68253cd63a0b5e6a5df57029b8316b5cf290",
+    "restored_cache_hits": 1,
+    "changed_source_cache_misses": 1
+  },
+  "restored": {
+    "cache_miss": 0,
+    "preprocessed_cache_hit": 436,
+    "local_storage_write": 0,
+    "cleanups_performed": 0,
+    "target_results": [
+      "local_storage_hit",
+      "local_storage_read_hit",
+      "preprocessed_cache_hit"
+    ]
+  },
+  "changed-source": {
+    "cache_miss": 1,
+    "preprocessed_cache_hit": 0,
+    "local_storage_write": 1,
+    "cleanups_performed": 0,
+    "target_results": [
+      "cache_miss",
+      "local_storage_miss",
+      "local_storage_read_miss",
+      "local_storage_write",
+      "preprocessed_cache_miss"
+    ]
+  },
+  "resume_job_id": 136665494737,
+  "cache_continuation": "PASS"
+}
