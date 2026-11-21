@@ -57,6 +57,7 @@ jobs:
         run: |
           python -m pip install --disable-pip-version-check -r requirements-engine-build.txt
           npm --prefix tests/native-automation ci --ignore-scripts --no-fund --no-audit
+          node --test tests/native-automation/loopback.test.mjs
         shell: bash
       - name: Run controlled browser fixtures against the runner baseline
         run: python scripts/automation_baseline.py

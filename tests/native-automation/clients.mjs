@@ -5,6 +5,7 @@ import { chromium } from 'playwright-core';
 import puppeteer from 'puppeteer-core';
 import { Builder, By, until } from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome.js';
+import { loopbackPort } from './loopback.mjs';
 
 const marker = 'NUMERA_RENDERER_FIXTURE_PASS';
 const frameMarker = 'NUMERA_FRAME_FIXTURE_PASS';
@@ -16,12 +17,6 @@ function verifyScreenshot(bytes) {
   const image = Buffer.from(bytes);
   assert.ok(image.length > pngSignature.length && image.subarray(0, 8).equals(pngSignature),
     'Expected a browser screenshot in PNG format');
-}
-
-function loopbackPort(address) {
-  const match = /^127\.0\.0\.1:([1-9][0-9]{0,4})$/.exec(address);
-  assert.ok(match && Number(match[1]) <= 65535, 'Expected a local Chromium automation endpoint');
-  return `http://${match[0]}`;
 }
 
 async function testPuppeteer(endpoint, fixture) {

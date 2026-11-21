@@ -90,7 +90,7 @@ def smoke_driver(binary, driver, scratch, output, environment, stop_tree):
             if actual != 'NUMERA_RENDERER_FIXTURE_PASS':
                 raise RuntimeError('Native WebDriver did not observe the renderer fixture marker')
             return {'result': 'PASS', 'driver_version': version,
-                    'scope': 'Source-built ChromeDriver W3C HTTP session and a controlled local document'}
+                    'scope': 'ChromeDriver W3C HTTP session and a controlled local document'}
         finally:
             if session is not None:
                 with suppress(OSError, ValueError, RuntimeError, http.client.HTTPException):
