@@ -1,5 +1,4 @@
 """Process ownership regression for the native graph monitor."""
-import importlib.util
 from pathlib import Path
 import subprocess
 import sys
@@ -10,9 +9,7 @@ from unittest.mock import patch
 
 SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
-SPEC = importlib.util.spec_from_file_location('compiler_cache_probe', SCRIPTS / 'chromium-compiler-cache-probe.py')
-probe = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(probe)
+import chromium_cache_probe as probe
 
 
 class NativeGraphOwnership(unittest.TestCase):

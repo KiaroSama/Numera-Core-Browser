@@ -1,0 +1,203 @@
+#!/usr/bin/env python3
+"""Attempt the full native Chromium graph in bounded jobs with verified local cache handoffs."""
+import argparse
+import json
+import os
+from pathlib import Path
+import platform
+import shutil
+import subprocess
+import time
+
+import psutil
+from chromium_cache_probe import REPOSITORY, RELEASES, compile_graph, install_tool, pack_cache, restore_cache
+from engine_build import CheckRun, install_linux_sandbox, now, publish_check, read_progress, sha256, smoke, stop_tree, write_json
+from logging_util import log
+
+SEGMENTS = 4
+CACHE_LIMIT = 2_650_000_000
+CACHE_ACCOUNTING_GUARD = 2_500_000_000
+MAX_ENTRIES = 100_000
+
+
+def ccache_command(tool, environment, *args):
+    return subprocess.check_output([str(tool), *args], env=environment, timeout=120)
+
+
+def statistics(tool, environment):
+    return json.loads(ccache_command(tool, environment, '--print-stats', '--format=json'))
+
+
+def compile_segment(ninja, wrapper, source, targets, environment, output, report, minutes, checks=None):
+    """Only stop the owned native tree, preserving completed cache writes."""
+    available = psutil.virtual_memory().available
+    workers = max(1, min(os.cpu_count() or 1, 4, available // (3 * 1024**3)))
+    report['parallelism'] = workers
+    ccache_command(wrapper, environment, '--zero-stats')
+    command = [str(ninja), '-C', 'out/Numera', '-j', str(workers), *targets]
+    native_log = output / 'native-build.log'
+    started = time.monotonic()
+    next_report = 0
+    with native_log.open('wb') as stream:
+        child = subprocess.Popen(command, cwd=source, env=environment, stdout=stream, stderr=subprocess.STDOUT)
+        try:
+            while child.poll() is None:
+                elapsed = time.monotonic() - started
+                free = shutil.disk_usage(source).free
+                if free < 25_000_000_000:
+                    raise RuntimeError('Staged build reached its 25 GB free disk floor')
+                if elapsed >= minutes * 60:
+                    return 'time-budget'
+                if elapsed >= next_report:
+                    values = statistics(wrapper, environment)
+                    report.update(elapsed_seconds=round(elapsed, 3), disk_free_bytes=free,
+                                  native_action_progress=read_progress(native_log), compiler_cache=values)
+                    try:
+                        parent = psutil.Process(child.pid)
+                        rss = 0
+                        for process in [parent, *parent.children(recursive=True)]:
+                            try:
+                                rss += process.memory_info().rss
+                            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                                pass
+                        report['peak_tree_rss_bytes'] = max(report.get('peak_tree_rss_bytes', 0), rss)
+                    except (psutil.NoSuchProcess, psutil.AccessDenied):
+                        pass
+                    write_json(output / 'report.json', report)
+                    if checks is not None:
+                        publish_check(report, checks)
+                    log(f"Full graph: {elapsed:.0f}s, {values['preprocessed_cache_hit']} cache hits, "
+                        f"{values['local_storage_write']} writes, {free / 1e9:.2f} GB free", component='staged-chromium')
+                    next_report = elapsed + 30
+                time.sleep(2)
+        finally:
+            if child.poll() is None:
+                stop_tree(child)
+            report.update(elapsed_seconds=round(time.monotonic() - started, 3),
+                          native_action_progress=read_progress(native_log))
+    if child.returncode != 0:
+        raise RuntimeError('Native Chromium build failed; inspect native-build.log')
+    return 'built'
+
+
+def write_outputs(result, checkpoint_sha=''):
+    with Path(os.environ['GITHUB_OUTPUT']).open('a', encoding='utf-8') as stream:
+        stream.write(f'result={result}\ncheckpoint_sha={checkpoint_sha}\n')
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--segment', required=True, type=int, choices=range(1, SEGMENTS + 1))
+    parser.add_argument('--minutes', type=int, choices=range(10, 276), default=275)
+    args = parser.parse_args()
+    host = platform.system()
+    event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text(encoding='utf-8'))
+    if (os.environ.get('GITHUB_ACTIONS') != 'true' or os.environ.get('RUNNER_ENVIRONMENT') != 'github-hosted'
+            or os.environ.get('GITHUB_REPOSITORY') != REPOSITORY or event['repository']['private'] is not False
+            or os.environ.get('RUNNER_ARCH') != 'X64' or host not in RELEASES):
+        raise RuntimeError('The staged build requires the authorized public Windows or Linux x86-64 job')
+    output = Path('build/chromium-staged-evidence').resolve()
+    output.mkdir(parents=True, exist_ok=False)
+    transfer = Path('build/chromium-staged-cache').resolve()
+    transfer.mkdir(parents=True, exist_ok=True)
+    root = Path(os.environ['RUNNER_TEMP']).resolve() / 'numera-chromium-staged'
+    tools = root.with_name(root.name + '-tools')
+    tools.mkdir(exist_ok=False)
+    entries = tools / 'entries'
+    entries.mkdir()
+    temp_cache = tools / 'temp'
+    temp_cache.mkdir()
+    report = {'schema_revision': 1, 'result': 'BLOCKED', 'stage': 'prepare', 'segment': args.segment,
+              'commit': os.environ['GITHUB_SHA'], 'host': host, 'release_ready': False, 'source_build': 'NOT_RUN',
+              'renderer_fixture': 'NOT_RUN', 'automation_suites': 'NOT_RUN', 'compile_budget_minutes': args.minutes,
+              'debug_build': True, 'elapsed_seconds': 0, 'disk_free_bytes': shutil.disk_usage(root.parent).free,
+              'peak_tree_rss_bytes': 0}
+    checks = CheckRun(job_name=('first', 'second', 'third', 'fourth')[args.segment - 1] + ' / native') if os.environ.get('GH_TOKEN') else None
+    try:
+        wrapper, ninja = [install_tool(tools, spec) for spec in RELEASES[host]]
+        config = tools / 'local-cache.conf'
+        config.write_text('direct_mode = false\ncompiler_check = content\nmax_size = 2550M\n', encoding='utf-8')
+        environment = {k: v for k, v in os.environ.items() if not k.upper().startswith(('CCACHE_', 'SCCACHE_')) and k not in
+                       {'GH_TOKEN', 'GITHUB_TOKEN', 'ACTIONS_RUNTIME_TOKEN', 'ACTIONS_ID_TOKEN_REQUEST_TOKEN'}}
+        environment.update(CCACHE_DIR=str(entries), CCACHE_CONFIGPATH=str(config), CCACHE_TEMPDIR=str(temp_cache),
+                           DEPOT_TOOLS_UPDATE='0', DEPOT_TOOLS_WIN_TOOLCHAIN='0', NINJA_STATUS='[%f/%t] ')
+        environment['PATH'] = os.pathsep.join((str(tools), str(root / 'depot_tools'), environment['PATH']))
+        compile_graph(root, environment, output)
+        source = root / 'checkout/src'
+        native_output = source / 'out/Numera'
+        targets = ['chrome', 'chromedriver'] + (['chrome_sandbox'] if host == 'Linux' else [])
+        graph_commands = tools / 'ninja-commands.txt'
+        with graph_commands.open('wb') as stream:
+            subprocess.run([str(ninja), '-C', 'out/Numera', '-t', 'commands', *targets], cwd=source,
+                           env=environment, timeout=120, stdout=stream, check=True)
+        if not 0 < graph_commands.stat().st_size <= 1024 * 1024 * 1024:
+            raise RuntimeError('Unexpected full Ninja command inventory size')
+        clang = source / ('third_party/llvm-build/Release+Asserts/bin/clang-cl.exe' if host == 'Windows'
+                          else 'third_party/llvm-build/Release+Asserts/bin/clang')
+        context = {'head': os.environ['GITHUB_SHA'], 'run_id': os.environ['GITHUB_RUN_ID'],
+                   'run_attempt': os.environ['GITHUB_RUN_ATTEMPT'], 'runner_image': os.environ['ImageVersion'],
+                   'host': host, 'scratch': str(root), 'targets': targets,
+                   'source_lock_sha256': sha256(Path('upstream/chromium/lock.json')),
+                   'gn_args_sha256': sha256(native_output / 'args.gn'), 'commands_sha256': sha256(graph_commands),
+                   'ccache_sha256': sha256(wrapper), 'ccache_config_sha256': sha256(config),
+                   'ninja_sha256': sha256(ninja), 'clang_sha256': sha256(clang)}
+        if host == 'Windows':
+            sdk = json.loads((root / 'windows-sdk.json').read_text(encoding='utf-8-sig'))
+            context['sdk'] = {k: sdk[k] for k in ('directory_version', 'debugging_tools_version', 'requested_release')}
+        report['context'] = context
+        graph_commands.unlink()
+        if args.segment > 1:
+            report['stage'] = 'restore'
+            previous = transfer / 'checkpoint.tar'
+            restore_cache(entries, previous, os.environ.get('EXPECTED_CHECKPOINT_SHA'), context,
+                          limit=CACHE_LIMIT, max_entries=MAX_ENTRIES)
+            previous.unlink()
+            # Rebuild local occupancy accounting after transport excluded ccache stats.
+            ccache_command(wrapper, environment, '--cleanup')
+        report.update(stage='compile-link', source_build='RUNNING', result='RUNNING')
+        reason = compile_segment(ninja, wrapper, source, targets, environment, output, report, args.minutes, checks)
+        values = statistics(wrapper, environment)
+        report.update(compiler_cache=values, segment_stop=reason)
+        if reason == 'time-budget':
+            if args.segment == SEGMENTS:
+                raise RuntimeError('The full graph did not finish within the four configured job segments')
+            if args.segment > 1 and values['preprocessed_cache_hit'] < 1:
+                raise RuntimeError('Fresh runner did not reuse any transferred Chromium compile outputs')
+            if values['local_storage_write'] < 1:
+                raise RuntimeError('The segment did not add transferable compiler outputs')
+            if values['cleanups_performed'] or values['cache_size_kibibyte'] * 1024 >= CACHE_ACCOUNTING_GUARD:
+                raise RuntimeError('The compiler cache did not fit the bounded checkpoint allowance')
+            report['stage'] = 'checkpoint'
+            archive = transfer / 'checkpoint.tar'
+            pack_cache(entries, archive, context, None, limit=CACHE_LIMIT, max_entries=MAX_ENTRIES)
+            report.update(result='PARTIAL', source_build='PARTIAL', cache_archive_bytes=archive.stat().st_size,
+                          cache_archive_sha256=sha256(archive))
+            write_outputs('PARTIAL', report['cache_archive_sha256'])
+            return
+        binary = (native_output / ('chrome.exe' if host == 'Windows' else 'chrome')).resolve(strict=True)
+        driver = (native_output / ('chromedriver.exe' if host == 'Windows' else 'chromedriver')).resolve(strict=True)
+        report.update(stage='renderer-fixture', source_build='PASS', renderer_fixture='RUNNING',
+                      browser_sha256=sha256(binary), browser_bytes=binary.stat().st_size,
+                      chromedriver_sha256=sha256(driver), chromedriver_bytes=driver.stat().st_size)
+        if host == 'Linux':
+            report['linux_sandbox_helper'] = install_linux_sandbox(native_output, root, environment)
+        smoke(binary, root, output, environment)
+        report.update(result='PASS', stage='source-and-renderer-complete', renderer_fixture='PASS')
+        write_outputs('PASS')
+    except Exception as error:
+        report.update(result='BLOCKED', error_type=type(error).__name__)
+        if isinstance(error, RuntimeError):
+            report['diagnostic'] = str(error)
+        for key in ('source_build', 'renderer_fixture'):
+            if report[key] == 'RUNNING':
+                report[key] = 'BLOCKED'
+        raise
+    finally:
+        report['timestamp'] = now()
+        write_json(output / 'report.json', report)
+        if checks is not None:
+            publish_check(report, checks)
+
+
+if __name__ == '__main__':
+    main()

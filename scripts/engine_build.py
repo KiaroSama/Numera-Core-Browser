@@ -117,9 +117,10 @@ def stop_tree(process):
 
 
 class CheckRun:
-    def __init__(self):
+    def __init__(self, job_name=None):
         self.token = os.environ.get('GH_TOKEN')
         self.repo = os.environ['GITHUB_REPOSITORY']
+        self.job_name = job_name if job_name is not None else os.environ['GITHUB_JOB']
         self.id = None
 
     def request(self, path, body=None):
@@ -136,7 +137,7 @@ class CheckRun:
         # The Actions runner alone owns this job's status and conclusion.
         if self.id is None:
             jobs = self.request(f'/repos/{self.repo}/actions/runs/{os.environ["GITHUB_RUN_ID"]}/jobs?per_page=100')
-            own = [job for job in jobs['jobs'] if job['name'] == os.environ['GITHUB_JOB'] and job['status'] == 'in_progress']
+            own = [job for job in jobs['jobs'] if job['name'] == self.job_name and job['status'] == 'in_progress']
             if len(own) != 1:
                 raise RuntimeError('Source job telemetry target is ambiguous')
             self.id = int(own[0]['check_run_url'].rsplit('/', 1)[1])
@@ -151,6 +152,10 @@ class CheckRun:
             progress = report['native_action_progress']
             summary += (f"\n\nObserved native action counter: {progress['completed']}/{progress['total']}. "
                         "Actions include generation, compilation and linking; this is not browser acceptance or a time estimate.")
+        if report.get('compiler_cache'):
+            stats = report['compiler_cache']
+            summary += (f"\n\nSegment {report['segment']}: {stats['preprocessed_cache_hit']} preprocessed cache hits, "
+                        f"{stats['local_storage_write']} local cache writes, {stats['cache_size_kibibyte']} KiB in cache.")
         self.request(f'/repos/{self.repo}/check-runs/{self.id}',
                      {'output': {'title': report['stage'], 'summary': summary}})
 
@@ -190,6 +195,21 @@ def smoke(binary, scratch, output, environment):
         raise RuntimeError('Renderer did not execute the fixture script')
     if not (output / 'renderer.png').read_bytes().startswith(b'\x89PNG\r\n\x1a\n'):
         raise RuntimeError('Screenshot fixture did not produce a PNG')
+
+
+def install_linux_sandbox(native_output, scratch, environment):
+    # Retain Ubuntu's namespace restrictions and Chromium's default sandbox.
+    source_helper = native_output / 'chrome_sandbox'
+    helper = scratch / 'numera-source-sandbox'
+    if source_helper.is_symlink() or not source_helper.is_file() or helper.exists() or helper.is_symlink():
+        raise RuntimeError('Owned sandbox helper source/destination check failed')
+    subprocess.run(['sudo', '-n', '--', 'install', '-o', 'root', '-g', 'root', '-m', '4755', '--', str(source_helper), str(helper)],
+                   env=environment, check=True, timeout=30)
+    if helper.stat().st_uid != 0 or helper.stat().st_mode & 0o7777 != 0o4755 or sha256(helper) != sha256(source_helper):
+        raise RuntimeError('Owned sandbox helper installation verification failed')
+    environment['CHROME_DEVEL_SANDBOX'] = str(helper)
+    return {'source_target': 'chrome_sandbox', 'sha256': sha256(helper), 'owner_uid': 0, 'mode': '4755',
+            'scope': 'Owned-source SUID developer fixture; no global AppArmor/sysctl or browser sandbox disabling'}
 
 
 def main():
@@ -306,19 +326,7 @@ def main():
         report['binary_sha256'] = sha256(binary)
         report['binary_bytes'] = binary.stat().st_size
         if host == 'Linux':
-            # Build the helper from this same pinned source; retain Ubuntu's
-            # namespace restriction and Chromium's default sandbox controls.
-            source_helper = native_output / 'chrome_sandbox'
-            helper = scratch / 'numera-source-sandbox'
-            if source_helper.is_symlink() or not source_helper.is_file() or helper.exists() or helper.is_symlink():
-                raise RuntimeError('Owned sandbox helper source/destination check failed')
-            subprocess.run(['sudo', '-n', '--', 'install', '-o', 'root', '-g', 'root', '-m', '4755', '--', str(source_helper), str(helper)],
-                           env=environment, check=True, timeout=30)
-            if helper.stat().st_uid != 0 or helper.stat().st_mode & 0o7777 != 0o4755 or sha256(helper) != sha256(source_helper):
-                raise RuntimeError('Owned sandbox helper installation verification failed')
-            environment['CHROME_DEVEL_SANDBOX'] = str(helper)
-            report['linux_sandbox_helper'] = {'source_target': 'chrome_sandbox', 'sha256': sha256(helper),
-                'owner_uid': 0, 'mode': '4755', 'scope': 'Owned-source SUID developer fixture; no global AppArmor/sysctl or browser sandbox disabling'}
+            report['linux_sandbox_helper'] = install_linux_sandbox(native_output, scratch, environment)
         smoke(binary.resolve(), scratch, output, environment)
         report['renderer_fixture'] = 'PASS'
         report['result'] = 'PASS'

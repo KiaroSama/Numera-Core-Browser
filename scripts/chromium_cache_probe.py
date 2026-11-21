@@ -20,6 +20,7 @@ from logging_util import log
 
 REPOSITORY = 'KiaroSama/Numera-Core-Browser'
 ARCHIVE_LIMIT = 32 * 1024 * 1024
+MANIFEST_NAME = 'manifest.json'
 RELEASES = {
     'Linux': (
         ('ccache/ccache', 'v4.14.3', 'ccache-4.14.3-linux-x86_64-musl-static.tar.gz',
@@ -88,46 +89,48 @@ def compile_graph(root, environment, output):
         raise RuntimeError('Pinned Chromium graph preparation failed; inspect graph.log')
 
 
-def pack_cache(root, archive, context, object_hash):
+def pack_cache(root, archive, context, object_hash, *, limit=ARCHIVE_LIMIT, max_entries=512):
     entries = sorted(root.rglob('*'))
     if any(p.is_symlink() or not (p.is_dir() or p.is_file()) for p in entries):
         raise RuntimeError('Unexpected link or special file in local compiler cache')
     files = [p for p in entries if p.is_file() and p.name not in {'CACHEDIR.TAG', '.cleaned', 'stats'}]
-    if not files or len(files) > 512 or sum(p.stat().st_size for p in files) >= ARCHIVE_LIMIT - 1024 * 1024:
+    if not files or len(files) > max_entries or sum(p.stat().st_size for p in files) >= limit - 1024 * 1024:
         raise RuntimeError('Compiler cache is empty or exceeds the bounded probe allowance')
     manifest = {'context': context, 'object_sha256': object_hash,
                 'files': {p.relative_to(root).as_posix(): sha256(p) for p in files}}
     contents = json.dumps(manifest, sort_keys=True).encode('utf-8')
     with tarfile.open(archive, 'x') as bundle:
-        info = tarfile.TarInfo('manifest.json')
+        info = tarfile.TarInfo(MANIFEST_NAME)
         info.size = len(contents)
         bundle.addfile(info, io.BytesIO(contents))
         for path in files:
             bundle.add(path, arcname=path.relative_to(root).as_posix(), recursive=False)
-    if archive.stat().st_size > ARCHIVE_LIMIT:
-        raise RuntimeError('Compiler cache transport exceeds 32 MiB')
+    if archive.stat().st_size > limit:
+        raise RuntimeError('Compiler cache archive exceeds the configured transport limit')
 
 
-def restore_cache(root, archive, expected, context):
-    if not re.fullmatch(r'[0-9a-f]{64}', expected or '') or archive.stat().st_size > ARCHIVE_LIMIT or sha256(archive) != expected:
+def restore_cache(root, archive, expected, context, *, limit=ARCHIVE_LIMIT, max_entries=512):
+    if not re.fullmatch(r'[0-9a-f]{64}', expected or '') or archive.stat().st_size > limit or sha256(archive) != expected:
         raise RuntimeError('Checkpoint does not match this attempt’s seed digest')
     with tarfile.open(archive, 'r:') as bundle:
         members = bundle.getmembers()
         names = [m.name for m in members]
-        if (not 2 <= len(members) <= 513 or len({n.casefold() for n in names}) != len(names)
-                or sum(m.size for m in members) > ARCHIVE_LIMIT
+        if (not 2 <= len(members) <= max_entries + 1 or len({n.casefold() for n in names}) != len(names)
+                or sum(m.size for m in members) > limit
                 or any(not m.isfile() or not re.fullmatch(r'[A-Za-z0-9_-]+(?:/[A-Za-z0-9_-]+)*|manifest\.json', m.name)
                        for m in members)):
             raise RuntimeError('Unexpected compiler-cache archive members')
-        manifest = json.load(bundle.extractfile('manifest.json'))
+        manifest = json.load(bundle.extractfile(MANIFEST_NAME))
         if manifest['context'] != context:
             changed = sorted(k for k in context if manifest['context'].get(k) != context[k])
             raise RuntimeError('Checkpoint build context changed: ' + ', '.join(changed))
-        names.remove('manifest.json')
+        names.remove(MANIFEST_NAME)
         if set(manifest['files']) != set(names):
             raise RuntimeError('Checkpoint inventory is incomplete')
         for name in names:
-            if hashlib.sha256(bundle.extractfile(name).read()).hexdigest() != manifest['files'][name]:
+            with bundle.extractfile(name) as entry:
+                actual = hashlib.file_digest(entry, 'sha256').hexdigest()
+            if actual != manifest['files'][name]:
                 raise RuntimeError('Checkpoint cache member digest mismatch')
         for name in names:
             path = root.joinpath(*PurePosixPath(name).parts)

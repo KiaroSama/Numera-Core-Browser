@@ -31,7 +31,7 @@ jobs:
         run: python -m unittest discover -s scripts/tests -p test_compiler_cache_probe.py -v
       - name: Compile the real Chromium object into an empty local cache
         id: seed
-        run: python scripts/chromium-compiler-cache-probe.py seed
+        run: python scripts/chromium_cache_probe.py seed
       - name: Save one bounded cache entry scoped to this attempt
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
@@ -64,7 +64,7 @@ jobs:
       - name: Recreate the object and verify real source invalidation
         env:
           EXPECTED_CHECKPOINT_SHA: ${{ needs.seed.outputs.checkpoint_sha }}
-        run: python scripts/chromium-compiler-cache-probe.py resume
+        run: python scripts/chromium_cache_probe.py resume
       - name: Preserve diagnostics only
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9

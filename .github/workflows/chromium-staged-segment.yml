@@ -1,0 +1,86 @@
+name: Chromium native build segment
+on:
+  workflow_call:
+    inputs:
+      target:
+        type: string
+        required: true
+      segment:
+        type: number
+        required: true
+      minutes:
+        type: number
+        required: true
+      previous:
+        type: number
+        default: 0
+      checkpoint_sha:
+        type: string
+        default: ''
+    outputs:
+      result:
+        description: Whether this segment built the source or saved a partial checkpoint
+        value: ${{ jobs.native.outputs.result }}
+      checkpoint_sha:
+        description: SHA-256 exported by the producing native job
+        value: ${{ jobs.native.outputs.checkpoint_sha }}
+permissions:
+  contents: read
+  actions: read
+  checks: write
+jobs:
+  native:
+    if: >-
+      github.repository == 'KiaroSama/Numera-Core-Browser' && github.event.repository.private == false &&
+      github.ref == 'refs/heads/main' && (inputs.target == 'ubuntu-24.04' || inputs.target == 'windows-2025-vs2026')
+    runs-on: ${{ inputs.target }}
+    timeout-minutes: 350
+    outputs:
+      result: ${{ steps.build.outputs.result }}
+      checkpoint_sha: ${{ steps.build.outputs.checkpoint_sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Install pinned telemetry dependency
+        run: python -m pip install --disable-pip-version-check -r requirements-engine-build.txt
+      - name: Restore only the predecessor cache from this workflow attempt
+        if: inputs.previous > 0
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: build/chromium-staged-cache/checkpoint.tar
+          key: chromium-staged-${{ github.run_id }}-${{ github.run_attempt }}-${{ inputs.previous }}-${{ inputs.target }}
+          fail-on-cache-miss: true
+      - name: Compile or continue the full native graph
+        id: build
+        env:
+          BUILD_SEGMENT: ${{ inputs.segment }}
+          BUILD_MINUTES: ${{ inputs.minutes }}
+          EXPECTED_CHECKPOINT_SHA: ${{ inputs.checkpoint_sha }}
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: python scripts/chromium_staged_build.py --segment $env:BUILD_SEGMENT --minutes $env:BUILD_MINUTES
+      - name: Confirm repository cache allowance before saving a partial compile
+        if: steps.build.outputs.result == 'PARTIAL'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $Usage = gh api "repos/$env:GITHUB_REPOSITORY/actions/cache/usage" --jq '.active_caches_size_in_bytes'
+          if ($LASTEXITCODE -ne 0 -or $Usage -notmatch '^\d+$') { throw 'Cannot verify repository cache allowance' }
+          $Checkpoint = (Get-Item 'build/chromium-staged-cache/checkpoint.tar').Length
+          if (([int64]$Usage + $Checkpoint + 150000000) -ge 9500000000) { throw 'Repository cache headroom is too small for this checkpoint' }
+      - name: Save the bounded checkpoint for the next native job
+        if: steps.build.outputs.result == 'PARTIAL'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: build/chromium-staged-cache/checkpoint.tar
+          key: chromium-staged-${{ github.run_id }}-${{ github.run_attempt }}-${{ inputs.segment }}-${{ inputs.target }}
+      - name: Retain source-build and renderer evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: staged-source-evidence-${{ inputs.segment }}-${{ inputs.target }}
+          path: build/chromium-staged-evidence
+          retention-days: 7
+          if-no-files-found: warn

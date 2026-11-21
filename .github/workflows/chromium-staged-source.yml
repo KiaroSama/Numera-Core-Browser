@@ -1,0 +1,56 @@
+name: Chromium staged source build
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Standard native public runner
+        type: choice
+        options: [ubuntu-24.04, windows-2025-vs2026]
+        default: ubuntu-24.04
+permissions:
+  contents: read
+  actions: read
+  checks: write
+concurrency:
+  group: chromium-staged-source
+  cancel-in-progress: false
+jobs:
+  first:
+    if: >-
+      github.repository == 'KiaroSama/Numera-Core-Browser' && github.event.repository.private == false &&
+      github.ref == 'refs/heads/main' && (inputs.target == 'ubuntu-24.04' || inputs.target == 'windows-2025-vs2026')
+    uses: ./.github/workflows/chromium-staged-segment.yml
+    with:
+      target: ${{ inputs.target }}
+      segment: 1
+      minutes: 275
+  second:
+    needs: first
+    if: needs.first.outputs.result == 'PARTIAL'
+    uses: ./.github/workflows/chromium-staged-segment.yml
+    with:
+      target: ${{ inputs.target }}
+      segment: 2
+      minutes: 275
+      previous: 1
+      checkpoint_sha: ${{ needs.first.outputs.checkpoint_sha }}
+  third:
+    needs: second
+    if: needs.second.outputs.result == 'PARTIAL'
+    uses: ./.github/workflows/chromium-staged-segment.yml
+    with:
+      target: ${{ inputs.target }}
+      segment: 3
+      minutes: 275
+      previous: 2
+      checkpoint_sha: ${{ needs.second.outputs.checkpoint_sha }}
+  fourth:
+    needs: third
+    if: needs.third.outputs.result == 'PARTIAL'
+    uses: ./.github/workflows/chromium-staged-segment.yml
+    with:
+      target: ${{ inputs.target }}
+      segment: 4
+      minutes: 275
+      previous: 3
+      checkpoint_sha: ${{ needs.third.outputs.checkpoint_sha }}
