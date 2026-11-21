@@ -3,13 +3,14 @@ from contextlib import nullcontext
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 from pathlib import Path
+import subprocess
 import sys
 from threading import Thread
 import unittest
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from chromedriver_fixture import MAX_RESPONSE, json_command, smoke_driver
+from chromedriver_fixture import MAX_RESPONSE, json_command, smoke_driver, verify_native_window
 
 
 class FixtureHandler(BaseHTTPRequestHandler):
@@ -67,3 +68,16 @@ class DriverFixtureTransport(unittest.TestCase):
         verify.assert_called_once_with(browser_pid, {'DISPLAY': ':1'})
         self.assertEqual(report['native_window'], 'test-window')
         self.assertEqual(requests[-1][:2], ('DELETE', f'/session/{session_id}'))
+
+    def test_linux_native_window_requires_a_viewable_browser_window(self):
+        tree = '   0xab "Numera source build fixture - Chromium": ("chromium" "Chromium")'
+        owner = subprocess.CompletedProcess([], 0, '_NET_WM_PID(CARDINAL) = 1234\n')
+        unmapped = subprocess.CompletedProcess([], 0, '  Map State: IsUnMapped\n')
+        mapped = subprocess.CompletedProcess([], 0, '  Map State: IsViewable\n')
+        with (patch('chromedriver_fixture.platform.system', return_value='Linux'),
+              patch('chromedriver_fixture.subprocess.check_output', return_value=tree),
+              patch('chromedriver_fixture.subprocess.run', side_effect=[owner, unmapped, owner, mapped]) as query,
+              patch('chromedriver_fixture.time.monotonic', side_effect=[0, 0, 5, 13]),
+              patch('chromedriver_fixture.time.sleep')):
+            self.assertEqual(verify_native_window(1234, {'DISPLAY': ':1'}), 'x11-viewable-window-with-browser-pid')
+        self.assertEqual(query.call_count, 4)

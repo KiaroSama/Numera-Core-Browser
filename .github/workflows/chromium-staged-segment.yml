@@ -59,6 +59,7 @@ jobs:
         run: |
           sudo apt-get update -q
           sudo apt-get install -y --no-install-recommends x11-utils=7.7+6build2
+          command -v xvfb-run Xvfb xauth xwininfo xprop
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: '24.22.3'

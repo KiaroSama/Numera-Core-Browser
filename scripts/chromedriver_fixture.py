@@ -78,14 +78,19 @@ def verify_native_window(browser_pid, environment):
     deadline = time.monotonic() + 12
     while time.monotonic() < deadline:
         if host == 'Linux':
-            tree = subprocess.check_output(['xwininfo', '-root', '-tree'], env=environment, timeout=3,
+            display_environment = dict(environment, LC_ALL='C.UTF-8')
+            tree = subprocess.check_output(['xwininfo', '-root', '-tree'], env=display_environment, timeout=3,
                                            encoding='utf-8')
             window_pattern = rf'^\s*(0x[0-9a-f]+) "{re.escape(FIXTURE_TITLE)}(?: - [^"]+)?":'
             for window in re.findall(window_pattern, tree, re.MULTILINE):
-                owner = subprocess.check_output(['xprop', '-id', window, '_NET_WM_PID'], env=environment,
-                                                timeout=3, encoding='utf-8')
-                if owner.strip() == f'_NET_WM_PID(CARDINAL) = {browser_pid}':
-                    return 'x11-window-with-browser-pid'
+                owner = subprocess.run(['xprop', '-id', window, '_NET_WM_PID'], env=display_environment, timeout=3,
+                                       stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, encoding='utf-8', check=False)
+                if owner.returncode != 0 or owner.stdout.strip() != f'_NET_WM_PID(CARDINAL) = {browser_pid}':
+                    continue
+                state = subprocess.run(['xwininfo', '-id', window, '-stats'], env=display_environment, timeout=3,
+                                       stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, encoding='utf-8', check=False)
+                if state.returncode == 0 and 'Map State: IsViewable' in state.stdout:
+                    return 'x11-viewable-window-with-browser-pid'
         elif host == 'Windows':
             # The PID comes from this session and is validated as an integer before use.
             command = (f'$Browser = Get-Process -Id {browser_pid} -ErrorAction Stop\n'

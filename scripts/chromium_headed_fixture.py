@@ -6,6 +6,7 @@ from pathlib import Path
 import platform
 import subprocess
 import sys
+from tempfile import TemporaryDirectory
 
 from chromedriver_fixture import smoke_driver
 from engine_build import stop_tree, write_json
@@ -19,10 +20,13 @@ def smoke_headed_browser(binary, driver, scratch, output, environment):
     if platform.system() == 'Windows':
         return smoke_driver(binary, driver, profile_root, evidence, environment, stop_tree, headed=True)
 
-    # xvfb-run isolates the X11 session with an automatically selected display and authority file.
-    command = ['xvfb-run', '--auto-servernum', '--server-args=-screen 0 1280x900x24 -nolisten tcp',
-               sys.executable, str(Path(__file__).resolve()), str(binary), str(driver), str(profile_root), str(evidence)]
-    with (evidence / 'display.log').open('wb') as log:
+    # The caller owns the temporary authority file even if xvfb-run times out.
+    with TemporaryDirectory(prefix='numera-headed-x11-') as display, (evidence / 'display.log').open('wb') as log:
+        authority = Path(display) / 'Xauthority'
+        authority.touch(mode=0o600, exist_ok=False)
+        command = ['xvfb-run', '--auto-servernum', '--auth-file', str(authority),
+                   '--server-args=-screen 0 1280x900x24 -nolisten tcp', sys.executable, str(Path(__file__).resolve()),
+                   str(binary), str(driver), str(profile_root), str(evidence)]
         child = subprocess.Popen(command, env=environment, stdout=log, stderr=subprocess.STDOUT)
         try:
             if child.wait(timeout=100) != 0:
@@ -32,7 +36,7 @@ def smoke_headed_browser(binary, driver, scratch, output, environment):
                 stop_tree(child)
                 child.wait(timeout=5)
     report = json.loads((evidence / 'report.json').read_text(encoding='utf-8'))
-    if report.get('result') != 'PASS' or report.get('native_window') != 'x11-window-with-browser-pid':
+    if report.get('result') != 'PASS' or report.get('native_window') != 'x11-viewable-window-with-browser-pid':
         raise RuntimeError('The Linux headed browser fixture did not verify a native window')
     return report
 
