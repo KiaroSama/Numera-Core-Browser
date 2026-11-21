@@ -2,7 +2,7 @@
   "schema_revision": 1,
   "timestamp": "2026-11-10T17:33:44.732611+00:00",
   "current_review": {
-    "observed_at": "2026-11-21T19:52:42+00:00",
+    "observed_at": "2026-11-21T20:17:50+00:00",
     "active_targets": [
       "windows-x86_64",
       "linux-x86_64"
@@ -20,9 +20,9 @@
               "windows-x86_64",
               "linux-x86_64"
             ],
-            "evidence": "docs/evidence/development-artifacts-44934635290.json",
-            "source_commit": "5089de860d4f2094181a31e154bf9f5063bccdae",
-            "workflow_run": 44934635290
+            "evidence": "docs/evidence/development-artifacts-44944966057.json",
+            "source_commit": "4bb3beb18566843cd6a7409b87019694c15e58f5",
+            "workflow_run": 44944966057
           }
         ]
       },
@@ -36,9 +36,9 @@
               "windows-x86_64",
               "linux-x86_64"
             ],
-            "evidence": "docs/evidence/development-artifacts-44934635290.json",
-            "source_commit": "5089de860d4f2094181a31e154bf9f5063bccdae",
-            "workflow_run": 44934635290
+            "evidence": "docs/evidence/development-artifacts-44944966057.json",
+            "source_commit": "4bb3beb18566843cd6a7409b87019694c15e58f5",
+            "workflow_run": 44944966057
           }
         ]
       },
@@ -52,9 +52,9 @@
               "windows-x86_64",
               "linux-x86_64"
             ],
-            "evidence": "docs/evidence/development-artifacts-44934635290.json",
-            "source_commit": "5089de860d4f2094181a31e154bf9f5063bccdae",
-            "workflow_run": 44934635290
+            "evidence": "docs/evidence/development-artifacts-44944966057.json",
+            "source_commit": "4bb3beb18566843cd6a7409b87019694c15e58f5",
+            "workflow_run": 44944966057
           }
         ]
       },
@@ -68,9 +68,9 @@
               "windows-x86_64",
               "linux-x86_64"
             ],
-            "evidence": "docs/evidence/development-artifacts-44934635290.json",
-            "source_commit": "5089de860d4f2094181a31e154bf9f5063bccdae",
-            "workflow_run": 44934635290
+            "evidence": "docs/evidence/development-artifacts-44944966057.json",
+            "source_commit": "4bb3beb18566843cd6a7409b87019694c15e58f5",
+            "workflow_run": 44944966057
           }
         ]
       },
@@ -160,15 +160,15 @@
         "release_acceptance": "BLOCKED",
         "checks": [
           {
-            "name": "Windows and Linux development CLI archive extraction and native doctor",
+            "name": "Extracted Windows and Linux development CLI diagnostics and portable archive check",
             "result": "PASS",
             "platforms": [
               "windows-x86_64",
               "linux-x86_64"
             ],
-            "evidence": "docs/evidence/development-artifacts-44934635290.json",
-            "source_commit": "5089de860d4f2094181a31e154bf9f5063bccdae",
-            "workflow_run": 44934635290
+            "evidence": "docs/evidence/development-artifacts-44944966057.json",
+            "source_commit": "4bb3beb18566843cd6a7409b87019694c15e58f5",
+            "workflow_run": 44944966057
           }
         ]
       },
@@ -356,9 +356,9 @@
               "windows-x86_64",
               "linux-x86_64"
             ],
-            "evidence": "docs/evidence/development-artifacts-44934635290.json",
-            "source_commit": "5089de860d4f2094181a31e154bf9f5063bccdae",
-            "workflow_run": 44934635290
+            "evidence": "docs/evidence/development-artifacts-44944966057.json",
+            "source_commit": "4bb3beb18566843cd6a7409b87019694c15e58f5",
+            "workflow_run": 44944966057
           }
         ]
       },
@@ -372,9 +372,9 @@
               "windows-x86_64",
               "linux-x86_64"
             ],
-            "evidence": "docs/evidence/development-artifacts-44934635290.json",
-            "source_commit": "5089de860d4f2094181a31e154bf9f5063bccdae",
-            "workflow_run": 44934635290
+            "evidence": "docs/evidence/development-artifacts-44944966057.json",
+            "source_commit": "4bb3beb18566843cd6a7409b87019694c15e58f5",
+            "workflow_run": 44944966057
           },
           {
             "name": "Native Rust process ownership for stock Chromium-family rendering and shutdown",
@@ -399,6 +399,17 @@
               "linux-x86_64"
             ],
             "evidence": "docs/research/2026-11-21.md"
+          },
+          {
+            "name": "Extracted native CLI rejects an incorrect archive digest and invalid archive structures",
+            "result": "PASS",
+            "platforms": [
+              "windows-x86_64",
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/development-artifacts-44944966057.json",
+            "source_commit": "4bb3beb18566843cd6a7409b87019694c15e58f5",
+            "workflow_run": 44944966057
           }
         ]
       },
@@ -416,9 +427,9 @@
               "windows-x86_64",
               "linux-x86_64"
             ],
-            "evidence": "docs/evidence/development-artifacts-44934635290.json",
-            "source_commit": "5089de860d4f2094181a31e154bf9f5063bccdae",
-            "workflow_run": 44934635290
+            "evidence": "docs/evidence/development-artifacts-44944966057.json",
+            "source_commit": "4bb3beb18566843cd6a7409b87019694c15e58f5",
+            "workflow_run": 44944966057
           },
           {
             "name": "Unicode Persian input round trip in the unmodified hosted browser",
@@ -472,9 +483,9 @@
             "platforms": [
               "linux-x86_64"
             ],
-            "evidence": "docs/evidence/development-cli-44858039915.json",
-            "source_commit": "d3f2f0046608a65d2648b0025612fbcfebfe8a06",
-            "workflow_run": 44858039866
+            "evidence": "docs/evidence/development-artifacts-44944966057.json",
+            "source_commit": "4bb3beb18566843cd6a7409b87019694c15e58f5",
+            "workflow_run": 44944965981
           }
         ]
       },
