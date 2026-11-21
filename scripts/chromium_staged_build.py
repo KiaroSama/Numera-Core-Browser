@@ -16,6 +16,7 @@ from chromedriver_fixture import smoke_clients, smoke_driver
 from chromium_cache_probe import (REPOSITORY, RELEASES, STAGED_CACHE_CONFIG, compile_graph,
                                   install_tool, pack_cache, restore_cache, sccache_server)
 from chromium_headed_fixture import smoke_headed_browser
+from chromium_license_inventory import linked_build_materials
 from chromium_portable_fixture import smoke_portable_runtime
 from engine_build import CheckRun, install_linux_sandbox, now, publish_check, read_progress, sha256, smoke, stop_tree, write_json
 from logging_util import log
@@ -177,6 +178,7 @@ def main():
               'read_only_replay': read_only_replay,
               'renderer_fixture': 'NOT_RUN', 'driver_fixture': 'NOT_RUN', 'automation_client_smokes': 'NOT_RUN',
               'automation_suites': 'NOT_RUN', 'portable_runtime_fixture': 'NOT_RUN', 'headed_browser_fixture': 'NOT_RUN',
+              'linked_build_materials': 'NOT_RUN',
               'compile_budget_minutes': args.minutes,
               'debug_build': True, 'elapsed_seconds': 0, 'disk_free_bytes': shutil.disk_usage(root.parent).free,
               'peak_tree_rss_bytes': 0}
@@ -279,14 +281,20 @@ def main():
         report['portable_runtime'] = smoke_portable_runtime(source, root, output, host, environment)
         report.update(stage='headed-browser-fixture', portable_runtime_fixture='PASS', headed_browser_fixture='RUNNING')
         report['headed_browser'] = smoke_headed_browser(binary, driver, root, output, environment)
-        report.update(result='PASS', stage='source-and-native-fixtures-complete', headed_browser_fixture='PASS')
+        report.update(stage='linked-build-materials', headed_browser_fixture='PASS', linked_build_materials='RUNNING')
+        report['build_materials'] = linked_build_materials(root, source, output / 'linked-build-materials', host, environment)
+        material_digests = report['build_materials']['inputs_sha256']
+        if (material_digests['chromium-source-lock.json'] != context['source_lock_sha256']
+                or material_digests['chromium-args.gn'] != context['gn_args_sha256']):
+            raise RuntimeError('Retained source material does not match the compiled build context')
+        report.update(result='PASS', stage='source-and-native-fixtures-complete', linked_build_materials='PASS')
         write_outputs('PASS')
     except Exception as error:
         report.update(result='BLOCKED', error_type=type(error).__name__)
         if isinstance(error, RuntimeError):
             report['diagnostic'] = str(error)
         for key in ('source_build', 'renderer_fixture', 'driver_fixture', 'automation_client_smokes',
-                    'portable_runtime_fixture', 'headed_browser_fixture'):
+                    'portable_runtime_fixture', 'headed_browser_fixture', 'linked_build_materials'):
             if report[key] == 'RUNNING':
                 report[key] = 'BLOCKED'
         raise

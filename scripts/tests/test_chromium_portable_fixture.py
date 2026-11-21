@@ -60,6 +60,7 @@ class PortableRuntimeFixture(unittest.TestCase):
 
             with (patch.object(fixture.subprocess, 'check_output', side_effect=describe),
                   patch.object(fixture, 'install_linux_sandbox', side_effect=install) as installed,
+                  patch.object(fixture, 'verify_portable_archive', return_value={'result': 'PASS'}) as verified,
                   patch.object(fixture, 'smoke', side_effect=render),
                   patch.object(fixture, 'smoke_driver', return_value={'result': 'PASS'}) as webdriver,
                   patch.object(fixture, 'smoke_browser_ownership', side_effect=check_ownership) as ownership):
@@ -71,6 +72,8 @@ class PortableRuntimeFixture(unittest.TestCase):
             self.assertEqual(original_environment['CHROME_DEVEL_SANDBOX'], '/original/helper')
             self.assertEqual(report['sandbox_helper']['mode'], '4755')
             package = scratch / 'numera-portable-runtime.tar.gz'
+            self.assertEqual(verified.call_args.args[:2], (package, report['archive']))
+            self.assertEqual(report['archive_verification']['result'], 'PASS')
             self.assertEqual(report['archive']['sha256'], fixture.sha256(package))
             self.assertEqual(report['archive']['files'], len(names))
             self.assertEqual({path.name for path in runtime.iterdir()}, names)
@@ -101,6 +104,7 @@ class PortableRuntimeFixture(unittest.TestCase):
 
             inventory = b'./initialexe/chrome.exe\n./component.dll\n'
             with (patch.object(fixture.subprocess, 'check_output', return_value=inventory),
+                  patch.object(fixture, 'verify_portable_archive', return_value={'result': 'PASS'}),
                   patch.object(fixture, 'smoke', side_effect=failure),
                   self.assertRaisesRegex(RuntimeError, 'Controlled renderer failure')):
                 fixture.smoke_portable_runtime(source, scratch, output, 'Windows', {})

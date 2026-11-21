@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import platform
 import re
+import shutil
 import subprocess
 import sys
 from urllib.parse import urlsplit
@@ -75,6 +76,55 @@ def git_source_inventory(root, source, output, pin, environment):
     return {'git_checkouts': len(checked_out), 'sha256': sha256(inventory), 'deps_sha256': sha256(deps)}
 
 
+def chromium_notices(source, output, host, revision, environment):
+    native = source / 'out/Numera'
+    license_tool = source / 'tools/licenses/licenses.py'
+    labels = {'chromium': '//chrome:chrome', 'chromedriver': '//chrome/test/chromedriver:chromedriver_server'}
+    if host == 'Linux':
+        labels['chrome-sandbox'] = '//sandbox/linux:chrome_sandbox'
+    reports = {}
+    with (output / 'license-tool.log').open('wb') as diagnostics:
+        for name, label in labels.items():
+            arguments = ['--gn-target', label, '--gn-out-dir', str(native), '--target-os',
+                         'win' if host == 'Windows' else 'linux']
+            notice = output / f'{name}-NOTICE.txt'
+            spdx = output / f'{name}.spdx.json'
+            link = f'https://chromium.googlesource.com/chromium/src/+/{revision}/'
+            for mode, file in [('notice', notice), ('spdx', spdx)]:
+                command = [sys.executable, str(license_tool), 'license_file', str(file), *arguments,
+                           '--format', mode, '--spdx-link', link]
+                subprocess.run(command, cwd=source, env=environment, stdout=diagnostics,
+                               stderr=subprocess.STDOUT, timeout=240, check=True)
+            if not 0 < notice.stat().st_size <= 16 * 1024**2 or not 0 < spdx.stat().st_size <= 16 * 1024**2:
+                raise RuntimeError('Pinned Chromium license tool emitted an out-of-bounds inventory')
+            inventory = json.loads(spdx.read_text(encoding='utf-8'))
+            if inventory.get('spdxVersion') != 'SPDX-2.2' or not inventory.get('packages'):
+                raise RuntimeError('Pinned Chromium license tool emitted an incomplete SPDX report')
+            reports[name] = {'gn_label': label, 'packages': len(inventory['packages']),
+                             'notice_sha256': sha256(notice), 'spdx_sha256': sha256(spdx)}
+            log(f'Collected pinned-source notices and SPDX for {label}', component='chromium-license-inventory')
+    return reports
+
+
+def linked_build_materials(root, source, output, host, environment):
+    output.mkdir()
+    lock_path = Path('upstream/chromium/lock.json')
+    lock = json.loads(lock_path.read_text(encoding='utf-8'))
+    pin = lock['platform_pins'][host.lower()]
+    inventory = git_source_inventory(root, source, output, pin, environment)
+    files = {
+        'chromium-source-lock.json': lock_path,
+        'chromium-DEPS': source / 'DEPS',
+        'chromium-args.gn': source / 'out/Numera/args.gn',
+    }
+    for name, path in files.items():
+        shutil.copyfile(path, output / name)
+    return {'source_inventory': inventory, 'chromium_revision': pin['revision'], 'chromium_version': pin['version'],
+            'inputs_sha256': {name: sha256(output / name) for name in files},
+            'targets': chromium_notices(source, output, host, pin['revision'], environment),
+            'complete_source_archive': 'NOT_PREPARED', 'redistribution_approval': False}
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--reviewed-candidate', metavar='EVIDENCE_FILENAME')
@@ -127,29 +177,7 @@ def main():
         report['runtime_layout'] = {'sha256': sha256(layout_file), 'paths': len(runtime_layout['dependencies']),
                                     'file_contents': 'NOT_RUN'}
         report['source_inventory'] = git_source_inventory(root, source, output, pin, environment)
-        targets = {'chromium': '//chrome:chrome', 'chromedriver': '//chrome/test/chromedriver:chromedriver_server'}
-        if host == 'Linux':
-            targets['chrome-sandbox'] = '//sandbox/linux:chrome_sandbox'
-        with (output / 'license-tool.log').open('wb') as diagnostics:
-            for name, label in targets.items():
-                arguments = ['--gn-target', label, '--gn-out-dir', str(native), '--target-os',
-                             'win' if host == 'Windows' else 'linux']
-                notice = output / f'{name}-NOTICE.txt'
-                spdx = output / f'{name}.spdx.json'
-                link = f"https://chromium.googlesource.com/chromium/src/+/{pin['revision']}/"
-                for mode, file in [('notice', notice), ('spdx', spdx)]:
-                    command = [sys.executable, str(license_tool), 'license_file', str(file), *arguments,
-                               '--format', mode, '--spdx-link', link]
-                    subprocess.run(command, cwd=source, env=environment, stdout=diagnostics,
-                                   stderr=subprocess.STDOUT, timeout=240, check=True)
-                if not 0 < notice.stat().st_size <= 16 * 1024**2 or not 0 < spdx.stat().st_size <= 16 * 1024**2:
-                    raise RuntimeError('Pinned Chromium license tool emitted an out-of-bounds inventory')
-                inventory = json.loads(spdx.read_text(encoding='utf-8'))
-                if inventory.get('spdxVersion') != 'SPDX-2.2' or not inventory.get('packages'):
-                    raise RuntimeError('Pinned Chromium license tool emitted an incomplete SPDX report')
-                report['targets'][name] = {'gn_label': label, 'packages': len(inventory['packages']),
-                                           'notice_sha256': sha256(notice), 'spdx_sha256': sha256(spdx)}
-                log(f'Collected pinned-source notices and SPDX for {label}', component='chromium-license-inventory')
+        report['targets'] = chromium_notices(source, output, host, pin['revision'], environment)
         report['result'] = 'PASS'
     finally:
         report['timestamp'] = now()

@@ -1,0 +1,81 @@
+{
+  "schema_revision": 1,
+  "component": "Chromium FFmpeg fork",
+  "license_reference": "LGPL-2.1-or-later and per-file notices",
+  "source": "official Chromium Gitiles",
+  "scope": "Downloaded exact Gitiles source archives for one upstream component and checked its x86-64 configurations. Packaged binary review and complete browser source delivery remain open.",
+  "archives": [
+    {
+      "chromium_major": 157,
+      "revision": "5c85ff666b3434d9323b83437f910ad8431ab7c9",
+      "source_archive": "https://chromium.googlesource.com/chromium/third_party/ffmpeg/+archive/5c85ff666b3434d9323b83437f910ad8431ab7c9.tar.gz",
+      "archive_bytes": 19167060,
+      "archive_sha256": "7f3cc00d0ceb057262a9a1f9ebf9c958cb35b31224b69d1b1c58ca35f387c2c9",
+      "regular_source_files": 11351,
+      "expanded_bytes": 98782226,
+      "reviewed_files_sha256": {
+        "BUILD.gn": "0a2a1b856787445f0cb7a565450435badfab8746d33c211dfd6593cdd678a38d",
+        "README.chromium": "1de0f37b567b9d7e32ca3db3e270991f2951be561bb1ffda8e526aeb368ca1db",
+        "COPYING.LGPLv2.1": "246041b6ecf9bc32d718a62c57877c78b5eb397b6467e74ed7ae2626ab189c30",
+        "CREDITS.chromium": "da59f1d15b847f3b3eb75e9a8bec427017ec5123591373f9109494a800556733",
+        "LICENSE.md": "e6dc72d5665a1ebd6dcc841de59278dad4ca77ecc47b03f1064a55c3e9ea8bb8",
+        "chromium/config/Chromium/linux/x64/config.h": "a701b410590a27755d2dc1b4c6a962d174cad3687747e8452a6994551aac6900",
+        "chromium/config/Chromium/win/x64/config.h": "1bbc50042f7178b26b7934621a1722ced05e21a7c5196cca0647dda11684bb5b"
+      },
+      "chromium_configuration": {
+        "linux": {
+          "GPL": 0,
+          "NONFREE": 0,
+          "VERSION3": 0
+        },
+        "win": {
+          "GPL": 0,
+          "NONFREE": 0,
+          "VERSION3": 0
+        }
+      },
+      "reviewed_native_graph_run": 44925530814,
+      "declared_runtime_paths": {
+        "linux": [
+          "libffmpeg.so"
+        ],
+        "windows": [
+          "ffmpeg.dll",
+          "ffmpeg.dll.pdb"
+        ]
+      }
+    },
+    {
+      "chromium_major": 158,
+      "revision": "42a2a7a2b2ceb0b1554af1e99a8cdaae189404bb",
+      "source_archive": "https://chromium.googlesource.com/chromium/third_party/ffmpeg/+archive/42a2a7a2b2ceb0b1554af1e99a8cdaae189404bb.tar.gz",
+      "archive_bytes": 19164261,
+      "archive_sha256": "74dacd23c21cad0a9c0b3ffa7047dd027ad2458655896305f828123cca9be813",
+      "regular_source_files": 11351,
+      "expanded_bytes": 98782604,
+      "reviewed_files_sha256": {
+        "BUILD.gn": "0a2a1b856787445f0cb7a565450435badfab8746d33c211dfd6593cdd678a38d",
+        "README.chromium": "1de0f37b567b9d7e32ca3db3e270991f2951be561bb1ffda8e526aeb368ca1db",
+        "COPYING.LGPLv2.1": "246041b6ecf9bc32d718a62c57877c78b5eb397b6467e74ed7ae2626ab189c30",
+        "CREDITS.chromium": "da59f1d15b847f3b3eb75e9a8bec427017ec5123591373f9109494a800556733",
+        "LICENSE.md": "e6dc72d5665a1ebd6dcc841de59278dad4ca77ecc47b03f1064a55c3e9ea8bb8",
+        "chromium/config/Chromium/linux/x64/config.h": "a701b410590a27755d2dc1b4c6a962d174cad3687747e8452a6994551aac6900",
+        "chromium/config/Chromium/win/x64/config.h": "1bbc50042f7178b26b7934621a1722ced05e21a7c5196cca0647dda11684bb5b"
+      },
+      "chromium_configuration": {
+        "linux": {
+          "GPL": 0,
+          "NONFREE": 0,
+          "VERSION3": 0
+        },
+        "win": {
+          "GPL": 0,
+          "NONFREE": 0,
+          "VERSION3": 0
+        }
+      },
+      "reviewed_native_graph_run": 44938030680
+    }
+  ],
+  "redistribution_approval": false
+}

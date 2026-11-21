@@ -57,6 +57,8 @@ The pinned Chromium license tool generated notice text and SPDX JSON using the n
 
 The source inventory records 169 checked-out Git revisions on Linux and 157 on Windows, including Chromium itself. Both `DEPS` files matched their official pinned bytes. The inventory covers the Git checkouts and the exact upstream `DEPS` reference for CIPD and GCS inputs. [Verified native source inventories](evidence/chromium-source-inventory-44913884524.json)
 
+The staged workflow now checks the exact portable tarball with the native Rust CLI and runs the Rust process ownership fixture from its extracted directory. After the native tests, the linked build captures its own Git revision inventory, raw `DEPS` and GN arguments, and generated notice and SPDX files. The current Linux and Windows runs started before this workflow revision. Complete corresponding source and redistribution review remain open. [Staged workflow](../.github/workflows/chromium-staged-segment.yml)
+
 The portable fixture in the completed Linux replay stopped after the client tests when the Linux ChromeDriver strip action returned an empty runtime inventory. The corrected GN query verified 5,558 declared runtime paths on Linux and 6,097 on Windows. An active Linux replay uses the corrected inventory to build a temporary runtime archive and exercise the extracted browser and driver. [Verified graph declarations](evidence/chromium-runtime-layout-44925530814.json) · [Owned archive replay](https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44927476670)
 
 ## Open gates

@@ -2,7 +2,7 @@
 """Stage a source-built runtime and verify it from a relocated path."""
 import json
 import os
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 import shutil
 import stat
 import subprocess
@@ -123,11 +123,25 @@ def extract_portable_archive(staged, scratch, inventory):
                                     'bytes': package.stat().st_size, 'sha256': sha256(package)}
 
 
+def verify_portable_archive(package, archive, inventory, host, environment):
+    binary = Path('target/debug') / ('numera-core.exe' if host == 'Windows' else 'numera-core')
+    binary = binary.resolve(strict=True)
+    result = json.loads(subprocess.check_output(
+        [str(binary), '--json', 'engines', 'verify-archive', str(package), archive['sha256']],
+        env=environment, timeout=300))
+    if result != {'archive_verified': True, 'archive_sha256': archive['sha256'],
+                  'archive_bytes': archive['bytes'], 'files': archive['files'],
+                  'expanded_file_bytes': inventory['bytes'], 'approved_package': False}:
+        raise RuntimeError('The native CLI did not confirm the exact tested runtime archive')
+    return {'result': 'PASS', 'cli_sha256': sha256(binary), **result}
+
+
 def smoke_portable_runtime(source, scratch, output, host, environment):
     staged, binary, driver = measure_portable_runtime(source, output, host, environment)
     inventory_path = output / 'portable-runtime-inventory.json'
     inventory = json.loads(inventory_path.read_text(encoding='utf-8'))
     runtime, archive = extract_portable_archive(staged, scratch, inventory)
+    verified = verify_portable_archive(scratch / 'numera-portable-runtime.tar.gz', archive, inventory, host, environment)
     build = source / 'out/Numera'
     original = build.with_name('Numera-fixture-held')
     if original.exists() or original.is_symlink():
@@ -154,7 +168,7 @@ def smoke_portable_runtime(source, scratch, output, host, environment):
         original.rename(build)
     report = {'result': 'PASS', 'scope': 'Extracted runtime, controlled rendering, WebDriver and native process ownership',
               'archive': archive, 'runtime_inventory_sha256': sha256(inventory_path), 'webdriver': result,
-              'process_ownership': ownership}
+              'archive_verification': verified, 'process_ownership': ownership}
     if sandbox_helper is not None:
         report['sandbox_helper'] = {**sandbox_helper, 'staged_source': 'chrome_sandbox',
                                     'fixture_location': 'Separate space-free privileged fixture directory'}
