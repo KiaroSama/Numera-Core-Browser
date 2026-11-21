@@ -62,8 +62,29 @@ fn chromium_owner(root: &Path, browser: &Path, fixture: &std::ffi::OsStr) {
     fs::create_dir(&home).unwrap();
     environment.insert("HOME".to_owned(), home.as_os_str().to_owned());
     #[cfg(windows)]
-    for key in ["USERPROFILE", "LOCALAPPDATA", "APPDATA", "TEMP", "TMP"] {
-        environment.insert(key.to_owned(), home.as_os_str().to_owned());
+    {
+        // Chrome must resolve the Windows default profile to decide whether
+        // DevTools is allowed for the explicit isolated profile below.
+        for key in [
+            "USERPROFILE",
+            "USERNAME",
+            "HOMEDRIVE",
+            "HOMEPATH",
+            "LOCALAPPDATA",
+            "APPDATA",
+            "ALLUSERSPROFILE",
+            "ProgramData",
+            "ProgramFiles",
+            "ProgramFiles(x86)",
+            "ProgramW6432",
+        ] {
+            if let Some(value) = std::env::var_os(key) {
+                environment.insert(key.to_owned(), value);
+            }
+        }
+        for key in ["TEMP", "TMP"] {
+            environment.insert(key.to_owned(), home.as_os_str().to_owned());
+        }
     }
     let mut profile = OsString::from("--user-data-dir=");
     profile.push(root.join("داده‌های مرورگر"));
