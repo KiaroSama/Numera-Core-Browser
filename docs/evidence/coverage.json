@@ -2,7 +2,7 @@
   "schema_revision": 1,
   "timestamp": "2026-11-10T17:33:44.732611+00:00",
   "current_review": {
-    "observed_at": "2026-11-22T07:58:12+00:00",
+    "observed_at": "2026-11-22T08:13:15+00:00",
     "active_targets": [
       "windows-x86_64",
       "linux-x86_64"
@@ -179,6 +179,16 @@
             "evidence": "docs/evidence/development-chromium-44983567389.json",
             "source_commit": "ac5170bbb8161d89034ce3f5130c84b1f0d24605",
             "workflow_run": 44983567389
+          },
+          {
+            "name": "Fresh Ubuntu 24.04 download, authentic source and verified extracted runtime",
+            "result": "PASS",
+            "platforms": [
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/linux-retained-browser-45000980622.json",
+            "source_commit": "a88128483693125300dc860a9a619407dea39b8d",
+            "workflow_run": 45000980622
           }
         ]
       },
@@ -276,6 +286,16 @@
             "evidence": "docs/evidence/development-chromium-44983567389.json",
             "source_commit": "ac5170bbb8161d89034ce3f5130c84b1f0d24605",
             "workflow_run": 44983567389
+          },
+          {
+            "name": "Fresh hosted extracted Chromium with a viewable native window",
+            "result": "PASS",
+            "platforms": [
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/linux-retained-browser-45000980622.json",
+            "source_commit": "a88128483693125300dc860a9a619407dea39b8d",
+            "workflow_run": 45000980622
           }
         ]
       },
@@ -532,6 +552,16 @@
             "evidence": "docs/evidence/development-chromium-44983567389.json",
             "source_commit": "ac5170bbb8161d89034ce3f5130c84b1f0d24605",
             "workflow_run": 44983567389
+          },
+          {
+            "name": "Fresh Ubuntu 24.04 launch with default sandbox and no administrator setup",
+            "result": "BLOCKED",
+            "platforms": [
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/linux-retained-browser-45000980622.json",
+            "source_commit": "a88128483693125300dc860a9a619407dea39b8d",
+            "workflow_run": 45000980622
           }
         ]
       },

@@ -213,7 +213,7 @@
       "scope": "Continue the Windows native graph with runtime retention and provenance after validation"
     }
   ],
-  "source_experiment_status_observed_at": "2026-11-22T07:58:12+00:00",
+  "source_experiment_status_observed_at": "2026-11-22T08:13:15+00:00",
   "active_targets": [
     "windows-x86_64",
     "linux-x86_64"
@@ -229,6 +229,12 @@
     "contract_integration": "NOT_RUN",
     "evidence": "docs/evidence/development-chromium-44983567389.json",
     "retention_days": 7,
-    "clean_host_installation": "NOT_RUN"
+    "clean_host_installation": "NOT_RUN",
+    "fresh_host_test": {
+      "result": "PASS",
+      "required_host_setup": "Verified sandbox helper on hosted Ubuntu 24.04",
+      "no_admin_renderer": "BLOCKED_BY_HOST_SANDBOX",
+      "evidence": "docs/evidence/linux-retained-browser-45000980622.json"
+    }
   }
 }

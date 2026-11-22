@@ -1,0 +1,55 @@
+{
+  "schema_revision": 1,
+  "workflow_run": 45000980622,
+  "workflow_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/45000980622",
+  "workflow_conclusion": "success",
+  "job_id": 137142217766,
+  "developer_runtime_artifact_id": 14745018310,
+  "source_workflow_run": 44983567389,
+  "artifact": {
+    "id": 14745489960,
+    "transport_bytes": 29964,
+    "transport_sha256": "sha256:a511d9f89c7be36ed93c824e0f8cf865b67bda1041198099e894bb86b2f8b29f",
+    "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/45000980622/artifacts/14745489960",
+    "expires_at": "2026-11-29T08:11:13Z"
+  },
+  "report": {
+    "schema_revision": 1,
+    "result": "PASS",
+    "artifact_source_commit": "ac5170bbb8161d89034ce3f5130c84b1f0d24605",
+    "artifact_run_id": 44983567389,
+    "verification_commit": "a88128483693125300dc860a9a619407dea39b8d",
+    "runner_image": "20261116.133.1",
+    "compiled_chromium": false,
+    "installation_scope": "Fresh standard Ubuntu GitHub-hosted runner",
+    "trusted_release": false,
+    "manifest_sha256": "a78f3a54ecbf178c67700f9bf4b4e8f40e9ae7222a492234e2602536fc458908",
+    "source_provenance": "PASS",
+    "archive_verification": {
+      "approved_package": false,
+      "archive_bytes": 1727595904,
+      "archive_sha256": "6066e736be8517f26786d5641db37ff2ad41311c73f5eae786f2b9e79ec1bfa8",
+      "archive_verified": true,
+      "expanded_file_bytes": 8346317525,
+      "files": 5558
+    },
+    "extracted_file_hashes": "PASS",
+    "no_admin_renderer": "BLOCKED_BY_HOST_SANDBOX",
+    "sandbox_helper": {
+      "source_target": "chrome_sandbox",
+      "sha256": "0f5196ae181eec450044ed2da6ff97d08642e260ddac7f2a8b54cf5ab589496f",
+      "owner_uid": 0,
+      "mode": "4755",
+      "scope": "Owned-source SUID developer fixture; no global AppArmor/sysctl or browser sandbox disabling"
+    },
+    "extracted_renderer": "PASS",
+    "headful_browser": {
+      "result": "PASS",
+      "driver_version": "157.0.8103.78",
+      "scope": "Headed W3C navigation and an OS window owned by the browser process",
+      "native_window": "x11-viewable-window-with-browser-pid"
+    },
+    "timestamp": "2026-11-22T08:11:13.717337+00:00"
+  },
+  "scope": "The actual downloaded Linux browser was independently verified and ran on a new standard Ubuntu 24.04 hosted job."
+}

@@ -75,6 +75,8 @@ The download-producing Linux replay linked Chromium and ChromeDriver after 56,77
 
 The clean hosted job downloaded the full artifact, checked the recorded file set and digests, and generated Sigstore provenance. An independent check reproduced the exact first-party source ZIP and manifest from the recorded source and native reports. GitHub CLI verified both against the exact source commit and trusted signer workflow, and rejected a one-byte change. The 1.74 GB ZIP exceeded the workspace connector's download limit. Full runtime validation was performed on the native and clean hosted jobs. [Provenance evidence](evidence/development-chromium-44983567389.json)
 
+A fresh Ubuntu 24.04 runner independently downloaded the same development package and verified all three attested subjects, the complete first-party source, the Rust archive result and all 5,558 extracted file hashes. Its host sandbox policy blocked the no-admin startup. With the exact verified helper installed in job scratch, the extracted browser rendered the controlled page and opened a viewable native X11 window owned by the ChromeDriver-launched process. [Independent download and native window evidence](evidence/linux-retained-browser-45000980622.json)
+
 ## Open gates
 
 | Gate | Status | Remaining acceptance |
