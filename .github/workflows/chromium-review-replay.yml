@@ -24,6 +24,10 @@ on:
         description: Optional verified source export filename to retain a tested development runtime
         type: string
         default: ''
+      windows_object_probe:
+        description: Measure a bounded Windows object target batch on the reviewed cache
+        type: boolean
+        default: false
 permissions:
   contents: read
   actions: read
@@ -40,12 +44,13 @@ jobs:
     with:
       target: ${{ inputs.target }}
       segment: 1
-      minutes: 275
+      minutes: ${{ inputs.windows_object_probe && 45 || 275 }}
       reviewed_checkpoint_run: ${{ inputs.reviewed_checkpoint_run }}
       reviewed_checkpoint_segment: ${{ inputs.reviewed_checkpoint_segment }}
       reviewed_upstream_evidence: ${{ inputs.reviewed_upstream_evidence }}
       verified_source_export: ${{ inputs.verified_source_export }}
       read_only_replay: true
+      windows_object_probe: ${{ inputs.windows_object_probe }}
   attest-development-runtime:
     if: inputs.verified_source_export != '' && needs.first.outputs.result == 'PASS'
     needs: first

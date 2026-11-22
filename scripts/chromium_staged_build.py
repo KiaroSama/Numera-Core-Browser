@@ -81,6 +81,17 @@ def statistics(tool, environment):
             'backend_statistics': details}
 
 
+def windows_object_probe_targets(graph):
+    control = 'obj/buildtools/third_party/libc++/libc++/algorithm.obj'
+    outputs = {edge['output'].replace('\\', '/') for edge in graph}
+    candidates = sorted(path for path in outputs if re.fullmatch(r'obj/content/browser/[A-Za-z0-9_.+/\-]+\.obj', path)
+                        and all(part not in {'', '.', '..'} for part in path.split('/')))
+    targets = [control, *candidates[:64]]
+    if control not in outputs or len(targets) != 65 or len(subprocess.list2cmdline(targets)) > 24_000:
+        raise RuntimeError('The native graph does not contain the expected probe objects')
+    return targets
+
+
 def compile_segment(ninja, wrapper, source, targets, environment, output, report, minutes, checks=None):
     """Only stop the owned native tree, preserving completed cache writes."""
     available = psutil.virtual_memory().available
@@ -119,7 +130,7 @@ def compile_segment(ninja, wrapper, source, targets, environment, output, report
                     write_json(output / 'report.json', report)
                     if checks is not None:
                         publish_check(report, checks)
-                    log(f"Full graph: {elapsed:.0f}s, {values['preprocessed_cache_hit']} cache hits, "
+                    log(f"Native build: {elapsed:.0f}s, {values['preprocessed_cache_hit']} cache hits, "
                         f"{values['local_storage_write']} writes, {free / 1e9:.2f} GB free", component='staged-chromium')
                     next_report = elapsed + 30
                 time.sleep(2)
@@ -160,6 +171,9 @@ def main():
     read_only_replay = os.environ.get('READ_ONLY_REPLAY') == 'true'
     if read_only_replay and reviewed is None:
         raise RuntimeError('A read-only replay requires a reviewed earlier checkpoint')
+    object_probe = os.environ.get('WINDOWS_OBJECT_PROBE') == 'true'
+    if object_probe and (not read_only_replay or host != 'Windows' or os.environ.get('VERIFIED_SOURCE_EXPORT')):
+        raise RuntimeError('The object probe requires a Windows read-only replay without runtime retention')
     if args.checkpoint_key:
         if reviewed is None:
             raise RuntimeError('A reviewed run is required to resolve a cache key')
@@ -258,13 +272,26 @@ def main():
             if cache_tool == 'ccache':
                 # Rebuild occupancy accounting after transport excluded ccache stats.
                 cache_command(wrapper, environment, '--cleanup')
-        report.update(stage='compile-link', source_build='RUNNING', result='RUNNING')
+        requested = targets
+        if object_probe:
+            commands = subprocess.check_output([str(ninja), '-C', 'out/Numera', '-t', 'compdb-targets', *targets],
+                                               cwd=source, env=environment, timeout=120)
+            requested = windows_object_probe_targets(json.loads(commands))
+            report['object_probe'] = {'selected_targets': requested, 'cache_retained': False}
+        report.update(stage='compile-objects' if object_probe else 'compile-link', source_build='RUNNING', result='RUNNING')
         with sccache_server(wrapper, environment) if cache_tool == 'sccache' else nullcontext():
-            reason = compile_segment(ninja, wrapper, source, targets, environment, output, report, args.minutes, checks)
+            reason = compile_segment(ninja, wrapper, source, requested, environment, output, report, args.minutes, checks)
             values = statistics(wrapper, environment)
         report.update(compiler_cache=values, segment_stop=reason)
         if (args.segment > 1 or reviewed is not None) and values['preprocessed_cache_hit'] < 1:
             raise RuntimeError('Fresh runner did not reuse any transferred Chromium compile outputs')
+        if object_probe:
+            if reason != 'built' or values['local_storage_write'] < 1:
+                raise RuntimeError('The targeted probe did not complete and add compiler outputs')
+            report['object_probe']['output_sha256'] = {name: sha256(native_output / name) for name in requested}
+            report.update(result='PASS', stage='object-probe-complete', source_build='PARTIAL')
+            write_outputs('PROBE_PASS')
+            return
         if reason == 'time-budget':
             if read_only_replay:
                 raise RuntimeError('The read-only replay exhausted its compile budget')

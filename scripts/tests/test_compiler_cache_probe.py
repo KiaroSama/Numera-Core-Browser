@@ -12,10 +12,19 @@ from unittest.mock import patch
 SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
 import chromium_cache_probe as probe
-from chromium_staged_build import reviewed_checkpoint, restore_reviewed_context
+from chromium_staged_build import reviewed_checkpoint, restore_reviewed_context, windows_object_probe_targets
 
 
 class CacheProvenance(unittest.TestCase):
+    def test_probe_targets_come_from_the_reachable_graph_and_stay_bounded(self):
+        control = 'obj/buildtools/third_party/libc++/libc++/algorithm.obj'
+        candidates = [f'obj/content/browser/{index:04}.obj' for index in range(80)]
+        outputs = [{'output': name} for name in reversed(candidates + [control])]
+        outputs += [{'output': 'obj/content/browser/../escape.obj'}, {'output': 'obj/other.obj'}]
+        self.assertEqual(windows_object_probe_targets(outputs), [control, *candidates[:64]])
+        with self.assertRaisesRegex(RuntimeError, 'expected probe objects'):
+            windows_object_probe_targets(outputs[:60])
+
     def test_reviewed_checkpoint_rebinds_producer_identity_without_replacing_build_inputs(self):
         evidence = Path(__file__).resolve().parents[2] / 'docs/evidence'
         checkpoint = reviewed_checkpoint(evidence, '44846110371', '2', 'Linux')

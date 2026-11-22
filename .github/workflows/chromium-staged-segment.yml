@@ -32,6 +32,9 @@ on:
       read_only_replay:
         type: boolean
         default: false
+      windows_object_probe:
+        type: boolean
+        default: false
     outputs:
       result:
         description: Whether this segment built the source or saved a partial checkpoint
@@ -122,6 +125,7 @@ jobs:
           REVIEWED_UPSTREAM_EVIDENCE: ${{ inputs.reviewed_upstream_evidence }}
           VERIFIED_SOURCE_EXPORT: ${{ inputs.verified_source_export }}
           READ_ONLY_REPLAY: ${{ inputs.read_only_replay }}
+          WINDOWS_OBJECT_PROBE: ${{ inputs.windows_object_probe }}
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
         run: python scripts/chromium_staged_build.py --segment $env:BUILD_SEGMENT --minutes $env:BUILD_MINUTES
