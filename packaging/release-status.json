@@ -170,7 +170,7 @@
       "target": "windows-2025-vs2026",
       "run_id": 44940532355,
       "source_commit": "cadcf1aa10e8eea38256295041fd2b0945b8853c",
-      "status": "in_progress",
+      "status": "completed",
       "native_job_id": 137036411956,
       "reviewed_checkpoint": "docs/evidence/chromium-staged-44913495180-segment-1.json",
       "checkpoint_transport_restore": "PASS",
@@ -178,7 +178,13 @@
       "scope": "Continue the full Windows graph with archive, headed and viewport fixtures",
       "last_verified_checkpoint": "docs/evidence/chromium-staged-44940532355-segment-2.json",
       "actual_compiler_restore": "PASS",
-      "last_verified_checkpoint_native_job": 137036411956
+      "last_verified_checkpoint_native_job": 137036411956,
+      "conclusion": "cancelled",
+      "source_build": "PARTIAL",
+      "continuation_run_id": 44989521034,
+      "first_native_job_conclusion": "success",
+      "second_native_job_conclusion": "success",
+      "reason": "Superseded during third-segment preparation after retaining the verified second checkpoint"
     },
     {
       "target": "ubuntu-24.04",
@@ -189,9 +195,19 @@
       "reviewed_checkpoint": "docs/evidence/chromium-staged-44846110371-segment-2.json",
       "verified_source_export": "docs/evidence/chromium-source-export-157-linux.json",
       "native_job_id": 137089129788
+    },
+    {
+      "target": "windows-2025-vs2026",
+      "run_id": 44989521034,
+      "source_commit": "beb9c4a183ae930e33a560b8ba0599417a34935b",
+      "status": "in_progress",
+      "native_job_id": 137107418732,
+      "reviewed_checkpoint": "docs/evidence/chromium-staged-44940532355-segment-2.json",
+      "verified_source_export": "docs/evidence/chromium-source-export-157-windows.json",
+      "scope": "Continue the Windows native graph with runtime retention and provenance after validation"
     }
   ],
-  "source_experiment_status_observed_at": "2026-11-22T05:26:03+00:00",
+  "source_experiment_status_observed_at": "2026-11-22T05:29:29+00:00",
   "active_targets": [
     "windows-x86_64",
     "linux-x86_64"

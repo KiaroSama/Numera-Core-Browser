@@ -5,7 +5,7 @@
   "artifact_id": 14740704349,
   "workflow_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44940532355",
   "native_job_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44940532355/job/137036411956",
-  "workflow_conclusion": "in_progress",
+  "workflow_conclusion": "cancelled",
   "native_job_conclusion": "success",
   "artifact": {
     "sha256": "sha256:e3f06172e448412eff07cdd54e0ef51efa5da156f4893595594ce6b9c8f50928",
@@ -145,5 +145,12 @@
     "cache_archive_bytes": 1080391680,
     "cache_archive_sha256": "dc5c0c04450d2974824f077e7134db4cc3c0af261b65e332e1bae8b785670658",
     "timestamp": "2026-11-22T05:24:23.712587+00:00"
+  },
+  "continuation": {
+    "run_id": 44989521034,
+    "native_job_id": 137107418732,
+    "source_export": "docs/evidence/chromium-source-export-157-windows.json",
+    "superseded_following_native_job": 137107078931,
+    "prior_following_job_stage": "source preparation"
   }
 }
