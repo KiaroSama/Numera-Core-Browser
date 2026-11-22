@@ -2,7 +2,9 @@
 
 The requested default Windows project location is `G:\Program Files\Portable\Scripts\Numera-Core-Browser`, and the requested installed-program location is `G:\Program Files\Numera Core Browser`. These are user preferences, not assumptions about another machine or GitHub runner. There is no installer yet and no global PATH or PowerShell execution-policy mutation is performed.
 
-For future portable runtime operation, explicit writable profile/data/cache grants are part of the contract. Current planning checks lexical absolute host paths without traversal and does not create them. Actual symlink/reparse-point authorization, read-only installation behavior, relocation, disk-full recovery, extraction safety and native database storage are unimplemented release requirements.
+Choose a private writable data root that already exists and a separate package store. On Linux the data root requires owner-only access. On Windows choose a local directory with ACLs restricted to the account that will run Core. Core confines profile and cache directories to the data root and rejects links and reparse-point traversal. Pure planning leaves paths untouched. The desktop launcher creates per-profile directories during authorized launch.
+
+To retain data before changing an engine, stop the session and run `numera-core profiles snapshot DATA_ROOT SOURCE DESTINATION` with absolute paths beneath the same root. The destination must be new with an existing private parent. Core takes an exclusive native-profile lease and copies regular data to the new directory. The package binding is written after all files have been copied. A failed copy is left for inspection and cannot launch without a valid binding. An existing profile remains pinned to its original exact package. Data-format migration to a different build requires separate evidence.
 
 Keep engine source workspaces outside the portable/runtime directory. Chromium source builds require paths without spaces; `Build-Chromium.ps1` therefore requires an explicit absolute scratch source root. It never silently moves the user's project. GitHub jobs use their own runner scratch storage and do not assume a `G:` drive.
 

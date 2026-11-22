@@ -9,8 +9,8 @@
       "package_id": "numera-chromium",
       "scope": "initial milestone",
       "owned_build": "PARTIAL",
-      "browser_gui": "unsupported",
-      "device_modes": {"desktop": "unsupported", "android-emulated": "unsupported", "ios-emulated": "unsupported"},
+      "browser_gui": "partial",
+      "device_modes": {"desktop": "partial", "android-emulated": "unsupported", "ios-emulated": "unsupported"},
       "automation": [
         {"client": "playwright", "transport": "CDP", "status": "unsupported", "planned": true, "limitation": "Owned headless Linux fixture passed through connectOverCDP. Managed CDP is unavailable."},
         {"client": "playwright", "transport": "native version-paired protocol", "status": "unsupported", "planned": true, "limitation": "Transport is not implemented"},

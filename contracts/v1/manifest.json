@@ -9,9 +9,9 @@
     "fixtures/negative-duplicate-key.ndjson": "df19315c7a5ab7a3cf94a5290cbc6a051162acbb4ec98a3d00c70474ed6b91ea",
     "fixtures/negative-namespace.json": "fcd3545881dd38364136529fad81f61ca6bf07d3bd018e8a95065cc2f3c71520",
     "manifest.schema.json": "1b698a4c72d2541b9b7db459efff2d47e3fed8578808286e353778ec3519a020",
-    "request.schema.json": "e514eaf1c1afb271cff6b5746d7c7b6657e3d0cfe1d99a6c97434bedafdfe756",
+    "request.schema.json": "602bf58824e2c8125cff837bf6dc9caa0d309aebed701e985ccfe210f35deb6c",
     "response.schema.json": "0b8ad9128adca8fdd708d0bbb95e8414a574f3abe5b91c65c7e3b4f6e13cf3eb",
-    "v1/compatibility.json": "723aef49546d7275968cc73483f6e6b0fc85f930400650038ec06163fb68ae6c",
+    "v1/compatibility.json": "da021ce9b21f6adfa1d1e1aa7ee91ab3c2cbb5f6698f7207f42125d50a0541ce",
     "v1/theme.tokens.json": "c238c6cd6815b81e2dc304d722b380701a14589c456438fb5d305e6acd0449a0"
   },
   "status": "development; not an integration-ready release",

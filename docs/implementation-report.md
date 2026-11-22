@@ -4,6 +4,10 @@ Windows and Linux x86-64 are the active build and distribution targets. Earlier 
 
 ## Delivered development source
 
+- The offline installer verifies TUF metadata and exact runtime contents, stages versioned Chromium packages, activates the selected digest and rolls the default back without replacing active binaries.
+- `numera-core-gui` and the configured NCB-1 service use native Chromium workers with standalone profile admission. The service supports launch, attachment, status, listing, events and stop. The local signed test fixture exercises the actual CLI and verifies native process cleanup after EOF, profile snapshots and repeat-launch rejection after reconnect. This fixture uses a synthetic executable.
+- The reusable NCB-1 client follows the same generated contract. The Manager repository remains separate. An actual Manager grant and a paired owned-browser run are still required.
+
 - A Rust workspace with real CLI commands and an inherited-stdio NCB-1 producer: diagnostics, capabilities, engine inventory, pure launch planning, manifest inspection, hashing and schema export.
 - Strict JSON/NDJSON parsing, recursive duplicate-key checks, version/handshake state, bounded queues/frames/deadlines, output-backpressure cancellation and sanitized errors. Missing engines, unsupported capabilities and required proxies fail closed.
 - Deterministic identity keys and configuration coherence checks with explicit emulation limitations. No page-visible identity or mobile behavior is claimed.
@@ -86,9 +90,9 @@ The independent download workflow selects the matching artifact and attested tar
 | Gate | Status | Remaining acceptance |
 | --- | --- | --- |
 | A: repository, license, baseline, feasibility | IN_PROGRESS | Linux passed a staged source build. Complete Windows source verification and matched release packaging. |
-| B: working owned browser slice | IN_PROGRESS | Verify Windows linking and automation, headed GUI and portable execution. Integrate the ownership primitives with browser sessions. |
+| B: working owned browser slice | IN_PROGRESS | Verify Windows linking and the new launcher with signed owned packages on both platforms. Validate authenticated automation endpoints. |
 | C: broader engines/device/package scope | NOT_RUN | Engine-applied emulation, modular installers and themes; Gecko/WebKit deferred after the Orbita direction |
-| D: trusted updates and integration | NOT_RUN | Signed metadata, staging/leases/activation/real-data rollback and paired manager/browser smoke suite |
+| D: trusted updates and integration | IN_PROGRESS | Provision publisher trust and verify package lifecycle and rollback with actual browser data. Connect the Manager grant and run a paired smoke suite. |
 | E: release acceptance | NOT_RUN | Full native matrix, upstream/security/licenses, packaging, performance and complete-source provenance |
 
 No engine download or alternative wrapper was used to satisfy these gates. No Tauri/system-webview shell, imitation settings dashboard, unreviewed engine promotion or fake release badge was created. The Numera Browser manager repository is unchanged. Core PRs were merged only after the user explicitly requested merging the side branches; observation metadata is still not trusted engine release metadata.

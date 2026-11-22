@@ -11,17 +11,21 @@ Begin with `hello` and overlapping protocol/schema ranges, then `capabilities.ge
 | Operation | Current behavior |
 | --- | --- |
 | `hello` | Negotiate wire/schema range |
-| `capabilities.get` | Scope capabilities to exact host and missing engine build |
-| `engines.list` | Report no installed/approved engines and explicit deferred families |
-| `launch.plan` | Pure validation; return a blocked effective plan, no storage/network/process side effects |
-| `session.launch` | Validate, then return `missing_package`; never spawn |
+| `capabilities.get` | Report host, configured active digest, session scope and limitations |
+| `engines.list` | List signed packages from the configured store and identify deferred families |
+| `launch.plan` | Validate the snapshot and resolve the signed package descriptor without creating state or spawning |
+| `session.launch` | Verify the installed package, acquire durable admission and start an owned standalone browser process |
+| `session.status`, `session.attach` | Inspect a session on this inherited connection using `{ "launch_id": "..." }` |
+| `session.list` | List the session views retained on this connection |
+| `session.stop` | Stop the exact owned session using `{ "launch_id": "..." }` |
+| `session.events` | Poll retained observations using `launch_id` and `after_sequence` |
 | `diagnostics.collect` | Sanitized build/host/capability evidence without paths, browsing content or secrets |
 
-Package administration, session attachment/status/events/stop, theme application, and update operations remain reserved requirements. They are not exposed as successful no-op operations. A missing feature or engine build never means support.
+The administrative CLI handles signed package operations. On an unconfigured service, launch still returns `missing_package`. The current endpoint supervises standalone sessions and reports the running observation and terminal observation with increasing sequence numbers. A repeated immutable launch on the same connection returns its current view. A reserved launch ID or idempotency key cannot start a second browser after reconnect. Reconnecting cannot seize a running worker; managed grants and detached reconnection require another authority. The `automation_endpoints` list remains empty until the package has an authenticated session transport.
 
 Responses correlate `id` and use `status: ok` with `result`, or `status: error` with stable `error.code` and safe `message`. Invalid untrusted envelopes use a null ID. Valid request IDs are echoed; callers must not use credentials as IDs.
 
-Input and output queues have one slot. Partial/idle input expires after 60 seconds. Dispatch and response writes honor the request budget; blocked output also expires after 5 seconds. A stalled peer can receive a partial final frame before the process exits; it must treat partial EOF as a failed connection. EOF cannot orphan an engine because this version cannot create a session.
+Input and output queues have one slot. Partial or idle input expires after 60 seconds. Poll `session.status` or `session.events` while holding an interactive session over inherited stdio. Dispatch and response writes honor the request budget and blocked output also expires after five seconds. A stalled peer treats a partial final frame as a failed connection. EOF closes the Core worker channels and starts native process cleanup. The worker releases admission after the owned tree and required profile locks clear. An interrupted worker leaves durable recovery state.
 
 CLI stdout and service stdout contain JSON only. Logs go to stderr with a timestamp/timezone, uppercase primary severity and component. Exit codes: `0` completed command/clean EOF, `2` invalid input/framing, `3` missing package for applicable CLI errors, `4` cancellation/output timeout. A blocked `plan` or `doctor` can return exit `0`: inspect the reported readiness/status.
 

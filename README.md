@@ -29,13 +29,13 @@ cargo run --locked -q -p core-cli -- engines list
 cargo run --locked -q -p core-cli -- serve
 ```
 
-`doctor` reports command success separately from browser readiness. `launch.plan` returns a blocked plan until a reviewed engine exists. `session.launch` fails with `missing_package`; it never downloads or relabels another product's browser.
+`doctor` reports command success separately from browser readiness. Configure a signed package store and a private data directory to enable standalone sessions.
 
 `numera-core --json engines verify-archive FILE SHA256` verifies a portable Chromium `tar.gz` layout and SHA-256 digest. Supply the digest from a separately verified build report or signed release metadata. The command reads the archive and reports its file count and expanded size.
 
 The compiled CLI requires no Node.js, Python, display server or manager installation. Development tooling uses Python, and native automation fixtures also use Node.js. On Windows use PowerShell 7: `./scripts/Build.ps1 -Mode Check` or `-Mode Build`.
 
-Successful native CI jobs produce `development-cli-*` artifacts with a `development-cli.tar.gz` bundle containing the tested CLI, notices and matching `complete-source.zip`. After extracting the artifact ZIP, extract the tar bundle with `tar -xzf development-cli.tar.gz`. In its `development-cli` directory run `./numera-core --json doctor` (PowerShell: `.\numera-core.exe --json doctor`). These unsigned development archives contain the control plane; browser/GUI and clean-machine installation acceptance remain open.
+Successful native CI jobs produce `development-cli-*` artifacts with a `development-cli.tar.gz` bundle containing the CLI, optional desktop launcher, notices and matching `complete-source.zip`. After extracting the artifact ZIP, extract the tar bundle with `tar -xzf development-cli.tar.gz`. Run `./numera-core --json doctor` from the extracted directory, or `.\numera-core.exe --json doctor` in PowerShell. These unsigned development archives require a separate signed Chromium package for browser sessions. Clean-machine installation validation remains open.
 
 For Windows or Linux x86-64, select the corresponding `development-cli-*` artifact on a recent successful Windows and Linux native CI run. GitHub may require login, and each archive expires seven days after its run. Check the source commit in `development-manifest.json`. [Native CI runs](https://github.com/KiaroSama/Numera-Core-Browser/actions/workflows/rust.yml)
 
@@ -43,21 +43,34 @@ The `numera-core-contracts-v1-*` artifacts contain the versioned schemas, fixtur
 
 Successful `main` builds publish a `development-artifact-provenance` bundle. Verify the inner CLI tar or contract ZIP with `gh attestation verify`, the extracted bundle, and the expected workflow, ref and source commit. The evidence records exact subject digests and the signer workflow. [Provenance and downloads](docs/evidence/development-artifacts-45004659038.json) · [GitHub verification reference](https://cli.github.com/manual/gh_attestation_verify)
 
+## Install and launch from signed offline packages
+
+Use an operator-provisioned publisher root, an offline TUF repository and a private writable data directory. Select absolute paths for the store and data directory. The store and data directory must be separate. The publisher-root file comes from an independent trusted channel. The public Linux development download above has separate provenance and uses its own launch procedure.
+
+```sh
+numera-core engines install "$STORE" "$TRUSTED_ROOT" "$REPOSITORY"
+numera-core-gui "$STORE" "$DATA_ROOT" work https://example.org/
+```
+
+The launcher opens the installed Chromium window and uses a separate profile folder for each named profile. Existing profiles retain their package digest across package activation. Build `numera-core` and `numera-core-gui` with `cargo build --locked -p core-cli`. On Windows use the `.exe` binaries with PowerShell variables and absolute paths.
+
+Use `numera-core serve STORE DATA_ROOT` for inherited-stdio standalone sessions, or `numera-core launch STORE DATA_ROOT SNAPSHOT.json` for a foreground launch with an explicit snapshot. Existing `serve` and `plan SNAPSHOT.json` also work without a configured store for protocol and configuration inspection. [Protocol](contracts/PROTOCOL.md) · [Offline publisher and update commands](docs/adr/003-updates.md) · [Profile snapshots](docs/portability.md)
+
 ## Source layout
 
 | Path | Implemented responsibility |
 | --- | --- |
 | `crates/core-contracts` | Typed NCB-1 messages, strict JSON, schemas and NDJSON bounds |
 | `crates/core-identity` | Coherence validation and deterministic identity keys; no browser overrides |
-| `crates/core-engines` | Package-manifest validation, hashing and truthful empty inventory |
-| `crates/core-process` | Standalone admission claims and native ownership primitives for Windows jobs and dedicated Linux workers |
-| `crates/core-runtime` | Shared planning, connection/version negotiation and diagnostics |
-| `crates/core-cli` | Standalone CLI and bounded inherited-stdio service |
+| `crates/core-engines` | Signed offline package staging, integrity verification and version selection |
+| `crates/core-process` | Standalone admission claims, Windows job and Linux worker ownership, profile snapshots |
+| `crates/core-runtime` | Pure launch planning, native session lifecycle and NCB-1 negotiation |
+| `crates/core-cli` | Package administration, inherited-stdio service and Chromium desktop launcher |
 | `contracts` | Generated canonical schemas, fixtures and manager theme tokens |
 | `upstream` | Per-platform source pins, minimal branding patch and unreviewed observations |
 | `scripts` | Build, dependency review, source feasibility and external conformance tools |
 
-Process supervision, proxy transport, native automation gateways, trusted updating and actual browser GUI remain implementation gates. Empty crates are not used to imply these features exist.
+The launcher supports standalone Chromium sessions. Managed grants, detached reconnect, credentialed proxy transport, mobile emulation and public publisher release acceptance remain open.
 
 ## Validate
 

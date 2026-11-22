@@ -1,3 +1,5 @@
 * text=auto eol=lf
 *.svg text
 *.png binary
+# Dependency inventories verify the original upstream bytes.
+licenses/dependencies/** -text

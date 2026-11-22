@@ -14,6 +14,7 @@ from logging_util import log
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--binary', required=True)
+parser.add_argument('--launcher')
 parser.add_argument('--output', required=True)
 parser.add_argument('--target', required=True)
 args = parser.parse_args()
@@ -24,8 +25,11 @@ try:
         created.append(Path(name).resolve().relative_to(Path.cwd().resolve()))
         with os.fdopen(descriptor, 'w', encoding='utf-8') as file:
             file.write('Synthetic local-only packaging canary; not a credential.\n')
-    subprocess.run([sys.executable, 'scripts/package-cli.py', '--binary', args.binary,
-                    '--output', args.output, '--target', args.target], check=True)
+    command = [sys.executable, 'scripts/package-cli.py', '--binary', args.binary,
+               '--output', args.output, '--target', args.target]
+    if args.launcher:
+        command.extend(['--launcher', args.launcher])
+    subprocess.run(command, check=True)
     output = Path(args.output).resolve()
     with tarfile.open(output.with_name(output.name + '.tar.gz'), 'r:gz') as archive:
         names = set(archive.getnames())

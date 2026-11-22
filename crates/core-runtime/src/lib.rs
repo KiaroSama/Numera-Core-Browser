@@ -1,8 +1,10 @@
-//! Shared, side-effect-free planning and the inherited-stdio connection state.
-//! No engine or process is substituted for an unavailable owned engine.
+//! Browser launch planning, native session ownership and the inherited-stdio protocol.
+mod session;
+pub use session::{Sessions, run_worker};
+
 use core_contracts::{
-    BuildPolicy, Command, CoreError, ErrorCode, LaunchSnapshot, Lifetime, NAMESPACE, PROTOCOL,
-    ProxyPolicy, Request, Response, SCHEMA_REVISION, valid_id,
+    BuildPolicy, Command, CoreError, EngineFamily, ErrorCode, LaunchSnapshot, Lifetime, NAMESPACE,
+    PROTOCOL, ProxyPolicy, Request, Response, SCHEMA_REVISION, valid_id,
 };
 use serde_json::{Value, json};
 use std::{
@@ -54,6 +56,10 @@ fn absolute_lexical(path: &str) -> bool {
 }
 
 pub fn plan(snapshot: &LaunchSnapshot) -> Result<Value, CoreError> {
+    plan_with(snapshot, None)
+}
+
+fn plan_with(snapshot: &LaunchSnapshot, sessions: Option<&Sessions>) -> Result<Value, CoreError> {
     if ![
         &snapshot.profile_id,
         &snapshot.launch_id,
@@ -155,9 +161,20 @@ pub fn plan(snapshot: &LaunchSnapshot) -> Result<Value, CoreError> {
     if matches!(snapshot.lifetime, Lifetime::Detached) {
         blockers.push(json!({"code":"unsupported_capability","message":"Detached mode requires a surviving durable supervisor"}));
     }
+    let mut selected = Value::Null;
+    if let Some(sessions) = sessions {
+        blockers.clear();
+        match session::choose(&sessions.store, &sessions.root, snapshot) {
+            Ok(package) => {
+                selected = json!({"sha256":package.sha256,"upstream_revision":package.manifest.upstream_revision,
+                    "target_triple":package.manifest.target_triple,"profile_data_format":package.manifest.profile_data_format});
+            }
+            Err(error) => blockers.push(json!(error)),
+        }
+    }
     Ok(
-        json!({"status":"blocked","profile_id":snapshot.profile_id,"launch_id":snapshot.launch_id,
-        "requested_engine":snapshot.engine,"selected_build":null,"device_mode":snapshot.device_mode,
+        json!({"status":if blockers.is_empty() {"planned"} else {"blocked"},"profile_id":snapshot.profile_id,"launch_id":snapshot.launch_id,
+        "requested_engine":snapshot.engine,"selected_build":selected,"device_mode":snapshot.device_mode,
         "identity_key":core_identity::identity_key(snapshot),"identity_validation":"syntax-and-coherence-only",
         "settings_applied":false,"blockers":blockers,"warnings":warnings,
         "preparation_steps":[],"side_effects":false}),
@@ -176,8 +193,55 @@ enum State {
 pub struct Connection {
     state: State,
     ids: HashSet<String>,
+    sessions: Option<Sessions>,
 }
 impl Connection {
+    pub fn with_sessions(sessions: Sessions) -> Self {
+        Self {
+            sessions: Some(sessions),
+            ..Self::default()
+        }
+    }
+
+    fn disconnected() -> CoreError {
+        CoreError::new(
+            ErrorCode::UnsupportedCapability,
+            "A configured native session authority is required",
+        )
+    }
+
+    fn configured_capabilities(&self) -> Value {
+        let mut report = capabilities();
+        let Some(sessions) = &self.sessions else {
+            return report;
+        };
+        report["features"]["updates.trusted"] = json!({"status":"partial","limitations":["Explicit offline publisher root and CLI package administration required"]});
+        report["features"]["network.proxy.required"] = json!({"status":"partial","limitations":["Chromium supports a single explicit credential-free upstream; policy precedence and network acceptance need native verification"]});
+        for operation in [
+            "session.status",
+            "session.list",
+            "session.attach",
+            "session.stop",
+            "session.events",
+        ] {
+            report["features"][operation] = json!({"status":"supported","limitations":["Sessions created through this inherited connection"]});
+        }
+        if let Ok(package) = sessions
+            .store
+            .select(&EngineFamily::Chromium, &BuildPolicy::Approved)
+        {
+            report["scope"] = json!({"engine_build":package.sha256,"device_mode":"desktop","automation_transport":null});
+            report["features"]["launch.plan"] = json!({"status":"supported","limitations":["Validates the selected signed browser and configuration without starting it"]});
+            report["features"]["session.launch"] = json!({"status":"partial","limitations":["Standalone browser process, held for the lifetime of the connection"]});
+            for capability in package.manifest.features.iter().filter(|feature| {
+                matches!(feature.name.as_str(), "browser.navigation" | "browser.gui")
+            }) {
+                report["features"][&capability.name] = json!(capability);
+            }
+        }
+        report
+    }
+
     pub fn handle(&mut self, bytes: &[u8]) -> Response {
         let started = Instant::now();
         let request = match Request::decode(bytes) {
@@ -197,8 +261,11 @@ impl Connection {
         if !self.ids.insert(request.id.clone()) {
             return Response::new(id, Err(CoreError::invalid("Duplicate request ID")));
         }
-        let result = request.command().and_then(|command| self.dispatch(command));
-        if started.elapsed() >= Duration::from_millis(request.deadline_ms as u64) {
+        let deadline = started + Duration::from_millis(request.deadline_ms as u64);
+        let result = request
+            .command()
+            .and_then(|command| self.dispatch(command, deadline));
+        if Instant::now() >= deadline && result.is_ok() {
             return Response::new(
                 id,
                 Err(CoreError::new(
@@ -210,7 +277,7 @@ impl Connection {
         Response::new(id, result)
     }
 
-    fn dispatch(&mut self, command: Command) -> Result<Value, CoreError> {
+    fn dispatch(&mut self, command: Command, deadline: Instant) -> Result<Value, CoreError> {
         if matches!(self.state, State::New) && !matches!(command, Command::Hello(_)) {
             return Err(CoreError::new(
                 ErrorCode::ProtocolMismatch,
@@ -234,7 +301,7 @@ impl Connection {
         }
         if let Command::CapabilitiesGet(_) = command {
             self.state = State::Ready;
-            return Ok(capabilities());
+            return Ok(self.configured_capabilities());
         }
         if !matches!(self.state, State::Ready) {
             return Err(CoreError::new(
@@ -243,16 +310,58 @@ impl Connection {
             ));
         }
         match command {
-            Command::EnginesList(_) => Ok(core_engines::inventory()),
-            Command::LaunchPlan(snapshot) => plan(&snapshot),
+            Command::EnginesList(_) => self.sessions.as_ref().map_or_else(
+                || Ok(core_engines::inventory()),
+                |sessions| sessions.store.inventory(),
+            ),
+            Command::LaunchPlan(snapshot) => plan_with(&snapshot, self.sessions.as_ref()),
             Command::SessionLaunch(snapshot) => {
+                if let Some(sessions) = &mut self.sessions {
+                    return sessions.launch(snapshot, deadline);
+                }
                 plan(&snapshot)?;
                 Err(CoreError::new(
                     ErrorCode::MissingPackage,
                     "No approved owned engine; session was not admitted or spawned",
                 ))
             }
-            Command::DiagnosticsCollect(_) => Ok(doctor()),
+            Command::SessionStatus(reference) | Command::SessionAttach(reference) => self
+                .sessions
+                .as_mut()
+                .ok_or_else(Self::disconnected)?
+                .status(&reference.launch_id),
+            Command::SessionList(_) => self
+                .sessions
+                .as_mut()
+                .map_or_else(|| Ok(json!({"sessions":[]})), Sessions::list),
+            Command::SessionStop(reference) => self
+                .sessions
+                .as_mut()
+                .ok_or_else(Self::disconnected)?
+                .stop(&reference.launch_id, deadline),
+            Command::SessionEvents(query) => self
+                .sessions
+                .as_mut()
+                .ok_or_else(Self::disconnected)?
+                .events(&query.launch_id, query.after_sequence),
+            Command::DiagnosticsCollect(_) => {
+                let mut report = doctor();
+                if let Some(sessions) = &self.sessions {
+                    let engines = sessions.store.inventory()?;
+                    report["owned_engine_available"] = json!(
+                        sessions
+                            .store
+                            .select(&EngineFamily::Chromium, &BuildPolicy::Approved)
+                            .is_ok()
+                    );
+                    report["engines"] = engines;
+                    report["limitations"] = json!([
+                        "Standalone sessions use an independently provisioned signed package",
+                        "Manager grant and detached supervision require integration"
+                    ]);
+                }
+                Ok(report)
+            }
             Command::Hello(_) | Command::CapabilitiesGet(_) => unreachable!("handled above"),
         }
     }

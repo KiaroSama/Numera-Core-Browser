@@ -275,6 +275,36 @@
       ],
       "type": "object"
     },
+    "SessionEventQuery": {
+      "additionalProperties": false,
+      "properties": {
+        "after_sequence": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "launch_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "launch_id",
+        "after_sequence"
+      ],
+      "type": "object"
+    },
+    "SessionReference": {
+      "additionalProperties": false,
+      "properties": {
+        "launch_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "launch_id"
+      ],
+      "type": "object"
+    },
     "Theme": {
       "additionalProperties": false,
       "properties": {
@@ -401,6 +431,86 @@
         },
         "payload": {
           "$ref": "#/$defs/LaunchSnapshot"
+        }
+      },
+      "required": [
+        "operation",
+        "payload"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "session.status",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/SessionReference"
+        }
+      },
+      "required": [
+        "operation",
+        "payload"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "session.list",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/Empty"
+        }
+      },
+      "required": [
+        "operation",
+        "payload"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "session.attach",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/SessionReference"
+        }
+      },
+      "required": [
+        "operation",
+        "payload"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "session.stop",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/SessionReference"
+        }
+      },
+      "required": [
+        "operation",
+        "payload"
+      ],
+      "type": "object"
+    },
+    {
+      "properties": {
+        "operation": {
+          "const": "session.events",
+          "type": "string"
+        },
+        "payload": {
+          "$ref": "#/$defs/SessionEventQuery"
         }
       },
       "required": [

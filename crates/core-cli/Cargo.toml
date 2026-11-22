@@ -5,17 +5,33 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 publish.workspace = true
+default-run = "numera-core"
 
 [[bin]]
 name = "numera-core"
 path = "src/main.rs"
 
+[[bin]]
+name = "numera-core-gui"
+path = "src/gui.rs"
+
 [dependencies]
 core-contracts.workspace = true
-core-engines = { workspace = true, features = ["runtime-archive"] }
+core-engines = { workspace = true, features = ["package-store"] }
 core-runtime.workspace = true
+core-process.workspace = true
+getrandom.workspace = true
+serde.workspace = true
 serde_json.workspace = true
 schemars.workspace = true
+
+[target.'cfg(target_os = "linux")'.dev-dependencies]
+aws-lc-rs = "=1.19.0"
+flate2 = { version = "=1.1.11", default-features = false, features = ["rust_backend"] }
+olpc-cjson = "=0.1.4"
+sha2.workspace = true
+tar = { version = "=0.4.46", default-features = false }
+tempfile = "=3.27.0"
 
 [lints]
 workspace = true

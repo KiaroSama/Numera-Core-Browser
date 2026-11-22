@@ -1,6 +1,14 @@
-//! Untrusted package metadata inspection. Hash matching is not trust approval.
+//! Engine package inspection and signed offline Chromium admission.
 #[cfg(feature = "runtime-archive")]
 mod runtime_archive;
+#[cfg(feature = "package-store")]
+mod store;
+
+#[cfg(feature = "package-store")]
+pub use store::{
+    EngineLease, EngineStore, PackageInfo, RuntimeTargetCustom, RuntimeTargetDescriptor,
+    RuntimeTargetHashes, describe_runtime_archive, runtime_inventory_sha256,
+};
 
 use core_contracts::{CoreError, EngineFamily, strict_json};
 #[cfg(feature = "runtime-archive")]

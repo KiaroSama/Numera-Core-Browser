@@ -49,7 +49,7 @@ pub(crate) fn nonce() -> Result<String, CoreError> {
     Ok(bytes.iter().map(|b| format!("{b:02x}")).collect())
 }
 
-fn private_directory(path: &Path) -> Result<(), CoreError> {
+pub(crate) fn private_directory(path: &Path) -> Result<(), CoreError> {
     #[cfg(unix)]
     let builder = {
         use std::os::unix::fs::DirBuilderExt;
@@ -86,7 +86,12 @@ fn private_directory(path: &Path) -> Result<(), CoreError> {
     Ok(())
 }
 
-fn nofollow(path: &Path, write: bool, create: bool, exclusive: bool) -> std::io::Result<File> {
+pub(crate) fn nofollow(
+    path: &Path,
+    write: bool,
+    create: bool,
+    exclusive: bool,
+) -> std::io::Result<File> {
     let mut options = OpenOptions::new();
     options
         .read(true)

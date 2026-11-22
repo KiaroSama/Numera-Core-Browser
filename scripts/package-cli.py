@@ -47,10 +47,18 @@ def verify_archive_cli(executable, directory, environment):
         raise RuntimeError('The extracted CLI did not enforce read-only archive integrity checks')
 
 
+def verify_launcher(executable, environment):
+    result = json.loads(subprocess.check_output(
+        [str(executable), '--help'], cwd=executable.parent, env=environment, timeout=15))
+    if result != {'usage': 'numera-core-gui STORE DATA_ROOT PROFILE [URL]'}:
+        raise RuntimeError('The development desktop launcher returned unexpected usage')
+
+
 def main():
     hosts = {'windows-2025': 'Windows', 'ubuntu-24.04': 'Linux'}
     parser = argparse.ArgumentParser()
     parser.add_argument('--binary', required=True)
+    parser.add_argument('--launcher')
     parser.add_argument('--output', required=True)
     parser.add_argument('--target', required=True, choices=hosts)
     args = parser.parse_args()
@@ -62,6 +70,11 @@ def main():
     binary = Path(args.binary).resolve(strict=True)
     if not binary.is_file() or not binary.is_relative_to(repo / 'target'):
         raise RuntimeError('Select a compiled workspace CLI')
+    launcher = Path(args.launcher).resolve(strict=True) if args.launcher else None
+    expected_launcher = 'numera-core-gui.exe' if native_system == 'Windows' else 'numera-core-gui'
+    if launcher and (launcher.name != expected_launcher or not launcher.is_file()
+                     or not launcher.is_relative_to(repo / 'target')):
+        raise RuntimeError('Select a compiled workspace desktop launcher')
     subprocess.run(['git', 'diff', '--exit-code', 'HEAD', '--'], check=True, capture_output=True)
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True, encoding='utf-8').strip()
     if os.environ.get('GITHUB_SHA', commit) != commit:
@@ -74,6 +87,8 @@ def main():
     output.mkdir(parents=True, exist_ok=False)
     staged = output / binary.name
     shutil.copy2(binary, staged)
+    if launcher:
+        shutil.copy2(launcher, output / launcher.name)
     source = output / 'complete-source.zip'
     subprocess.run(['git', 'archive', '--format=zip', '--output', str(source), commit], check=True, capture_output=True)
     tracked = set(subprocess.check_output(['git', 'ls-tree', '-rz', '--name-only', commit]).decode('utf-8').rstrip('\0').split('\0'))
@@ -97,8 +112,7 @@ def main():
             target = output.joinpath(*path.parts)
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(archive.read(name))
-    # Run from the staged directory with no client/toolchain PATH. This proves
-    # Verify native execution with the dependencies already installed on this runner.
+    # Verify native execution without client/toolchain PATH or a display.
     environment = dict(os.environ, PATH='')
     for key in ['DISPLAY', 'WAYLAND_DISPLAY', 'LD_LIBRARY_PATH']:
         environment.pop(key, None)
@@ -119,11 +133,19 @@ def main():
         'engine_ready': False, 'browser_gui': False, 'archive_signature': 'none',
         'publisher_signing': 'NOT_CONFIGURED', 'platform_signing': 'NOT_EVALUATED',
         'clean_machine_installation': 'NOT_RUN', 'native_staged_doctor': 'PASS'}
+    if launcher:
+        staged_launcher = output / launcher.name
+        verify_launcher(staged_launcher, environment)
+        manifest['desktop_launcher'] = {'executable': launcher.name, 'sha256': sha256(staged_launcher)}
     (output / 'development-manifest.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
+    launcher_note = ('The optional numera-core-gui launcher requires a separately installed, signed Chromium package.\n'
+                     if launcher else '')
     (output / 'README.txt').write_text(
         'Numera Core Browser — development control-plane CLI\n\n'
         'Run ./numera-core --json doctor (PowerShell: .\\numera-core.exe --json doctor) from this directory.\n'
-        'The CLI provides protocol diagnostics and blocked planning. No browser engine or GUI is included.\n'
+        'The CLI provides protocol diagnostics, launch planning and signed package administration.\n'
+        'Install the Chromium engine separately.\n'
+        f'{launcher_note}'
         'This is unsigned development software, not an integration-ready or production browser release.\n'
         'Native execution was tested on the named CI target; clean-machine OS/CRT prerequisites are not certified.\n'
         'Complete matching first-party source is in complete-source.zip. Read its README for pinned build instructions.\n'
@@ -145,6 +167,11 @@ def main():
             raise RuntimeError('Extracted development archive did not execute natively')
         if sha256(executable) != manifest['executable_sha256']:
             raise RuntimeError('Extracted executable hash does not match the package')
+        if launcher:
+            extracted_launcher = executable.with_name(launcher.name)
+            if sha256(extracted_launcher) != manifest['desktop_launcher']['sha256']:
+                raise RuntimeError('Extracted desktop launcher hash does not match the package')
+            verify_launcher(extracted_launcher, environment)
         verify_archive_cli(executable, extracted, environment)
     log('PASS: extracted native development CLI with matching source/notices; browser readiness remains false')
 

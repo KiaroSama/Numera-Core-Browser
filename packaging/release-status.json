@@ -16,7 +16,8 @@
   "blockers": [
     "Owned Chromium compilation and linking remains in verification on Windows",
     "Windows native clients, headed browser, portable runtime and installer acceptance remain open",
-    "No signed updater or paired manager smoke suite"
+    "No production publisher root or approved signed engine package has been provisioned for the offline updater",
+    "The paired Manager and owned Chromium smoke suite remains open"
   ],
   "development_cli": {
     "source_commit": "fe937c2e6cab71ab473a039ccf66639e0dc3c2bc",

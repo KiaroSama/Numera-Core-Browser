@@ -9,7 +9,9 @@ publish.workspace = true
 [dependencies]
 core-contracts.workspace = true
 core-identity.workspace = true
-core-engines.workspace = true
+core-engines = { workspace = true, features = ["package-store"] }
+core-process.workspace = true
+serde.workspace = true
 serde_json.workspace = true
 url.workspace = true
 

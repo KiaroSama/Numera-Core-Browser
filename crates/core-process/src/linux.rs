@@ -119,6 +119,7 @@ fn stop_children(deadline: Instant) -> Result<(), CoreError> {
 
 pub struct OwnedProcessTree {
     root: Option<OwnedFd>,
+    pid: u32,
     worker: PhantomData<Rc<()>>,
 }
 
@@ -191,6 +192,7 @@ impl OwnedProcessTree {
         match root {
             Ok(root) => Ok(Self {
                 root: Some(root),
+                pid: child.id(),
                 worker: PhantomData,
             }),
             Err(_) => {
@@ -203,6 +205,10 @@ impl OwnedProcessTree {
                 ))
             }
         }
+    }
+
+    pub fn pid(&self) -> u32 {
+        self.pid
     }
 
     pub fn root_exited(&self) -> Result<bool, CoreError> {

@@ -4,16 +4,64 @@ use core_contracts::CoreError;
 use flate2::bufread::GzDecoder;
 use sha2::{Digest, Sha256};
 use std::{
-    collections::BTreeMap,
+    collections::{BTreeMap, BTreeSet, btree_map::Entry},
     io::{self, BufRead, BufReader, Read},
     path::Path,
 };
 
-const MAX_ARCHIVE_BYTES: u64 = 8 * 1024 * 1024 * 1024;
+pub(crate) const MAX_ARCHIVE_BYTES: u64 = 8 * 1024 * 1024 * 1024;
 const MAX_TAR_BYTES: u64 = 24 * 1024 * 1024 * 1024;
-const MAX_MEMBERS: usize = 150_000;
+pub(crate) const MAX_MEMBERS: usize = 150_000;
 const MAX_PATH_BYTES: usize = 4096;
 const MAX_ALL_PATH_BYTES: usize = 16 * 1024 * 1024;
+
+#[derive(Default)]
+struct Paths {
+    files: BTreeSet<String>,
+    directories: BTreeMap<String, String>,
+    file_path_bytes: usize,
+    directory_path_bytes: usize,
+}
+
+impl Paths {
+    fn add(&mut self, relative: &str) -> Result<(), CoreError> {
+        self.file_path_bytes += relative.len();
+        if relative.len() > MAX_PATH_BYTES
+            || self.file_path_bytes > MAX_ALL_PATH_BYTES
+            || !safe_relative(relative)
+            || self.files.len() >= MAX_MEMBERS
+        {
+            return Err(invalid_archive());
+        }
+        let key = relative.to_uppercase();
+        if self.directories.contains_key(&key) || self.files.contains(&key) {
+            return Err(invalid_archive());
+        }
+        let (mut folded, mut path) = (key.as_str(), relative);
+        while let Some(((prefix, _), (spelling, _))) =
+            folded.rsplit_once('/').zip(path.rsplit_once('/'))
+        {
+            if self.files.contains(prefix) {
+                return Err(invalid_archive());
+            }
+            let count = self.directories.len();
+            match self.directories.entry(prefix.to_owned()) {
+                Entry::Occupied(known) if known.get() == spelling => {}
+                Entry::Vacant(new) if count < MAX_MEMBERS => {
+                    self.directory_path_bytes += prefix.len() + spelling.len();
+                    if self.directory_path_bytes > MAX_ALL_PATH_BYTES {
+                        return Err(invalid_archive());
+                    }
+                    new.insert(spelling.to_owned());
+                }
+                _ => return Err(invalid_archive()),
+            }
+            (folded, path) = (prefix, spelling);
+        }
+        self.files.insert(key);
+        Ok(())
+    }
+}
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct RuntimeArchiveReport {
@@ -78,6 +126,17 @@ fn inspect_archive<R: Read>(
     expected: &str,
     tar_limit: u64,
 ) -> Result<RuntimeArchiveReport, CoreError> {
+    walk_archive(input, expected, tar_limit, |_, _, member| {
+        io::copy(member, &mut io::sink()).map_err(|_| invalid_archive())
+    })
+}
+
+fn walk_archive<R: Read>(
+    input: R,
+    expected: &str,
+    tar_limit: u64,
+    mut process: impl FnMut(&str, u32, &mut dyn Read) -> Result<u64, CoreError>,
+) -> Result<RuntimeArchiveReport, CoreError> {
     let source = HashedInput {
         input: input.take(MAX_ARCHIVE_BYTES + 1),
         digest: Sha256::new(),
@@ -85,9 +144,8 @@ fn inspect_archive<R: Read>(
     };
     let decoder = GzDecoder::new(BufReader::new(source));
     let mut archive = tar::Archive::new(decoder.take(tar_limit + 1));
-    let mut files = BTreeMap::new();
+    let mut paths = Paths::default();
     let mut declared_path = None;
-    let mut path_bytes = 0;
     let mut file_bytes = 0_u64;
     for entry in archive.entries().map_err(|_| invalid_archive())?.raw(true) {
         let mut entry = entry.map_err(|_| invalid_archive())?;
@@ -99,7 +157,8 @@ fn inspect_archive<R: Read>(
             declared_path = Some(name_extension(&mut entry)?);
             continue;
         }
-        if !kind.is_file() || entry.header().mode().map_err(|_| invalid_archive())? & 0o7000 != 0 {
+        let mode = entry.header().mode().map_err(|_| invalid_archive())?;
+        if !kind.is_file() || mode & 0o7000 != 0 {
             return Err(invalid_archive());
         }
         let path = match declared_path.take() {
@@ -109,42 +168,15 @@ fn inspect_archive<R: Read>(
             }
         };
         let relative = path.strip_prefix("runtime/").ok_or_else(invalid_archive)?;
-        path_bytes += relative.len();
-        if relative.len() > MAX_PATH_BYTES
-            || path_bytes > MAX_ALL_PATH_BYTES
-            || !safe_relative(relative)
-            || files.len() >= MAX_MEMBERS
-            || files
-                .insert(relative.to_uppercase(), relative.to_owned())
-                .is_some()
-        {
-            return Err(invalid_archive());
-        }
-        let count = io::copy(&mut entry, &mut io::sink()).map_err(|_| invalid_archive())?;
+        paths.add(relative)?;
+        let count = process(relative, 0o444 | (mode & 0o111), &mut entry)?;
         if count != entry.size() {
             return Err(invalid_archive());
         }
         file_bytes += count;
     }
-    if files.is_empty() || declared_path.is_some() {
+    if paths.files.is_empty() || declared_path.is_some() {
         return Err(invalid_archive());
-    }
-    let mut directories = BTreeMap::new();
-    for (key, name) in &files {
-        let (mut folded, mut path) = (key.as_str(), name.as_str());
-        while let Some(((prefix, _), (spelling, _))) =
-            folded.rsplit_once('/').zip(path.rsplit_once('/'))
-        {
-            if files.contains_key(prefix)
-                || directories
-                    .insert(prefix, spelling)
-                    .is_some_and(|previous| previous != spelling)
-                || directories.len() > MAX_MEMBERS
-            {
-                return Err(invalid_archive());
-            }
-            (folded, path) = (prefix, spelling);
-        }
     }
 
     // The parser stops after the first end marker. Read the remaining padding and
@@ -186,9 +218,18 @@ fn inspect_archive<R: Read>(
     Ok(RuntimeArchiveReport {
         archive_bytes: source.bytes,
         sha256,
-        files: files.len(),
+        files: paths.files.len(),
         file_bytes,
     })
+}
+
+#[cfg(feature = "package-store")]
+pub(crate) fn read_runtime_members<R: Read>(
+    input: R,
+    expected: &str,
+    process: impl FnMut(&str, u32, &mut dyn Read) -> Result<u64, CoreError>,
+) -> Result<RuntimeArchiveReport, CoreError> {
+    walk_archive(input, expected, MAX_TAR_BYTES, process)
 }
 
 pub fn inspect_runtime_archive(

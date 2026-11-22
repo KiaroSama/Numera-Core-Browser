@@ -149,6 +149,19 @@ pub struct LaunchSnapshot {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SessionReference {
+    pub launch_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SessionEventQuery {
+    pub launch_id: String,
+    pub after_sequence: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "operation", content = "payload")]
 pub enum Command {
     #[serde(rename = "hello")]
@@ -161,6 +174,16 @@ pub enum Command {
     LaunchPlan(LaunchSnapshot),
     #[serde(rename = "session.launch")]
     SessionLaunch(LaunchSnapshot),
+    #[serde(rename = "session.status")]
+    SessionStatus(SessionReference),
+    #[serde(rename = "session.list")]
+    SessionList(Empty),
+    #[serde(rename = "session.attach")]
+    SessionAttach(SessionReference),
+    #[serde(rename = "session.stop")]
+    SessionStop(SessionReference),
+    #[serde(rename = "session.events")]
+    SessionEvents(SessionEventQuery),
     #[serde(rename = "diagnostics.collect")]
     DiagnosticsCollect(Empty),
 }
@@ -353,7 +376,28 @@ mod tests {
     #[test]
     fn schema_has_typed_command_branches() {
         let s = request_schema();
-        assert!(s["oneOf"].as_array().is_some_and(|v| v.len() == 6));
+        let operations: Vec<_> = s["oneOf"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|branch| branch["properties"]["operation"]["const"].as_str().unwrap())
+            .collect();
+        assert_eq!(
+            operations,
+            [
+                "hello",
+                "capabilities.get",
+                "engines.list",
+                "launch.plan",
+                "session.launch",
+                "session.status",
+                "session.list",
+                "session.attach",
+                "session.stop",
+                "session.events",
+                "diagnostics.collect",
+            ]
+        );
         assert!(s["$defs"]["LaunchSnapshot"].is_object());
     }
     #[test]
