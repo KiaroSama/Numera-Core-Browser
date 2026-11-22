@@ -1,0 +1,78 @@
+{
+  "schema_revision": 1,
+  "source_commit": "fe0d95e47e96a928cc3666d90769e9208e01916f",
+  "scope": "Verified development CLI and NCB-1 contract. Native browser release acceptance remains open.",
+  "native_run": {
+    "id": 45004659038,
+    "url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/45004659038",
+    "conclusion": "success",
+    "tests": {
+      "windows": 52,
+      "linux": 53
+    },
+    "jobs": {
+      "windows": 137153447162,
+      "linux": 137153447219,
+      "dependency_security": 137153447003,
+      "attestation": 137153772689
+    }
+  },
+  "development_cli": {
+    "linux": {
+      "source_commit": "fe0d95e47e96a928cc3666d90769e9208e01916f",
+      "artifact_id": 14747615995,
+      "target": "ubuntu-24.04",
+      "transport_sha256": "e63a3c1d3bd4494e9d1d883c823284477077320becd3cddc64a1f60fbfa5ea12",
+      "matching_source_sha256": "c3f6b3b57e5d4f59f9b16f5fded05a020c86695559fc80692ba0b81103a41826",
+      "complete_source_file_count": 404,
+      "executable_sha256": "59188434486f352f30f5003c91ed9386e6501383af2f4f51bb0783b8cce6d8fe",
+      "local_execution": "PASS",
+      "transport_bytes": 7599996,
+      "subject_sha256": "98d672572ab5c33a1d37556a26e9bbeb63ff6c1f7b23856af3310478603e8607",
+      "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/45004659038/artifacts/14747615995"
+    },
+    "windows": {
+      "source_commit": "fe0d95e47e96a928cc3666d90769e9208e01916f",
+      "artifact_id": 14747142407,
+      "target": "windows-2025",
+      "transport_sha256": "6b3c4e21c67d157e9961e94bc0cd1d120eb42eff2428e6f25cbd78a8569bbc55",
+      "matching_source_sha256": "c3f6b3b57e5d4f59f9b16f5fded05a020c86695559fc80692ba0b81103a41826",
+      "complete_source_file_count": 404,
+      "executable_sha256": "7ce313ce56f70cf8e95e6c184d63bc7a5ddda15380bad95a2d4115fc12a31f3a",
+      "local_execution": "NOT_RUN on this Linux verifier; native Windows execution verified by CI",
+      "transport_bytes": 1820978,
+      "subject_sha256": "8b98a39872e63b613f51e0f2e231f768d328a4bb802de86b77535bc6be731a24",
+      "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/45004659038/artifacts/14747142407"
+    }
+  },
+  "contract": {
+    "sha256": "db3c0caf99794c17a8051045bba86dc5a70114f27264a59c008cf7ee161dfa1d",
+    "platforms_byte_identical": true,
+    "verified_exact_source_members": 20,
+    "canonical_hashes_verified": 11,
+    "artifacts": {
+      "linux": 14747426452,
+      "windows": 14747476389
+    }
+  },
+  "provenance": {
+    "artifact_id": 14747157355,
+    "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/45004659038/artifacts/14747157355",
+    "sha256": "c26b134756a1de568aedf6b912db791e9e97912703668fd09aef96c2ced00ab3",
+    "verified_subjects": 3,
+    "source_ref": "refs/heads/main",
+    "signer_workflow": ".github/workflows/rust.yml",
+    "github_hosted_enforced": true
+  },
+  "osv": {
+    "artifact_id": 14747450749,
+    "report": {
+      "timestamp": "2026-11-22T08:50:28.089650+00:00",
+      "source": "https://api.osv.dev/v1/querybatch",
+      "lock_file": "Cargo.lock",
+      "result": "PASS",
+      "packages_checked": 73,
+      "findings": []
+    }
+  }
+}

@@ -11,9 +11,11 @@ The supplied `original-build-specification.md` is the requirements baseline, not
 
 ## Inspection
 
-Manager main: `bf3196394458c4b09d25ca6c0dccbd9754041c42`.
-Manager migration branch: `3bf1d839fd33e42a10b982bd8607a7052ea7c4cd`.
-Open migration PR: [#56](https://github.com/KiaroSama/Numera-Browser/pull/56). Python remains selected on main; the native Rust library is a non-default migration candidate. No manager branch is changed, merged, or promoted here.
+The manager's main branch was inspected at `6b486e16653bca1b18eb0007238a50175421d54a` on November 22. Its change since the earlier inspection adds a secret-scan workflow. Python remains the default engine and the native Rust migration remains separate. [Manager comparison](https://github.com/KiaroSama/Numera-Browser/compare/bf3196394458c4b09d25ca6c0dccbd9754041c42...6b486e16653bca1b18eb0007238a50175421d54a)
+
+The manager's current SDK adapter sends a numeric request ID and a `hello` operation. A fixture using that initial envelope was rejected by the Core CLI because NCB-1 requires a namespace, string ID, deadline and typed payload. A manager NCB-1 client and a paired native browser test remain open. [Manager adapter](https://github.com/KiaroSama/Numera-Browser/blob/6b486e16653bca1b18eb0007238a50175421d54a/engine-rust/src/browser/adapter.rs) · [NCB-1 types](../crates/core-contracts/src/lib.rs)
+
+The inspected migration PR is closed and its head is `3bf1d839fd33e42a10b982bd8607a7052ea7c4cd`. Manager inspection was read-only. [Manager migration PR #56](https://github.com/KiaroSama/Numera-Browser/pull/56)
 
 No AGENTS.md, private Rules, Spec Kit installation, `.specify` workflow, or repository hooks were found in the available workspace or either inspected manager checkout. No private instructions or command chain are invented. Git author identity follows the configured environment identity.
 
