@@ -71,6 +71,9 @@ jobs:
 
           VERSION = "8.30.1"
           ARCHIVE_SHA256 = "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb"
+          PROBE_EVIDENCE = "docs/evidence/chromium-object-probe-45003337977.json"
+          PROBE_OBJECT = "obj/content/browser/browser/agent_cluster_key.obj"
+          PROBE_SHA256 = "72d63ad2833f4066c19e796d7936bb45045f1c5055296ab9487cecfe8fade53a"
           DOWNLOAD_URL = (
               f"https://github.com/gitleaks/gitleaks/releases/download/v{VERSION}/"
               f"gitleaks_{VERSION}_linux_x64.tar.gz"
@@ -103,7 +106,7 @@ jobs:
               if not summary_path:
                   return
               lines = ["## Gitleaks", "", f"Scanner: **{VERSION}**", "", f"Scope: **{scope}**", ""]
-              lines.extend(["Rules: Pinned built-in Gitleaks rules with standard exclusions and two verified public contract-checksum lines. No commit is excluded. Full history describes revision coverage, not universal byte or credential coverage.", ""])
+              lines.extend(["Rules: Pinned built-in Gitleaks rules with standard exclusions and three verified public checksum lines. All fetched commits remain in the scan scope.", ""])
               if not findings:
                   lines.append("No matching secrets were found in the scanned Git history.")
               else:
@@ -137,13 +140,29 @@ jobs:
                   require(blob.returncode == 0 and hashlib.sha256(blob.stdout).hexdigest() == digest,
                           "A historical public contract checksum could not be verified.")
                   patterns.append(r'^\s*"' + re.escape(name) + r'"\s*:\s*"' + digest + r'"\s*,?\s*$')
+              # This compiler-output SHA-256 matches the independently verified
+              # native artifact for run 45003337977. Its object name ends in "key".
+              probe_revision = "0ea1a277d507eda77407b675e781cd94f0020424"
+              probe = subprocess.run(["git", "-C", str(git_directory), "show", probe_revision + ":" + PROBE_EVIDENCE],
+                                     capture_output=True, timeout=15)
+              require(probe.returncode == 0 and hashlib.sha256(probe.stdout).hexdigest() ==
+                      "59aac59214aded922e5f92b6311b36cad5e2ea7349aa73c28b259cd4809377b6",
+                      "The historical compiler measurement could not be verified.")
+              require(json.loads(probe.stdout)["selected_object_sha256"][PROBE_OBJECT] == PROBE_SHA256,
+                      "The historical public compiler checksum could not be verified.")
+              probe_pattern = r'^\s*"' + re.escape(PROBE_OBJECT) + r'"\s*:\s*"' + PROBE_SHA256 + r'"\s*,?\s*$'
               return (
                   "[extend]\nuseDefault = true\n\n[[allowlists]]\n"
                   'description = "Verified public contract checksum lines"\n'
                   'targetRules = ["generic-api-key"]\ncondition = "AND"\n'
                   "paths = ['''^contracts/v1/manifest\\.json$''']\n"
                   'regexTarget = "line"\nregexes = [\n'
-                  + "\n".join("'''" + pattern + "'''," for pattern in patterns) + "\n]\n"
+                  + "\n".join("'''" + pattern + "'''," for pattern in patterns) + "\n]\n\n"
+                  "[[allowlists]]\n"
+                  'description = "Verified public compiler object checksum line"\n'
+                  'targetRules = ["generic-api-key"]\ncondition = "AND"\n'
+                  + "paths = ['''^" + re.escape(PROBE_EVIDENCE) + "$''']\n"
+                  + "regexTarget = \"line\"\nregexes = ['''" + probe_pattern + "''']\n"
               )
 
 
@@ -151,6 +170,7 @@ jobs:
               digest = "df19315c7a5ab7a3cf94a5290cbc6a051162acbb4ec98a3d00c70474ed6b91ea"
               other_digest = "c238c6cd6815b81e2dc304d722b380701a14589c456438fb5d305e6acd0449a0"
               known_line = '    "fixtures/negative-duplicate-key.ndjson": "' + digest + '",\n'
+              probe_line = f'    "{PROBE_OBJECT}": "{PROBE_SHA256}",\n'
               cases = [
                   ("public-checksum", "contracts/v1/manifest.json", known_line, 0),
                   ("second-public-checksum", "contracts/v1/manifest.json",
@@ -162,6 +182,10 @@ jobs:
                   ("coexisting-field", "contracts/v1/manifest.json",
                    known_line + '    "api_key": "' + digest + '",\n', 2),
                   ("trailing-content", "contracts/v1/manifest.json", known_line.rstrip("\n") + " extra content\n", 2),
+                  ("compiler-checksum", PROBE_EVIDENCE, probe_line, 0),
+                  ("compiler-other-path", "other.json", probe_line, 2),
+                  ("compiler-other-value", PROBE_EVIDENCE, probe_line.replace(PROBE_SHA256, digest), 2),
+                  ("compiler-coexisting-field", PROBE_EVIDENCE, probe_line + '    "api_key": "' + PROBE_SHA256 + '",\n', 2),
               ]
               for name, relative, text, expected in cases:
                   root = temporary / ("control-" + name)
