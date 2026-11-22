@@ -35,6 +35,15 @@ on:
       windows_object_probe:
         type: boolean
         default: false
+      windows_object_delta:
+        type: string
+        default: ''
+      expected_delta_sha:
+        type: string
+        default: ''
+      expected_objects_sha:
+        type: string
+        default: ''
     outputs:
       result:
         description: Whether this segment built the source or saved a partial checkpoint
@@ -42,6 +51,12 @@ on:
       checkpoint_sha:
         description: SHA-256 exported by the producing native job
         value: ${{ jobs.native.outputs.checkpoint_sha }}
+      delta_sha:
+        description: SHA-256 of the bounded compiler cache delta
+        value: ${{ jobs.native.outputs.delta_sha }}
+      objects_sha:
+        description: SHA-256 of the selected object digest map
+        value: ${{ jobs.native.outputs.objects_sha }}
 permissions:
   contents: read
   actions: read
@@ -56,6 +71,8 @@ jobs:
     outputs:
       result: ${{ steps.build.outputs.result }}
       checkpoint_sha: ${{ steps.build.outputs.checkpoint_sha }}
+      delta_sha: ${{ steps.build.outputs.delta_sha }}
+      objects_sha: ${{ steps.build.outputs.objects_sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -114,6 +131,12 @@ jobs:
           path: build/chromium-staged-cache/checkpoint.tar
           key: chromium-staged-${{ github.run_id }}-${{ github.run_attempt }}-${{ inputs.previous }}-${{ inputs.target }}
           fail-on-cache-miss: true
+      - name: Download the bounded Windows compiler cache delta
+        if: inputs.windows_object_delta == 'resume'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: windows-object-cache-delta
+          path: build/chromium-object-delta
       - name: Compile or continue the full native graph
         id: build
         env:
@@ -126,6 +149,9 @@ jobs:
           VERIFIED_SOURCE_EXPORT: ${{ inputs.verified_source_export }}
           READ_ONLY_REPLAY: ${{ inputs.read_only_replay }}
           WINDOWS_OBJECT_PROBE: ${{ inputs.windows_object_probe }}
+          WINDOWS_OBJECT_DELTA: ${{ inputs.windows_object_delta }}
+          EXPECTED_DELTA_SHA: ${{ inputs.expected_delta_sha }}
+          EXPECTED_OBJECTS_SHA: ${{ inputs.expected_objects_sha }}
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
         run: python scripts/chromium_staged_build.py --segment $env:BUILD_SEGMENT --minutes $env:BUILD_MINUTES
@@ -149,10 +175,19 @@ jobs:
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: staged-source-evidence-${{ inputs.segment }}-${{ inputs.target }}
+          name: staged-source-evidence-${{ inputs.segment }}-${{ inputs.target }}${{ inputs.windows_object_delta != '' && format('-{0}', inputs.windows_object_delta) || '' }}
           path: build/chromium-staged-evidence
           retention-days: 7
           if-no-files-found: warn
+      - name: Retain only the new Windows compiler entries and object digests
+        if: inputs.windows_object_delta == 'seed' && steps.build.outputs.result == 'PROBE_PASS'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: windows-object-cache-delta
+          path: build/chromium-object-delta
+          compression-level: 0
+          retention-days: 7
+          if-no-files-found: error
       - name: Retain the tested development runtime and matching source references
         if: inputs.verified_source_export != '' && steps.build.outputs.result == 'PASS'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9

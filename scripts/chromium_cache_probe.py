@@ -97,30 +97,42 @@ def compile_graph(root, environment, output, cache_tool='ccache', *, review_lock
 
 
 def pack_cache(root, archive, context, object_hash, *, limit=ARCHIVE_LIMIT, max_entries=512,
-               required_entries=None):
+               required_entries=None, base_checkpoint_sha256=None):
     entries = sorted(root.rglob('*'))
     if any(p.is_symlink() or not (p.is_dir() or p.is_file()) for p in entries):
         raise RuntimeError('Unexpected link or special file in local compiler cache')
     files = [p for p in entries if p.is_file() and p.name not in {'CACHEDIR.TAG', '.cleaned', 'stats'}]
-    if not files or len(files) > max_entries or sum(p.stat().st_size for p in files) >= limit - 1024 * 1024:
+    if not files or len(files) > max_entries:
         raise RuntimeError('Compiler cache is empty or exceeds the bounded probe allowance')
-    inventory = {p.relative_to(root).as_posix(): sha256(p) for p in files}
-    if required_entries and not required_entries.items() <= inventory.items():
+    archive_files = {path.relative_to(root).as_posix(): path for path in files}
+    if base_checkpoint_sha256 is not None:
+        if not re.fullmatch(r'[0-9a-f]{64}', base_checkpoint_sha256) or not required_entries:
+            raise RuntimeError('A compiler cache delta requires a verified base checkpoint')
+        for name, digest in required_entries.items():
+            path = archive_files.pop(name, None)
+            if path is None or sha256(path) != digest:
+                raise RuntimeError('Previously restored cache entries were evicted or changed')
+    if not archive_files or sum(path.stat().st_size for path in archive_files.values()) >= limit - 1024**2:
+        raise RuntimeError('Compiler cache is empty or exceeds the bounded probe allowance')
+    inventory = {name: sha256(path) for name, path in archive_files.items()}
+    if base_checkpoint_sha256 is None and required_entries and not required_entries.items() <= inventory.items():
         raise RuntimeError('Previously restored cache entries were evicted or changed')
     manifest = {'context': context, 'object_sha256': object_hash, 'files': inventory}
+    if base_checkpoint_sha256 is not None:
+        manifest['base_checkpoint_sha256'] = base_checkpoint_sha256
     contents = json.dumps(manifest, sort_keys=True).encode('utf-8')
     with tarfile.open(archive, 'x') as bundle:
         info = tarfile.TarInfo(MANIFEST_NAME)
         info.size = len(contents)
         bundle.addfile(info, io.BytesIO(contents))
-        for path in files:
-            bundle.add(path, arcname=path.relative_to(root).as_posix(), recursive=False)
+        for name, path in archive_files.items():
+            bundle.add(path, arcname=name, recursive=False)
     if archive.stat().st_size > limit:
         raise RuntimeError('Compiler cache archive exceeds the configured transport limit')
 
 
 def restore_cache(root, archive, expected, context, *, limit=ARCHIVE_LIMIT, max_entries=512,
-                  linux_runner_images=None, restored_entries=None):
+                  linux_runner_images=None, restored_entries=None, base_checkpoint_sha256=None):
     if not re.fullmatch(r'[0-9a-f]{64}', expected or '') or archive.stat().st_size > limit or sha256(archive) != expected:
         raise RuntimeError('Checkpoint does not match this attempt’s seed digest')
     with tarfile.open(archive, 'r:') as bundle:
@@ -132,6 +144,10 @@ def restore_cache(root, archive, expected, context, *, limit=ARCHIVE_LIMIT, max_
                        for m in members)):
             raise RuntimeError('Unexpected compiler-cache archive members')
         manifest = json.load(bundle.extractfile(MANIFEST_NAME))
+        if (manifest.get('base_checkpoint_sha256') != base_checkpoint_sha256
+                or (base_checkpoint_sha256 is not None and (not restored_entries
+                    or not re.fullmatch(r'[0-9a-f]{64}', base_checkpoint_sha256)))):
+            raise RuntimeError('Compiler cache delta does not match the restored base checkpoint')
         producer = manifest['context']
         changed = {k for k in context.keys() | producer.keys()
                    if k not in context or k not in producer or producer[k] != context[k]}
@@ -150,12 +166,21 @@ def restore_cache(root, archive, expected, context, *, limit=ARCHIVE_LIMIT, max_
         names.remove(MANIFEST_NAME)
         if set(manifest['files']) != set(names):
             raise RuntimeError('Checkpoint inventory is incomplete')
+        existing = {name.casefold(): name for name in (restored_entries or {})}
         for name in names:
             with bundle.extractfile(name) as entry:
                 actual = hashlib.file_digest(entry, 'sha256').hexdigest()
             if actual != manifest['files'][name]:
                 raise RuntimeError('Checkpoint cache member digest mismatch')
+            previous = existing.get(name.casefold())
+            if previous is not None:
+                path = root.joinpath(*PurePosixPath(previous).parts)
+                if (base_checkpoint_sha256 is None or previous != name or restored_entries[previous] != actual
+                        or path.is_symlink() or not path.is_file() or sha256(path) != actual):
+                    raise RuntimeError('Conflicting compiler cache entries from independent jobs')
         for name in names:
+            if name.casefold() in existing:
+                continue
             path = root.joinpath(*PurePosixPath(name).parts)
             path.parent.mkdir(parents=True, exist_ok=True)
             with path.open('xb') as output:

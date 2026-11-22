@@ -14,7 +14,7 @@ import time
 import psutil
 from chromedriver_fixture import smoke_clients, smoke_driver
 from chromium_development_bundle import read_source_export, retain_development_bundle
-from chromium_cache_probe import (REPOSITORY, RELEASES, STAGED_CACHE_CONFIG, compile_graph,
+from chromium_cache_probe import (ARCHIVE_LIMIT, REPOSITORY, RELEASES, STAGED_CACHE_CONFIG, compile_graph,
                                   install_tool, pack_cache, restore_cache, sccache_server)
 from chromium_headed_fixture import smoke_headed_browser
 from chromium_license_inventory import linked_build_materials, prepare_candidate_lock
@@ -144,9 +144,10 @@ def compile_segment(ninja, wrapper, source, targets, environment, output, report
     return 'built'
 
 
-def write_outputs(result, checkpoint_sha=''):
+def write_outputs(result, checkpoint_sha='', *, delta_sha='', objects_sha=''):
     with Path(os.environ['GITHUB_OUTPUT']).open('a', encoding='utf-8') as stream:
-        stream.write(f'result={result}\ncheckpoint_sha={checkpoint_sha}\n')
+        stream.write(f'result={result}\ncheckpoint_sha={checkpoint_sha}\n'
+                     f'delta_sha={delta_sha}\nobjects_sha={objects_sha}\n')
 
 
 def main():
@@ -174,6 +175,9 @@ def main():
     object_probe = os.environ.get('WINDOWS_OBJECT_PROBE') == 'true'
     if object_probe and (not read_only_replay or host != 'Windows' or os.environ.get('VERIFIED_SOURCE_EXPORT')):
         raise RuntimeError('The object probe requires a Windows read-only replay without runtime retention')
+    delta_phase = os.environ.get('WINDOWS_OBJECT_DELTA', '')
+    if delta_phase and (not object_probe or delta_phase not in {'seed', 'resume'}):
+        raise RuntimeError('The compiler cache transfer requires a Windows object probe')
     if args.checkpoint_key:
         if reviewed is None:
             raise RuntimeError('A reviewed run is required to resolve a cache key')
@@ -197,7 +201,8 @@ def main():
               'compile_budget_minutes': args.minutes,
               'debug_build': True, 'elapsed_seconds': 0, 'disk_free_bytes': shutil.disk_usage(root.parent).free,
               'peak_tree_rss_bytes': 0}
-    checks = CheckRun(job_name=('first', 'second', 'third', 'fourth')[args.segment - 1] + ' / native') if os.environ.get('GH_TOKEN') else None
+    job = delta_phase or ('first', 'second', 'third', 'fourth')[args.segment - 1]
+    checks = CheckRun(job_name=job + ' / native') if os.environ.get('GH_TOKEN') else None
     try:
         lock_path = Path('upstream/chromium/lock.json')
         candidate = os.environ.get('REVIEWED_UPSTREAM_EVIDENCE', '')
@@ -273,11 +278,23 @@ def main():
                 # Rebuild occupancy accounting after transport excluded ccache stats.
                 cache_command(wrapper, environment, '--cleanup')
         requested = targets
+        delta_directory = Path('build/chromium-object-delta').resolve()
         if object_probe:
             commands = subprocess.check_output([str(ninja), '-C', 'out/Numera', '-t', 'compdb-targets', *targets],
                                                cwd=source, env=environment, timeout=120)
             requested = windows_object_probe_targets(json.loads(commands))
             report['object_probe'] = {'selected_targets': requested, 'cache_retained': False}
+        if delta_phase == 'resume':
+            report['stage'] = 'restore-object-delta'
+            restore_cache(entries, delta_directory / 'delta.tar', os.environ.get('EXPECTED_DELTA_SHA'), context,
+                          restored_entries=previous_inventory, base_checkpoint_sha256=reviewed['sha256'])
+            environment['SCCACHE_LOCAL_RW_MODE'] = 'READ_ONLY'
+            objects_path = delta_directory / 'object-sha256.json'
+            if objects_path.stat().st_size > 32_768 or sha256(objects_path) != os.environ.get('EXPECTED_OBJECTS_SHA'):
+                raise RuntimeError('The producing object inventory is missing or differs from its digest')
+            expected_objects = json.loads(objects_path.read_text(encoding='utf-8'))
+            if set(expected_objects) != set(requested):
+                raise RuntimeError('The producing job selected different compiler targets')
         report.update(stage='compile-objects' if object_probe else 'compile-link', source_build='RUNNING', result='RUNNING')
         with sccache_server(wrapper, environment) if cache_tool == 'sccache' else nullcontext():
             reason = compile_segment(ninja, wrapper, source, requested, environment, output, report, args.minutes, checks)
@@ -286,11 +303,32 @@ def main():
         if (args.segment > 1 or reviewed is not None) and values['preprocessed_cache_hit'] < 1:
             raise RuntimeError('Fresh runner did not reuse any transferred Chromium compile outputs')
         if object_probe:
-            if reason != 'built' or values['local_storage_write'] < 1:
-                raise RuntimeError('The targeted probe did not complete and add compiler outputs')
-            report['object_probe']['output_sha256'] = {name: sha256(native_output / name) for name in requested}
+            if reason != 'built':
+                raise RuntimeError('The targeted compiler probe did not finish')
+            objects = {name: sha256(native_output / name) for name in requested}
+            report['object_probe']['output_sha256'] = objects
+            delta_sha = objects_sha = ''
+            if delta_phase == 'resume':
+                backend = values['backend_statistics']
+                if (objects != expected_objects or values['local_storage_write'] != 0
+                        or backend['compilations'] != 0 or backend['requests_not_cacheable'] != 0
+                        or sum(backend['cache_misses']['counts'].values()) != 0):
+                    raise RuntimeError('The fresh runner did not reproduce the target objects entirely from cache')
+                report['object_probe']['restored_delta_sha256'] = os.environ['EXPECTED_DELTA_SHA']
+            elif values['local_storage_write'] < 1:
+                raise RuntimeError('The targeted compiler probe did not add compiler outputs')
+            if delta_phase == 'seed':
+                delta_directory.mkdir(parents=True, exist_ok=False)
+                delta = delta_directory / 'delta.tar'
+                pack_cache(entries, delta, context, None, limit=ARCHIVE_LIMIT, max_entries=MAX_ENTRIES,
+                           required_entries=previous_inventory, base_checkpoint_sha256=reviewed['sha256'])
+                objects_path = delta_directory / 'object-sha256.json'
+                write_json(objects_path, objects)
+                delta_sha, objects_sha = sha256(delta), sha256(objects_path)
+                report['object_probe'].update(cache_retained=True, delta_sha256=delta_sha, delta_bytes=delta.stat().st_size,
+                                              object_inventory_sha256=objects_sha)
             report.update(result='PASS', stage='object-probe-complete', source_build='PARTIAL')
-            write_outputs('PROBE_PASS')
+            write_outputs('PROBE_PASS', delta_sha=delta_sha, objects_sha=objects_sha)
             return
         if reason == 'time-budget':
             if read_only_replay:

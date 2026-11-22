@@ -1,0 +1,50 @@
+name: Verify new Windows Chromium compiler entries on a fresh host
+on:
+  workflow_dispatch:
+    inputs:
+      reviewed_checkpoint_run:
+        description: Run ID of the reviewed Windows base checkpoint
+        type: string
+        required: true
+      reviewed_checkpoint_segment:
+        description: Segment containing the reviewed checkpoint
+        type: choice
+        options: ['1', '2', '3', '4']
+        default: '2'
+permissions:
+  actions: read
+  contents: read
+  checks: write
+concurrency:
+  group: chromium-windows-cache-transfer
+  cancel-in-progress: false
+jobs:
+  seed:
+    if: >-
+      github.repository == 'KiaroSama/Numera-Core-Browser' && github.event.repository.private == false &&
+      github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/chromium-staged-segment.yml
+    with:
+      target: windows-2025-vs2026
+      segment: 1
+      minutes: 45
+      reviewed_checkpoint_run: ${{ inputs.reviewed_checkpoint_run }}
+      reviewed_checkpoint_segment: ${{ inputs.reviewed_checkpoint_segment }}
+      read_only_replay: true
+      windows_object_probe: true
+      windows_object_delta: seed
+  resume:
+    needs: seed
+    if: needs.seed.outputs.result == 'PROBE_PASS'
+    uses: ./.github/workflows/chromium-staged-segment.yml
+    with:
+      target: windows-2025-vs2026
+      segment: 1
+      minutes: 45
+      reviewed_checkpoint_run: ${{ inputs.reviewed_checkpoint_run }}
+      reviewed_checkpoint_segment: ${{ inputs.reviewed_checkpoint_segment }}
+      read_only_replay: true
+      windows_object_probe: true
+      windows_object_delta: resume
+      expected_delta_sha: ${{ needs.seed.outputs.delta_sha }}
+      expected_objects_sha: ${{ needs.seed.outputs.objects_sha }}

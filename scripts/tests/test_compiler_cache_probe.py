@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import tarfile
 import tempfile
 from types import SimpleNamespace
 import unittest
@@ -16,6 +17,41 @@ from chromium_staged_build import reviewed_checkpoint, restore_reviewed_context,
 
 
 class CacheProvenance(unittest.TestCase):
+    def test_cache_delta_binds_the_base_and_checks_conflicts_before_restoring(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / 'source'
+            source.mkdir()
+            (source / 'base').write_bytes(b'base')
+            context = {'host': 'Windows', 'source': 'pinned'}
+            original = root / 'original.tar'
+            probe.pack_cache(source, original, context, None)
+            base_digest = probe.sha256(original)
+            destination = root / 'restored'
+            inventory = {}
+            probe.restore_cache(destination, original, base_digest, context, restored_entries=inventory)
+            base = inventory.copy()
+            (source / 'new').write_bytes(b'initial result')
+            delta = root / 'delta.tar'
+            probe.pack_cache(source, delta, context, None, required_entries=base, base_checkpoint_sha256=base_digest)
+            with tarfile.open(delta) as archive:
+                self.assertEqual(set(archive.getnames()), {'manifest.json', 'new'})
+            for _ in range(2):
+                probe.restore_cache(destination, delta, probe.sha256(delta), context, restored_entries=inventory,
+                                    base_checkpoint_sha256=base_digest)
+            with self.assertRaisesRegex(RuntimeError, 'does not match the restored base'):
+                probe.restore_cache(destination, delta, probe.sha256(delta), context, restored_entries=inventory,
+                                    base_checkpoint_sha256='0' * 64)
+            (source / 'additional').write_bytes(b'would be created before the conflict')
+            (source / 'new').write_bytes(b'conflicting result')
+            conflict = root / 'conflict.tar'
+            probe.pack_cache(source, conflict, context, None, required_entries=base, base_checkpoint_sha256=base_digest)
+            with self.assertRaisesRegex(RuntimeError, 'Conflicting compiler cache entries'):
+                probe.restore_cache(destination, conflict, probe.sha256(conflict), context, restored_entries=inventory,
+                                    base_checkpoint_sha256=base_digest)
+            self.assertFalse((destination / 'additional').exists())
+            self.assertEqual((destination / 'new').read_bytes(), b'initial result')
+
     def test_probe_targets_come_from_the_reachable_graph_and_stay_bounded(self):
         control = 'obj/buildtools/third_party/libc++/libc++/algorithm.obj'
         candidates = [f'obj/content/browser/{index:04}.obj' for index in range(80)]
