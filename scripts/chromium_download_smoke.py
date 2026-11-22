@@ -3,6 +3,7 @@ import io
 import json
 import os
 from pathlib import Path
+import platform
 import re
 import subprocess
 import tarfile
@@ -121,9 +122,11 @@ def main():
     provenance = Path('build/downloaded-chromium/provenance').resolve(strict=True)
     output = Path('build/chromium-download-smoke').resolve()
     output.mkdir(exist_ok=False, parents=True)
+    distribution = platform.freedesktop_os_release()
     report = {'schema_revision': 1, 'result': 'BLOCKED', 'artifact_source_commit': revision,
               'artifact_run_id': run, 'verification_commit': os.environ['GITHUB_SHA'],
               'runner_image': os.environ['ImageVersion'], 'compiled_chromium': False,
+              'distribution': {'id': distribution['ID'], 'version': distribution['VERSION_ID']},
               'installation_scope': 'Fresh standard Ubuntu GitHub-hosted runner', 'trusted_release': False}
     try:
         manifest = verify_distribution(package, provenance, revision, run)

@@ -6,6 +6,11 @@ on:
         description: Completed repository workflow run that retained the Linux development bundle
         type: string
         required: true
+      host:
+        description: Standard Ubuntu image for the independent portability test
+        type: choice
+        options: [ubuntu-24.04, ubuntu-22.04]
+        default: ubuntu-24.04
 permissions:
   actions: read
   contents: read
@@ -16,8 +21,8 @@ jobs:
   fresh-host:
     if: >-
       github.repository == 'KiaroSama/Numera-Core-Browser' && github.event.repository.private == false &&
-      github.ref == 'refs/heads/main'
-    runs-on: ubuntu-24.04
+      github.ref == 'refs/heads/main' && (inputs.host == 'ubuntu-24.04' || inputs.host == 'ubuntu-22.04')
+    runs-on: ${{ inputs.host }}
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -65,10 +70,17 @@ jobs:
           path: build/downloaded-chromium/provenance
           github-token: ${{ github.token }}
           run-id: ${{ steps.source.outputs.run }}
+      - name: Select the pinned fixture Python on Ubuntu 22.04
+        if: inputs.host == 'ubuntu-22.04'
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: '3.12.16'
       - name: Prepare the verifier and window inspection fixtures
+        env:
+          X11_UTILS_VERSION: ${{ inputs.host == 'ubuntu-22.04' && '7.7+5build2' || '7.7+6build2' }}
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y --no-install-recommends x11-utils=7.7+6build2
+          sudo apt-get install -y --no-install-recommends "x11-utils=$X11_UTILS_VERSION"
           command -v xvfb-run Xvfb xauth xwininfo xprop gh
           python3 -m pip install --disable-pip-version-check -r requirements-engine-build.txt
           cargo build --locked -p core-cli --release
