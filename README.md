@@ -4,11 +4,19 @@
 
 An independent browser runtime for [Numera Browser](https://github.com/KiaroSama/Numera-Browser), following the GoLogin/Orbita product boundary: the manager owns profiles; Core owns the browser runtime. The initial delivery targets an owned Chromium source build and retained browser chrome, with a shared Rust control plane.
 
-**Development status.** Windows and Linux x86-64 are the active targets. The Rust control plane has passed native CI on both. On Linux, Chromium and ChromeDriver built from pinned source passed headless rendering, raw W3C WebDriver, and controlled Playwright, Puppeteer and Selenium tests. The source-built browser and driver also passed from an extracted archive in a Persian path with spaces. The Windows source build continues. Owned headed browser acceptance and end-user distribution remain open. [Owned Linux result](docs/evidence/chromium-portable-44927476670.json) · [Implementation report](docs/implementation-report.md) · [Scope](docs/scope.md) · [Original handoff](docs/original-build-specification.md)
+**Development status.** Windows and Linux x86-64 are the active targets. The Rust control plane passed native CI on both. The Linux development browser built from pinned Chromium source is available to download. Its native window, relocated runtime and all three automation clients passed controlled tests. The Windows source build and production installation testing remain open. [Linux development browser evidence](docs/evidence/development-chromium-44983567389.json) · [Implementation report](docs/implementation-report.md) · [Scope](docs/scope.md) · [Original handoff](docs/original-build-specification.md)
 
 This is source-available, noncommercial software under the exact [Noncommercial Network Share-Alike License 1.0](LICENSE). Third-party material retains its own terms. It is not described as OSI-approved open source.
 
 The supplied logo is preserved at `assets/logo.svg`. No GoLogin or Orbita code, binary, or proprietary patch is incorporated.
+
+## Download the Linux development browser
+
+The Ubuntu 24.04 x86-64 artifact includes the Chromium 157.0.8103.78 runtime, ChromeDriver, generated notices, matching first-party source and the pinned upstream source reference. The download is 1.74 GB and the extracted runtime uses 8.35 GB. GitHub sign-in is required to download the seven-day Actions artifact. [Download the package](https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44983567389/artifacts/14745018310) · [Download provenance](https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44983567389/artifacts/14745233722)
+
+After extracting both Actions ZIPs, verify the inner `numera-portable-runtime.tar.gz` and `development-runtime.json` with the extracted attestation bundle. Enforce the `main` ref, source commit `ac5170bbb8161d89034ce3f5130c84b1f0d24605`, the signer workflow recorded in the evidence and the GitHub-hosted runner restriction. The native Rust CLI also verifies the tarball's file layout and recorded SHA-256. [Exact verification evidence](docs/evidence/development-chromium-44983567389.json) · [GitHub verification reference](https://cli.github.com/manual/gh_attestation_verify)
+
+Extract the verified tarball into a fresh directory with `tar -xzf numera-portable-runtime.tar.gz`. The browser executable is `runtime/chrome`. Launch it with a new, explicit `--user-data-dir` to keep the development profile separate from existing browser data. The native Ubuntu fixture used a separately installed verified sandbox helper. Clean-host installation and automatic updates remain open. [Portability details](docs/portability.md)
 
 ## Run the implemented CLI
 

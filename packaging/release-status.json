@@ -190,11 +190,17 @@
       "target": "ubuntu-24.04",
       "run_id": 44983567389,
       "source_commit": "ac5170bbb8161d89034ce3f5130c84b1f0d24605",
-      "status": "in_progress",
+      "status": "completed",
       "scope": "Native development runtime retention, with source verification and artifact provenance",
       "reviewed_checkpoint": "docs/evidence/chromium-staged-44846110371-segment-2.json",
       "verified_source_export": "docs/evidence/chromium-source-export-157-linux.json",
-      "native_job_id": 137089129788
+      "native_job_id": 137089129788,
+      "conclusion": "success",
+      "source_build": "PASS",
+      "portable_runtime": "PASS",
+      "headed_browser": "PASS",
+      "archive_uploaded": true,
+      "evidence": "docs/evidence/development-chromium-44983567389.json"
     },
     {
       "target": "windows-2025-vs2026",
@@ -207,9 +213,22 @@
       "scope": "Continue the Windows native graph with runtime retention and provenance after validation"
     }
   ],
-  "source_experiment_status_observed_at": "2026-11-22T05:29:29+00:00",
+  "source_experiment_status_observed_at": "2026-11-22T07:58:12+00:00",
   "active_targets": [
     "windows-x86_64",
     "linux-x86_64"
-  ]
+  ],
+  "development_browser": {
+    "target": "linux-x86_64",
+    "source_commit": "ac5170bbb8161d89034ce3f5130c84b1f0d24605",
+    "run_id": 44983567389,
+    "artifact_id": 14745018310,
+    "channel": "unsigned-development-browser",
+    "publisher_signature": "NOT_CONFIGURED",
+    "artifact_provenance": "PASS",
+    "contract_integration": "NOT_RUN",
+    "evidence": "docs/evidence/development-chromium-44983567389.json",
+    "retention_days": 7,
+    "clean_host_installation": "NOT_RUN"
+  }
 }

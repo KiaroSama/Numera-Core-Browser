@@ -2,7 +2,7 @@
   "schema_revision": 1,
   "timestamp": "2026-11-10T17:33:44.732611+00:00",
   "current_review": {
-    "observed_at": "2026-11-22T05:29:29+00:00",
+    "observed_at": "2026-11-22T07:58:12+00:00",
     "active_targets": [
       "windows-x86_64",
       "linux-x86_64"
@@ -169,6 +169,16 @@
             "evidence": "docs/evidence/development-artifacts-44946324377.json",
             "source_commit": "fe937c2e6cab71ab473a039ccf66639e0dc3c2bc",
             "workflow_run": 44946324377
+          },
+          {
+            "name": "Hosted extracted Chromium development archive and signed provenance",
+            "result": "PASS",
+            "platforms": [
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/development-chromium-44983567389.json",
+            "source_commit": "ac5170bbb8161d89034ce3f5130c84b1f0d24605",
+            "workflow_run": 44983567389
           }
         ]
       },
@@ -216,6 +226,16 @@
             "evidence": "docs/evidence/chromium-profile-baseline-44948395760.json",
             "source_commit": "f74908f79a492d181769719a9258eb72813cdf08",
             "workflow_run": 44948395760
+          },
+          {
+            "name": "Owned relocated browser profiles, worker, downloads and renderer",
+            "result": "PASS",
+            "platforms": [
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/development-chromium-44983567389.json",
+            "source_commit": "ac5170bbb8161d89034ce3f5130c84b1f0d24605",
+            "workflow_run": 44983567389
           }
         ]
       },
@@ -246,6 +266,16 @@
             "evidence": "docs/evidence/automation-baseline-44936064509.json",
             "source_commit": "40517be7ee7bb3118e4b5aef206a569a0fcb3cf7",
             "workflow_run": 44936064509
+          },
+          {
+            "name": "Owned native X11 viewable browser window",
+            "result": "PASS",
+            "platforms": [
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/development-chromium-44983567389.json",
+            "source_commit": "ac5170bbb8161d89034ce3f5130c84b1f0d24605",
+            "workflow_run": 44983567389
           }
         ]
       },
@@ -397,6 +427,16 @@
             "evidence": "docs/evidence/chromium-rust-ownership-44942943841.json",
             "source_commit": "2835e5cb43cade07d9606222d0494da0de2a7423",
             "workflow_run": 44942943841
+          },
+          {
+            "name": "Owned extracted Chromium supervised by Rust process ownership",
+            "result": "PASS",
+            "platforms": [
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/development-chromium-44983567389.json",
+            "source_commit": "ac5170bbb8161d89034ce3f5130c84b1f0d24605",
+            "workflow_run": 44983567389
           }
         ]
       },
@@ -482,6 +522,16 @@
             "evidence": "docs/evidence/chromium-portable-44927476670.json",
             "source_commit": "3758ca8596be7374ab5874df97bac35966e51813",
             "workflow_run": 44927476670
+          },
+          {
+            "name": "Owned extracted runtime in a Persian path with spaces",
+            "result": "PASS",
+            "platforms": [
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/development-chromium-44983567389.json",
+            "source_commit": "ac5170bbb8161d89034ce3f5130c84b1f0d24605",
+            "workflow_run": 44983567389
           }
         ]
       },

@@ -1,0 +1,294 @@
+{
+  "schema_revision": 1,
+  "channel": "unsigned-development-browser",
+  "workflow_run": 44983567389,
+  "workflow_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44983567389",
+  "workflow_conclusion": "success",
+  "source_commit": "ac5170bbb8161d89034ce3f5130c84b1f0d24605",
+  "target": "ubuntu-24.04",
+  "trusted_release": false,
+  "native": {
+    "job_id": 137089129788,
+    "actions": {
+      "completed": 56773,
+      "total": 56773
+    },
+    "compile_and_link_seconds": 12503.74,
+    "compiler_cache": {
+      "preprocessed_cache_hit": 39176,
+      "local_storage_write": 7783
+    },
+    "browser_sha256": "a31a779b0cb4b41c360ae29e93e827f2226c12a33c1a4d9d7f7dceaef9453371",
+    "chromedriver_sha256": "df2fc7da286de0445e61695a4a41c0cf337af31a785f10bfd812fc43eb67d318",
+    "headed_browser": {
+      "result": "PASS",
+      "driver_version": "157.0.8103.78",
+      "scope": "Headed W3C navigation and an OS window owned by the browser process",
+      "native_window": "x11-viewable-window-with-browser-pid"
+    },
+    "portable_runtime": {
+      "result": "PASS",
+      "scope": "Extracted runtime, controlled rendering, WebDriver and native process ownership",
+      "archive": {
+        "format": "tar.gz",
+        "files": 5558,
+        "bytes": 1727595904,
+        "sha256": "6066e736be8517f26786d5641db37ff2ad41311c73f5eae786f2b9e79ec1bfa8"
+      },
+      "runtime_inventory_sha256": "6a68458b43a11651bcce619dea2fc6259ede5be6ed33cddf7e4d6dd7f911f567",
+      "webdriver": {
+        "result": "PASS",
+        "driver_version": "157.0.8103.78",
+        "scope": "ChromeDriver W3C HTTP session and a controlled local document"
+      },
+      "archive_verification": {
+        "result": "PASS",
+        "cli_sha256": "1f7004c552a644999771facaf9001bd0eccc18a108f700c134198b579b60d04d",
+        "approved_package": false,
+        "archive_bytes": 1727595904,
+        "archive_sha256": "6066e736be8517f26786d5641db37ff2ad41311c73f5eae786f2b9e79ec1bfa8",
+        "archive_verified": true,
+        "expanded_file_bytes": 8346317525,
+        "files": 5558
+      },
+      "process_ownership": {
+        "result": "PASS",
+        "rendered": "PASS",
+        "owned_tree_shutdown": "PASS",
+        "observed_processes": 13,
+        "profile_path": "Unicode with spaces",
+        "normalized_file_url": false
+      },
+      "profile_data": {
+        "result": "PASS",
+        "computed_style": "PASS",
+        "dedicated_worker": "PASS",
+        "download_bytes": 37,
+        "profile_restart": "PASS",
+        "profile_isolation": "PASS",
+        "profile_and_download_paths": "Unicode with spaces"
+      },
+      "sandbox_helper": {
+        "source_target": "chrome_sandbox",
+        "sha256": "0f5196ae181eec450044ed2da6ff97d08642e260ddac7f2a8b54cf5ab589496f",
+        "owner_uid": 0,
+        "mode": "4755",
+        "scope": "Owned-source SUID developer fixture; no global AppArmor/sysctl or browser sandbox disabling",
+        "staged_source": "chrome_sandbox",
+        "fixture_location": "Separate space-free privileged fixture directory"
+      }
+    },
+    "automation_clients": {
+      "result": "PASS",
+      "node": "24.22.3",
+      "browserVersion": "157.0.8103.78",
+      "tests": {
+        "selenium": {
+          "version": "4.53.0",
+          "transport": "WebDriver",
+          "checks": [
+            "navigation",
+            "unicode-input",
+            "click-and-wait",
+            "nested-frame",
+            "png-screenshot"
+          ]
+        },
+        "puppeteer": {
+          "version": "25.18.1",
+          "transport": "Chrome DevTools Protocol",
+          "checks": [
+            "navigation",
+            "unicode-input",
+            "click-and-wait",
+            "nested-frame",
+            "png-screenshot"
+          ]
+        },
+        "playwright": {
+          "version": "1.65.1",
+          "transport": "connectOverCDP",
+          "checks": [
+            "navigation",
+            "unicode-input",
+            "click-and-wait",
+            "nested-frame",
+            "png-screenshot"
+          ]
+        }
+      },
+      "responsiveViewport": {
+        "result": "PASS",
+        "layouts": [
+          {
+            "width": 390,
+            "height": 844,
+            "screenWidth": 390,
+            "screenHeight": 844,
+            "deviceScaleFactor": 3,
+            "touchPoints": 5
+          },
+          {
+            "width": 844,
+            "height": 390,
+            "screenWidth": 844,
+            "screenHeight": 390,
+            "deviceScaleFactor": 2,
+            "touchPoints": 5
+          }
+        ],
+        "reload": "PASS",
+        "separate_target": "PASS",
+        "scope": "Chromium CDP viewport, screen, pixel ratio and touch on a controlled local document"
+      },
+      "scope": "Controlled headless navigation, Unicode input, frame, click and screenshot for each client"
+    },
+    "linked_build_materials": {
+      "source_inventory": {
+        "git_checkouts": 169,
+        "sha256": "714e327b4becda0f2d8754f815a70e5d2d62a4f20c157322a0802c811444a08c",
+        "deps_sha256": "70f36c59069488921a7d83b5ad0dfb3d221211be2be966f28ed84ef6ceeb8daa"
+      },
+      "chromium_revision": "4b3d0dabb8250b6f152d2d85d79e7706e309d087",
+      "chromium_version": "157.0.8103.78",
+      "inputs_sha256": {
+        "chromium-source-lock.json": "a0899efb63de8badf27b640b9bfba4f702aaaa74cd2381c19f7fd6c5ac81bf12",
+        "chromium-DEPS": "70f36c59069488921a7d83b5ad0dfb3d221211be2be966f28ed84ef6ceeb8daa",
+        "chromium-args.gn": "408e167a7f67ca45d128210357045c90211bc05cdafce9df18fa52afcffea7dc"
+      },
+      "targets": {
+        "chromium": {
+          "gn_label": "//chrome:chrome",
+          "packages": 336,
+          "notice_sha256": "bf6dbf470443ab86afa52acc80b672d9e809d38ff3009330abfcc0376fcd3eb7",
+          "spdx_sha256": "d009effe055c517103fece7658d499c5531f6f45b76fa164ef1cb8c463ed78f4"
+        },
+        "chromedriver": {
+          "gn_label": "//chrome/test/chromedriver:chromedriver_server",
+          "packages": 229,
+          "notice_sha256": "9c4600cd85a0b5c4b40b704b19d8d8d0e292ada3b9b91679e1d12e92dc2c1ad2",
+          "spdx_sha256": "5555539dbf6d1614d8fbb8d8fa59697160b53806d96f8e6b195dee82b2c99647"
+        },
+        "chrome-sandbox": {
+          "gn_label": "//sandbox/linux:chrome_sandbox",
+          "packages": 3,
+          "notice_sha256": "5d70e4fd91dcb613d11982570526ceef9d4e2576c233ae7cf2156a2b1e69d62e",
+          "spdx_sha256": "79e0dd2a3504fad5ad99bc0a7c8c73267b27dc69a41cae7a2adc970dec8839e0"
+        }
+      },
+      "complete_source_archive": "NOT_PREPARED",
+      "redistribution_approval": false
+    },
+    "relocated_renderer_png_sha256": "07b4dc000a596a6489d683e4b4fddd56211871294f9f20133b3c32dbf0599512"
+  },
+  "diagnostic_artifact": {
+    "id": 14745084696,
+    "transport_bytes": 1872008,
+    "transport_sha256": "sha256:5da4220db8707537e70d8901e76f2c3e62d0819f01e7ade120ddfb4726129cfd",
+    "expires_at": "2026-11-29T07:53:06Z",
+    "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44983567389/artifacts/14745084696"
+  },
+  "development_browser_artifact": {
+    "id": 14745018310,
+    "transport_bytes": 1738260407,
+    "transport_sha256": "sha256:072b4000b505828c40ff391e8117ccb13a98a723c7a723d4a7ed53374791c8ff",
+    "expires_at": "2026-11-29T07:53:07Z",
+    "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44983567389/artifacts/14745018310",
+    "native_rust_inspection": "PASS",
+    "clean_hosted_job_attachment_and_runtime_digest_check": "PASS",
+    "direct_workspace_download": "NOT_RUN: artifact exceeds the connector size limit"
+  },
+  "provenance": {
+    "job_id": 137140062710,
+    "result": "PASS",
+    "predicate": "https://slsa.dev/provenance/v1",
+    "signer_workflow": "KiaroSama/Numera-Core-Browser/.github/workflows/chromium-development-provenance.yml",
+    "source_ref": "refs/heads/main",
+    "github_hosted_required": true,
+    "bundle": {
+      "id": 14745233722,
+      "transport_bytes": 7514,
+      "transport_sha256": "sha256:f4d168f90dc2bfe62112a6520ab2e8c3aad6c7079890924b980d8f51442f6f56",
+      "bundle_sha256": "083cc889d9d78d50721e108a42d012a1438f871233dbc3807b92cadf3a7fe9e9",
+      "expires_at": "2026-11-29T07:55:41Z",
+      "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/44983567389/artifacts/14745233722"
+    },
+    "independent_verification": {
+      "verifier": "GitHub CLI 2.105.0 with TUF-verified trust roots",
+      "reconstructed_runtime_manifest": "PASS",
+      "matching_first_party_source_zip": "PASS",
+      "tampered_manifest": "REJECTED",
+      "runtime_digest_matches_verified_manifest": "PASS"
+    }
+  },
+  "manifest": {
+    "schema_revision": 1,
+    "package": "numera-chromium",
+    "build_mode": "development",
+    "target": "x86_64-unknown-linux-gnu",
+    "chromium_version": "157.0.8103.78",
+    "chromium_revision": "4b3d0dabb8250b6f152d2d85d79e7706e309d087",
+    "numera_commit": "ac5170bbb8161d89034ce3f5130c84b1f0d24605",
+    "patch_sha256": "5e7e0c640b0f2289636183a6151ceeb5583e9065f8d07d22fd7a06ed77dbd3f5",
+    "workflow_run": 44983567389,
+    "runtime": {
+      "file": "numera-portable-runtime.tar.gz",
+      "format": "tar.gz",
+      "files": 5558,
+      "bytes": 1727595904,
+      "sha256": "6066e736be8517f26786d5641db37ff2ad41311c73f5eae786f2b9e79ec1bfa8"
+    },
+    "numera_source": {
+      "file": "numera-source.zip",
+      "sha256": "92323dcf59698d6afcba125a5036a87dac96a34ab7801356dd8de37edf33e862"
+    },
+    "upstream_source": {
+      "url": "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-157.0.8103.78.tar.xz?generation=1794436736176923",
+      "hashes_url": "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-157.0.8103.78.tar.xz.hashes",
+      "generation": "1794436736176923",
+      "bytes": 4513947968,
+      "sha256": "d7af88cd8d9abf0ed1adc3f2ad2c507aeda79b4373dc83557f27a0b78f1bdc6c",
+      "gcs_md5_verified": true
+    },
+    "source_evidence": "source-evidence",
+    "attachments_sha256": {
+      "runtime-inventory.json": "6a68458b43a11651bcce619dea2fc6259ede5be6ed33cddf7e4d6dd7f911f567",
+      "source-evidence/chrome-sandbox-NOTICE.txt": "5d70e4fd91dcb613d11982570526ceef9d4e2576c233ae7cf2156a2b1e69d62e",
+      "source-evidence/chrome-sandbox.spdx.json": "79e0dd2a3504fad5ad99bc0a7c8c73267b27dc69a41cae7a2adc970dec8839e0",
+      "source-evidence/chromedriver-NOTICE.txt": "9c4600cd85a0b5c4b40b704b19d8d8d0e292ada3b9b91679e1d12e92dc2c1ad2",
+      "source-evidence/chromedriver.spdx.json": "5555539dbf6d1614d8fbb8d8fa59697160b53806d96f8e6b195dee82b2c99647",
+      "source-evidence/chromium-DEPS": "70f36c59069488921a7d83b5ad0dfb3d221211be2be966f28ed84ef6ceeb8daa",
+      "source-evidence/chromium-NOTICE.txt": "bf6dbf470443ab86afa52acc80b672d9e809d38ff3009330abfcc0376fcd3eb7",
+      "source-evidence/chromium-args.gn": "408e167a7f67ca45d128210357045c90211bc05cdafce9df18fa52afcffea7dc",
+      "source-evidence/chromium-source-lock.json": "a0899efb63de8badf27b640b9bfba4f702aaaa74cd2381c19f7fd6c5ac81bf12",
+      "source-evidence/chromium.spdx.json": "d009effe055c517103fece7658d499c5531f6f45b76fa164ef1cb8c463ed78f4",
+      "source-evidence/git-source-revisions.json": "714e327b4becda0f2d8754f815a70e5d2d62a4f20c157322a0802c811444a08c",
+      "verified-upstream-source.json": "7ec3e451f963b13dd136fb04d8481e9251e77eb5eb117406d1173465d09b7edb"
+    },
+    "runtime_inventory_sha256": "6a68458b43a11651bcce619dea2fc6259ede5be6ed33cddf7e4d6dd7f911f567",
+    "publisher_signature": "NOT_CONFIGURED",
+    "trusted_release": false,
+    "validation": {
+      "portable_runtime": "PASS",
+      "native_headed_browser": "PASS",
+      "browser_clients": "PASS",
+      "rust_process_ownership": "PASS",
+      "profile_and_downloads": "PASS"
+    },
+    "linux_sandbox": {
+      "source_target": "chrome_sandbox",
+      "sha256": "0f5196ae181eec450044ed2da6ff97d08642e260ddac7f2a8b54cf5ab589496f",
+      "owner_uid": 0,
+      "mode": "4755",
+      "scope": "Owned-source SUID developer fixture; no global AppArmor/sysctl or browser sandbox disabling",
+      "staged_source": "chrome_sandbox",
+      "fixture_location": "Separate space-free privileged fixture directory"
+    },
+    "signed_application_updates": "NOT_RUN",
+    "clean_host_installation": "NOT_RUN"
+  },
+  "clean_host_installation": "NOT_RUN",
+  "windows_runtime": "NOT_RUN",
+  "paired_manager": "NOT_RUN",
+  "application_update_signature": "NOT_RUN"
+}
