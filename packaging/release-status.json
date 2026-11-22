@@ -176,8 +176,9 @@
       "checkpoint_transport_restore": "PASS",
       "build_tooling_and_transport_tests": "PASS",
       "scope": "Continue the full Windows graph with archive, headed and viewport fixtures",
-      "last_verified_checkpoint": "docs/evidence/chromium-staged-44940532355-segment-1.json",
-      "actual_compiler_restore": "PASS"
+      "last_verified_checkpoint": "docs/evidence/chromium-staged-44940532355-segment-2.json",
+      "actual_compiler_restore": "PASS",
+      "last_verified_checkpoint_native_job": 137036411956
     },
     {
       "target": "ubuntu-24.04",
@@ -190,7 +191,7 @@
       "native_job_id": 137089129788
     }
   ],
-  "source_experiment_status_observed_at": "2026-11-22T04:07:40+00:00",
+  "source_experiment_status_observed_at": "2026-11-22T05:26:03+00:00",
   "active_targets": [
     "windows-x86_64",
     "linux-x86_64"
