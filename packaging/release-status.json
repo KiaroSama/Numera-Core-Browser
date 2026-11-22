@@ -171,14 +171,26 @@
       "run_id": 44940532355,
       "source_commit": "cadcf1aa10e8eea38256295041fd2b0945b8853c",
       "status": "in_progress",
-      "native_job_id": 136957369438,
+      "native_job_id": 137036411956,
       "reviewed_checkpoint": "docs/evidence/chromium-staged-44913495180-segment-1.json",
       "checkpoint_transport_restore": "PASS",
       "build_tooling_and_transport_tests": "PASS",
-      "scope": "Continue the full Windows graph with archive, headed and viewport fixtures"
+      "scope": "Continue the full Windows graph with archive, headed and viewport fixtures",
+      "last_verified_checkpoint": "docs/evidence/chromium-staged-44940532355-segment-1.json",
+      "actual_compiler_restore": "PASS"
+    },
+    {
+      "target": "ubuntu-24.04",
+      "run_id": 44983567389,
+      "source_commit": "ac5170bbb8161d89034ce3f5130c84b1f0d24605",
+      "status": "in_progress",
+      "scope": "Native development runtime retention, with source verification and artifact provenance",
+      "reviewed_checkpoint": "docs/evidence/chromium-staged-44846110371-segment-2.json",
+      "verified_source_export": "docs/evidence/chromium-source-export-157-linux.json",
+      "native_job_id": 137089129788
     }
   ],
-  "source_experiment_status_observed_at": "2026-11-21T22:04:34+00:00",
+  "source_experiment_status_observed_at": "2026-11-22T04:07:40+00:00",
   "active_targets": [
     "windows-x86_64",
     "linux-x86_64"
