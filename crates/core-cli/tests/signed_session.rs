@@ -27,8 +27,15 @@ fn call(
         .unwrap_or_else(|_| panic!("Invalid Core response for {operation}"))
 }
 
-fn start(store: &Path, root: &Path) -> process::Child {
-    process::Command::new(env!("CARGO_BIN_EXE_numera-core"))
+fn start(store: &Path, root: &Path, sandbox_helper: Option<&Path>) -> process::Child {
+    let mut command = process::Command::new(env!("CARGO_BIN_EXE_numera-core"));
+    let variable = "NUMERA_CHROMIUM_SANDBOX_HELPER";
+    if let Some(helper) = sandbox_helper {
+        command.env(variable, helper);
+    } else {
+        command.env_remove(variable);
+    }
+    command
         .arg("serve")
         .args([store, root])
         .stdin(Stdio::piped())
@@ -83,7 +90,24 @@ fn signed_package_reaches_native_session_and_eof_cleanup() {
     desired["resources"]["cache_root"] = json!(state.join("cache"));
     let setup = json!({"protocols":{"min":1,"max":1},"schemas":{"min":1,"max":1}});
 
-    let mut child = start(&store, &state);
+    let mut child = start(&store, &state, Some(Path::new("relative-sandbox")));
+    let mut stdin = child.stdin.take().unwrap();
+    let mut stdout = BufReader::new(child.stdout.take().unwrap());
+    call(&mut stdout, &mut stdin, 1, "hello", setup.clone());
+    call(&mut stdout, &mut stdin, 2, "capabilities.get", json!({}));
+    let invalid = call(
+        &mut stdout,
+        &mut stdin,
+        3,
+        "session.launch",
+        desired.clone(),
+    );
+    assert_eq!(invalid["error"]["code"], "invalid_configuration");
+    assert!(!state.join("browser").exists());
+    drop(stdin);
+    wait(&mut child);
+
+    let mut child = start(&store, &state, None);
     let mut stdin = child.stdin.take().unwrap();
     let mut stdout = BufReader::new(child.stdout.take().unwrap());
     assert_eq!(
@@ -151,7 +175,7 @@ fn signed_package_reaches_native_session_and_eof_cleanup() {
         b"test profile"
     );
 
-    let mut child = start(&store, &state);
+    let mut child = start(&store, &state, None);
     let mut stdin = child.stdin.take().unwrap();
     let mut stdout = BufReader::new(child.stdout.take().unwrap());
     call(&mut stdout, &mut stdin, 1, "hello", setup);

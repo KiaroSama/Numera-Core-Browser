@@ -20,6 +20,8 @@ use std::{
 const STOP_BUDGET: Duration = Duration::from_secs(5);
 const MAX_SESSIONS: usize = 16;
 const MAX_RECORDS: usize = 64;
+#[cfg(target_os = "linux")]
+const SANDBOX_HELPER: &str = "NUMERA_CHROMIUM_SANDBOX_HELPER";
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -269,9 +271,19 @@ pub fn run_worker() -> Result<(), CoreError> {
         }
         let paths = SessionPaths::validate(&request.root, &request.snapshot)?;
         let network = network_arguments(&request.snapshot.proxy)?;
-        Ok((request, engine, paths, network))
+        #[cfg(target_os = "linux")]
+        let sandbox_helper = {
+            let path = std::env::var_os(SANDBOX_HELPER);
+            if let Some(helper) = &path {
+                engine.verify_sandbox_helper(Path::new(helper))?;
+            }
+            path
+        };
+        #[cfg(not(target_os = "linux"))]
+        let sandbox_helper = None;
+        Ok((request, engine, paths, network, sandbox_helper))
     })();
-    let (request, engine, paths, network) = match prepared {
+    let (request, engine, paths, network, sandbox_helper) = match prepared {
         Ok(prepared) => {
             write(&mut output, &Result::<(), CoreError>::Ok(()))?;
             prepared
@@ -292,10 +304,11 @@ pub fn run_worker() -> Result<(), CoreError> {
         engine.sha256(),
         engine.executable(),
         |paths| {
-            (
-                browser_arguments(snapshot, paths, network),
-                child_environment(Some(paths)),
-            )
+            let mut environment = child_environment(Some(paths));
+            if let Some(helper) = sandbox_helper {
+                environment.insert("CHROME_DEVEL_SANDBOX".into(), helper);
+            }
+            (browser_arguments(snapshot, paths, network), environment)
         },
     );
     let process = match process {
@@ -379,6 +392,10 @@ impl Worker {
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::null());
+        #[cfg(target_os = "linux")]
+        if let Some(helper) = std::env::var_os(SANDBOX_HELPER) {
+            command.env(SANDBOX_HELPER, helper);
+        }
         #[cfg(unix)]
         std::os::unix::process::CommandExt::process_group(&mut command, 0);
         #[cfg(windows)]

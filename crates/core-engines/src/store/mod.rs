@@ -50,6 +50,8 @@ pub struct PackageInfo {
 pub struct EngineLease {
     info: PackageInfo,
     executable: PathBuf,
+    #[cfg(target_os = "linux")]
+    sandbox_helper: Option<payload::Member>,
     _lease: File,
 }
 
@@ -64,6 +66,12 @@ impl EngineLease {
 
     pub fn executable(&self) -> &Path {
         &self.executable
+    }
+
+    /// Verify an operator-installed copy against the selected signed package.
+    #[cfg(target_os = "linux")]
+    pub fn verify_sandbox_helper(&self, helper: &Path) -> Result<(), CoreError> {
+        payload::verify_sandbox_helper(helper, self.sandbox_helper.as_ref())
     }
 }
 
@@ -263,9 +271,33 @@ impl EngineStore {
         let runtime = dir.join(RUNTIME);
         verify_installed(&runtime, &inventory)?;
         let executable = runtime.join(&authorized.package.manifest.executable);
+        #[cfg(target_os = "linux")]
+        let sandbox_helper = {
+            let relative = Path::new(&authorized.package.manifest.executable);
+            // Chromium tries an adjacent chrome-sandbox before the configured path.
+            if inventory.contains_key(
+                relative
+                    .with_file_name("chrome-sandbox")
+                    .to_str()
+                    .unwrap_or_default(),
+            ) {
+                None
+            } else {
+                inventory
+                    .get(
+                        relative
+                            .with_file_name("chrome_sandbox")
+                            .to_str()
+                            .unwrap_or_default(),
+                    )
+                    .cloned()
+            }
+        };
         Ok(EngineLease {
             info: authorized.package,
             executable,
+            #[cfg(target_os = "linux")]
+            sandbox_helper,
             _lease: lease,
         })
     }

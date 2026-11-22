@@ -60,6 +60,49 @@ fn read_member(
     })
 }
 
+#[cfg(target_os = "linux")]
+pub(super) fn verify_sandbox_helper(
+    path: &Path,
+    expected: Option<&Member>,
+) -> Result<(), CoreError> {
+    use std::{os::unix::fs::MetadataExt, path::Component};
+
+    let invalid_path =
+        || CoreError::invalid("Linux sandbox helper requires an absolute, root-protected path");
+    if !path.is_absolute()
+        || path
+            .components()
+            .any(|part| !matches!(part, Component::RootDir | Component::Normal(_)))
+    {
+        return Err(invalid_path());
+    }
+    let parent = path.parent().ok_or_else(invalid_path)?;
+    let mut directory = std::path::PathBuf::new();
+    for part in parent.components() {
+        directory.push(part);
+        let metadata = fs::symlink_metadata(&directory).map_err(|_| invalid_path())?;
+        if !metadata.is_dir() || metadata.uid() != 0 || metadata.mode() & 0o022 != 0 {
+            return Err(invalid_path());
+        }
+    }
+    let file = regular(path, false).map_err(|_| invalid_path())?;
+    let metadata = file.metadata().map_err(|_| invalid_path())?;
+    if metadata.uid() != 0 || metadata.mode() & 0o7777 != 0o4755 {
+        return Err(CoreError::invalid(
+            "Linux sandbox helper must be owned by root with mode 4755",
+        ));
+    }
+    let expected = expected
+        .filter(|member| member.mode & 0o100 != 0 && member.bytes == metadata.len())
+        .ok_or_else(signature)?;
+    let installed = read_member(&mut file.take(expected.bytes + 1), None, expected.mode)
+        .map_err(storage_error)?;
+    if &installed != expected {
+        return Err(signature());
+    }
+    Ok(())
+}
+
 pub(super) fn verify_inventory(
     members: &Members,
     manifest: &EngineManifest,
