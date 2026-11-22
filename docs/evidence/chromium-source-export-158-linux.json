@@ -1,0 +1,49 @@
+{
+  "schema_revision": 1,
+  "scope": "Official upstream Linux source export compared with the reviewed Chromium 158 candidate and native source inventory. Browser compilation and release acceptance remain open.",
+  "host": "Linux",
+  "arch": "x86-64",
+  "chromium_version": "158.0.8127.36",
+  "chromium_revision": "14d6f648e8cd7ad750a4044200ce94d3321be260",
+  "source_lock_sha256": "11e1ef7bee2f71df6b7ac496316f8100fc20af5f6729746e782e9e4cb6dab589",
+  "native_inventory": {
+    "run_id": 44938030680,
+    "artifact_id": 14720334535,
+    "git_checkouts_sha256": "362cfe91539b599af03515381e3e349b6d2fb9577438508e4b684cdcbdc53126",
+    "git_checkouts": 169
+  },
+  "source_archive": {
+    "url": "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-158.0.8127.36.tar.xz?generation=1794535595819349",
+    "hashes_url": "https://commondatastorage.googleapis.com/chromium-browser-official/chromium-158.0.8127.36.tar.xz.hashes",
+    "generation": "1794535595819349",
+    "bytes": 4244528344,
+    "sha256": "000e7ce96ca59f48e278a652189e816c9c9686b80479d13693c2957e349b0cec",
+    "gcs_md5_verified": true
+  },
+  "branding_patch_check": "PASS",
+  "official_export_recipe": "https://chromium.googlesource.com/chromium/tools/build/+/HEAD/recipes/recipes/publish_tarball.py",
+  "content_checks": {
+    "deps_identical_to_pinned_git": true,
+    "branding_matches_pinned_git": true,
+    "version_matches": true,
+    "regular_files": 1189928,
+    "directories": 159321,
+    "expanded_regular_file_bytes": 23890365923,
+    "verified_upstream_files_sha256": {
+      "DEPS": "db3d3a3f508dd4210446814aa977d6ef9e4a046194b04a94ad6a0d3ea5f39017",
+      "LICENSE": "368cca1106be99d39ecd32a38d8305585d802a475effb66380b91ffc9bcf709b",
+      "chrome/VERSION": "3cef5caedb996bd79f49d53c7f9a6642da167e6ae1dda005fe04488e528a9d2d",
+      "chrome/app/chromium_strings.grd": "c75030548d52a2fdaab334ef10f1ce1e13dcc6ac1e53267a1fc2cea756aa011e",
+      "tools/licenses/licenses.py": "81538d9fadd2960761c1610c1700434389a5284e4b91e5920f3b95bc992db35c"
+    },
+    "reviewed_dependency_checkouts": 168,
+    "present_checkout_directories": 168,
+    "absent_checkout_directories": [],
+    "ffmpeg_compared_regular_files": 11351,
+    "ffmpeg_byte_identical_regular_files": 11351,
+    "ffmpeg_omitted_regular_files": [],
+    "ffmpeg_changed_files": []
+  },
+  "engine_release_approved": false,
+  "engine_compilation": "NOT_RUN"
+}

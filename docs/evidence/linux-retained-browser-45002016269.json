@@ -1,0 +1,56 @@
+{
+  "schema_revision": 1,
+  "workflow_run": 45002016269,
+  "workflow_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/45002016269",
+  "workflow_conclusion": "success",
+  "job_id": 137145415210,
+  "developer_runtime_artifact_id": 14745018310,
+  "source_workflow_run": 44983567389,
+  "artifact": {
+    "id": 14746336369,
+    "transport_bytes": 50128,
+    "transport_sha256": "sha256:0e8cca642e94c89ab454f23bdbff90b0e7f0a5c8c1740406c4e27a00d4f89b70",
+    "download": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/45002016269/artifacts/14746336369",
+    "expires_at": "2026-11-29T08:19:43Z"
+  },
+  "report": {
+    "schema_revision": 1,
+    "result": "PASS",
+    "artifact_source_commit": "ac5170bbb8161d89034ce3f5130c84b1f0d24605",
+    "artifact_run_id": 44983567389,
+    "verification_commit": "04ff67245ac79bfd9c383cafcfb0823bc55c8a73",
+    "runner_image": "20261116.365.1",
+    "compiled_chromium": false,
+    "distribution": {
+      "id": "ubuntu",
+      "version": "22.04"
+    },
+    "installation_scope": "Fresh standard Ubuntu GitHub-hosted runner",
+    "trusted_release": false,
+    "manifest_sha256": "a78f3a54ecbf178c67700f9bf4b4e8f40e9ae7222a492234e2602536fc458908",
+    "source_provenance": "PASS",
+    "archive_verification": {
+      "approved_package": false,
+      "archive_bytes": 1727595904,
+      "archive_sha256": "6066e736be8517f26786d5641db37ff2ad41311c73f5eae786f2b9e79ec1bfa8",
+      "archive_verified": true,
+      "expanded_file_bytes": 8346317525,
+      "files": 5558
+    },
+    "extracted_file_hashes": "PASS",
+    "no_admin_renderer": "PASS",
+    "extracted_renderer": "PASS",
+    "headful_browser": {
+      "result": "PASS",
+      "driver_version": "157.0.8103.78",
+      "scope": "Headed W3C navigation and an OS window owned by the browser process",
+      "native_window": "x11-viewable-window-with-browser-pid"
+    },
+    "timestamp": "2026-11-22T08:19:42.874953+00:00"
+  },
+  "scope": "The downloaded Linux development browser was verified and ran without a separately installed sandbox helper on a fresh standard Ubuntu 22.04 GitHub-hosted runner.",
+  "renderer_screenshots_sha256": {
+    "no-admin/renderer.png": "71446d6c83a393a1d7caaf3fc1f364c232c423106fd45c2b43b69c99d18224a7",
+    "extracted-browser/renderer.png": "71446d6c83a393a1d7caaf3fc1f364c232c423106fd45c2b43b69c99d18224a7"
+  }
+}

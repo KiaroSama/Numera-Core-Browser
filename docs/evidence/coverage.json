@@ -562,6 +562,16 @@
             "evidence": "docs/evidence/linux-retained-browser-45000980622.json",
             "source_commit": "a88128483693125300dc860a9a619407dea39b8d",
             "workflow_run": 45000980622
+          },
+          {
+            "name": "Fresh Ubuntu 22.04 launch with default sandbox and no administrator setup",
+            "result": "PASS",
+            "platforms": [
+              "linux-x86_64"
+            ],
+            "evidence": "docs/evidence/linux-retained-browser-45002016269.json",
+            "source_commit": "04ff67245ac79bfd9c383cafcfb0823bc55c8a73",
+            "workflow_run": 45002016269
           }
         ]
       },

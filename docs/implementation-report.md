@@ -77,6 +77,8 @@ The clean hosted job downloaded the full artifact, checked the recorded file set
 
 A fresh Ubuntu 24.04 runner independently downloaded the same development package and verified all three attested subjects, the complete first-party source, the Rust archive result and all 5,558 extracted file hashes. Its host sandbox policy blocked the no-admin startup. With the exact verified helper installed in job scratch, the extracted browser rendered the controlled page and opened a viewable native X11 window owned by the ChromeDriver-launched process. [Independent download and native window evidence](evidence/linux-retained-browser-45000980622.json)
 
+A fresh Ubuntu 22.04 runner independently verified the same package and all 5,558 extracted file hashes. The controlled renderer and the ChromeDriver-launched native X11 window passed with the host's default sandbox and no administrator setup. The downloaded diagnostics include matching renderer screenshots and the report of the browser-owned window. GitHub plans to retire this runner image on April 17, 2027. [Ubuntu 22.04 download and native window evidence](evidence/linux-retained-browser-45002016269.json) · [Runner image retirement](https://github.com/actions/runner-images/issues/14254)
+
 ## Open gates
 
 | Gate | Status | Remaining acceptance |
