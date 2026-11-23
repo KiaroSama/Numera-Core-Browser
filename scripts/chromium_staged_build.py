@@ -164,8 +164,9 @@ def main():
         raise RuntimeError('The staged build requires the authorized public Windows or Linux x86-64 job')
     reviewed = None
     reviewed_run = os.environ.get('REVIEWED_CHECKPOINT_RUN', '')
+    windows_staged_delta = os.environ.get('WINDOWS_STAGED_DELTA') == 'true'
     if reviewed_run:
-        if args.segment != 1:
+        if args.segment != 1 and not windows_staged_delta:
             raise RuntimeError('Only the first segment can start from a reviewed earlier run')
         reviewed = reviewed_checkpoint(Path('docs/evidence'), reviewed_run,
                                        os.environ.get('REVIEWED_CHECKPOINT_SEGMENT', ''), host)
@@ -178,6 +179,8 @@ def main():
     delta_phase = os.environ.get('WINDOWS_OBJECT_DELTA', '')
     if delta_phase and (not object_probe or delta_phase not in {'seed', 'resume'}):
         raise RuntimeError('The compiler cache transfer requires a Windows object probe')
+    if windows_staged_delta and (host != 'Windows' or reviewed is None or read_only_replay):
+        raise RuntimeError('A staged compiler cache delta requires a reviewed Windows base checkpoint')
     if args.checkpoint_key:
         if reviewed is None:
             raise RuntimeError('A reviewed run is required to resolve a cache key')
@@ -201,6 +204,8 @@ def main():
               'compile_budget_minutes': args.minutes,
               'debug_build': True, 'elapsed_seconds': 0, 'disk_free_bytes': shutil.disk_usage(root.parent).free,
               'peak_tree_rss_bytes': 0}
+    if windows_staged_delta:
+        report['checkpoint_transport'] = 'artifact-delta'
     job = delta_phase or ('first', 'second', 'third', 'fourth')[args.segment - 1]
     checks = CheckRun(job_name=job + ' / native') if os.environ.get('GH_TOKEN') else None
     try:
@@ -260,6 +265,7 @@ def main():
         report['context'] = context
         graph_commands.unlink()
         previous_inventory = {} if cache_tool == 'sccache' else None
+        base_inventory = None
         if args.segment > 1 or reviewed is not None:
             report['stage'] = 'restore'
             previous = transfer / 'checkpoint.tar'
@@ -277,6 +283,18 @@ def main():
             if cache_tool == 'ccache':
                 # Rebuild occupancy accounting after transport excluded ccache stats.
                 cache_command(wrapper, environment, '--cleanup')
+        if windows_staged_delta:
+            base_inventory = previous_inventory.copy()
+            if args.segment > 1:
+                report['stage'] = 'restore-staged-delta'
+                predecessor = transfer / 'predecessor' / 'delta.tar'
+                digest = os.environ.get('EXPECTED_CHECKPOINT_SHA')
+                restore_cache(entries, predecessor, digest, context, limit=CACHE_LIMIT,
+                              max_entries=MAX_ENTRIES, restored_entries=previous_inventory,
+                              base_checkpoint_sha256=reviewed['sha256'])
+                report['restored_delta_sha256'] = digest
+                report['restored_delta_entries'] = len(previous_inventory) - len(base_inventory)
+                predecessor.unlink()
         requested = targets
         delta_directory = Path('build/chromium-object-delta').resolve()
         if object_probe:
@@ -338,9 +356,10 @@ def main():
             if values.get('cleanups_performed', 0) or values['cache_size_kibibyte'] * 1024 >= CACHE_ACCOUNTING_GUARD:
                 raise RuntimeError('The compiler cache did not fit the bounded checkpoint allowance')
             report['stage'] = 'checkpoint'
-            archive = transfer / 'checkpoint.tar'
+            archive = transfer / ('delta.tar' if windows_staged_delta else 'checkpoint.tar')
             pack_cache(entries, archive, context, None, limit=CACHE_LIMIT, max_entries=MAX_ENTRIES,
-                       required_entries=previous_inventory)
+                       required_entries=previous_inventory, base_entries=base_inventory,
+                       base_checkpoint_sha256=reviewed['sha256'] if windows_staged_delta else None)
             report.update(result='PARTIAL', source_build='PARTIAL', cache_archive_bytes=archive.stat().st_size,
                           cache_archive_sha256=sha256(archive))
             write_outputs('PARTIAL', report['cache_archive_sha256'])

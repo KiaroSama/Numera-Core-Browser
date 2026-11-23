@@ -17,6 +17,44 @@ from chromium_staged_build import reviewed_checkpoint, restore_reviewed_context,
 
 
 class CacheProvenance(unittest.TestCase):
+    def test_cumulative_delta_retains_predecessor_and_excludes_reviewed_base(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            source = root / 'source'
+            source.mkdir()
+            (source / 'base').write_bytes(b'already reviewed')
+            context = {'host': 'Windows', 'source': 'pinned', 'run_id': '2'}
+            base_archive = root / 'base.tar'
+            probe.pack_cache(source, base_archive, context, None)
+            base_digest = probe.sha256(base_archive)
+            base = {'base': probe.sha256(source / 'base')}
+            (source / 'first').write_bytes(b'first stage')
+            first_delta = root / 'first.tar'
+            probe.pack_cache(source, first_delta, context, None, required_entries=base,
+                             base_checkpoint_sha256=base_digest)
+            runner = root / 'second-runner'
+            retained = {}
+            probe.restore_cache(runner, base_archive, base_digest, context, restored_entries=retained)
+            probe.restore_cache(runner, first_delta, probe.sha256(first_delta), context,
+                                restored_entries=retained, base_checkpoint_sha256=base_digest)
+            (runner / 'second').write_bytes(b'second stage')
+            cumulative = root / 'cumulative.tar'
+            probe.pack_cache(runner, cumulative, context, None, required_entries=retained,
+                             base_checkpoint_sha256=base_digest, base_entries=base)
+            with tarfile.open(cumulative) as archive:
+                self.assertEqual(set(archive.getnames()), {'manifest.json', 'first', 'second'})
+            final = root / 'third-runner'
+            final_inventory = {}
+            probe.restore_cache(final, base_archive, base_digest, context, restored_entries=final_inventory)
+            probe.restore_cache(final, cumulative, probe.sha256(cumulative), context,
+                                restored_entries=final_inventory, base_checkpoint_sha256=base_digest)
+            self.assertEqual((final / 'first').read_bytes(), b'first stage')
+            self.assertEqual((final / 'second').read_bytes(), b'second stage')
+            (runner / 'first').unlink()
+            with self.assertRaisesRegex(RuntimeError, 'evicted or changed'):
+                probe.pack_cache(runner, root / 'lost.tar', context, None, required_entries=retained,
+                                 base_checkpoint_sha256=base_digest, base_entries=base)
+
     def test_cache_delta_binds_the_base_and_checks_conflicts_before_restoring(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

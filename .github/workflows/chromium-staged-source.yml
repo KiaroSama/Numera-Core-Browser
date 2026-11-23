@@ -43,6 +43,7 @@ jobs:
       minutes: 275
       reviewed_checkpoint_run: ${{ inputs.reviewed_checkpoint_run }}
       reviewed_checkpoint_segment: ${{ inputs.reviewed_checkpoint_segment }}
+      windows_staged_delta: ${{ inputs.target == 'windows-2025-vs2026' && inputs.reviewed_checkpoint_run != '' }}
       reviewed_upstream_evidence: ${{ inputs.reviewed_upstream_evidence }}
       verified_source_export: ${{ inputs.verified_source_export }}
   second:
@@ -55,6 +56,9 @@ jobs:
       minutes: 275
       previous: 1
       checkpoint_sha: ${{ needs.first.outputs.checkpoint_sha }}
+      reviewed_checkpoint_run: ${{ inputs.target == 'windows-2025-vs2026' && inputs.reviewed_checkpoint_run || '' }}
+      reviewed_checkpoint_segment: ${{ inputs.reviewed_checkpoint_segment }}
+      windows_staged_delta: ${{ inputs.target == 'windows-2025-vs2026' && inputs.reviewed_checkpoint_run != '' }}
       reviewed_upstream_evidence: ${{ inputs.reviewed_upstream_evidence }}
       verified_source_export: ${{ inputs.verified_source_export }}
   third:
@@ -67,6 +71,9 @@ jobs:
       minutes: 275
       previous: 2
       checkpoint_sha: ${{ needs.second.outputs.checkpoint_sha }}
+      reviewed_checkpoint_run: ${{ inputs.target == 'windows-2025-vs2026' && inputs.reviewed_checkpoint_run || '' }}
+      reviewed_checkpoint_segment: ${{ inputs.reviewed_checkpoint_segment }}
+      windows_staged_delta: ${{ inputs.target == 'windows-2025-vs2026' && inputs.reviewed_checkpoint_run != '' }}
       reviewed_upstream_evidence: ${{ inputs.reviewed_upstream_evidence }}
       verified_source_export: ${{ inputs.verified_source_export }}
   fourth:
@@ -79,6 +86,9 @@ jobs:
       minutes: 275
       previous: 3
       checkpoint_sha: ${{ needs.third.outputs.checkpoint_sha }}
+      reviewed_checkpoint_run: ${{ inputs.target == 'windows-2025-vs2026' && inputs.reviewed_checkpoint_run || '' }}
+      reviewed_checkpoint_segment: ${{ inputs.reviewed_checkpoint_segment }}
+      windows_staged_delta: ${{ inputs.target == 'windows-2025-vs2026' && inputs.reviewed_checkpoint_run != '' }}
       reviewed_upstream_evidence: ${{ inputs.reviewed_upstream_evidence }}
       verified_source_export: ${{ inputs.verified_source_export }}
   attest-development-runtime:

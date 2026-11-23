@@ -97,7 +97,7 @@ def compile_graph(root, environment, output, cache_tool='ccache', *, review_lock
 
 
 def pack_cache(root, archive, context, object_hash, *, limit=ARCHIVE_LIMIT, max_entries=512,
-               required_entries=None, base_checkpoint_sha256=None):
+               required_entries=None, base_checkpoint_sha256=None, base_entries=None):
     entries = sorted(root.rglob('*'))
     if any(p.is_symlink() or not (p.is_dir() or p.is_file()) for p in entries):
         raise RuntimeError('Unexpected link or special file in local compiler cache')
@@ -105,17 +105,19 @@ def pack_cache(root, archive, context, object_hash, *, limit=ARCHIVE_LIMIT, max_
     if not files or len(files) > max_entries:
         raise RuntimeError('Compiler cache is empty or exceeds the bounded probe allowance')
     archive_files = {path.relative_to(root).as_posix(): path for path in files}
+    base = {}
     if base_checkpoint_sha256 is not None:
-        if not re.fullmatch(r'[0-9a-f]{64}', base_checkpoint_sha256) or not required_entries:
+        base = required_entries if base_entries is None else base_entries
+        if not re.fullmatch(r'[0-9a-f]{64}', base_checkpoint_sha256) or not base:
             raise RuntimeError('A compiler cache delta requires a verified base checkpoint')
-        for name, digest in required_entries.items():
+        for name, digest in base.items():
             path = archive_files.pop(name, None)
             if path is None or sha256(path) != digest:
                 raise RuntimeError('Previously restored cache entries were evicted or changed')
     if not archive_files or sum(path.stat().st_size for path in archive_files.values()) >= limit - 1024**2:
         raise RuntimeError('Compiler cache is empty or exceeds the bounded probe allowance')
     inventory = {name: sha256(path) for name, path in archive_files.items()}
-    if base_checkpoint_sha256 is None and required_entries and not required_entries.items() <= inventory.items():
+    if required_entries and not required_entries.items() <= (base | inventory).items():
         raise RuntimeError('Previously restored cache entries were evicted or changed')
     manifest = {'context': context, 'object_sha256': object_hash, 'files': inventory}
     if base_checkpoint_sha256 is not None:
