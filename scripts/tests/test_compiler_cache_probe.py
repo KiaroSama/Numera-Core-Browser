@@ -13,7 +13,7 @@ from unittest.mock import patch
 SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
 import chromium_cache_probe as probe
-from chromium_staged_build import reviewed_checkpoint, restore_reviewed_context, windows_object_probe_targets
+from chromium_staged_build import reviewed_checkpoint, reviewed_delta, restore_reviewed_context, windows_object_probe_targets
 
 
 class CacheProvenance(unittest.TestCase):
@@ -141,6 +141,32 @@ class CacheProvenance(unittest.TestCase):
             path.write_text(json.dumps(data), encoding='utf-8')
             with self.assertRaisesRegex(RuntimeError, 'metadata does not match'):
                 reviewed_checkpoint(directory, run, '4', 'Linux')
+
+    def test_prior_run_can_continue_a_reviewed_delta_from_the_same_windows_base(self):
+        evidence = Path(__file__).resolve().parents[2] / 'docs/evidence'
+        filename = 'chromium-staged-44989521034-segment-1.json'
+        base = reviewed_checkpoint(evidence, '44989521034', '1', 'Windows')
+        data = json.loads((evidence / filename).read_text(encoding='utf-8'))
+        run = '45999999999'
+        report = data['report']
+        report.update(segment=4, checkpoint_transport='artifact-delta',
+                      cache_archive_sha256='1' * 64, reviewed_checkpoint={'key': base['key'], 'sha256': base['sha256']})
+        report['context'].update(run_id=run, run_attempt='2')
+        data.update(run_id=int(run), artifact={'id': 14759000000, 'name': 'staged-windows-delta-2-4'})
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = Path(tmp)
+            path = directory / f'chromium-staged-{run}-segment-4.json'
+            path.write_text(json.dumps(data), encoding='utf-8')
+            delta = reviewed_delta(directory, run, '4', base)
+            self.assertEqual(delta['artifact_id'], data['artifact']['id'])
+            self.assertEqual(delta['sha256'], report['cache_archive_sha256'])
+            self.assertEqual(delta['context'], report['context'])
+            with self.assertRaisesRegex(RuntimeError, 'reviewed Windows base'):
+                reviewed_delta(directory, run, '4', dict(base, sha256='2' * 64))
+            data['artifact']['name'] = 'staged-windows-delta-1-4'
+            path.write_text(json.dumps(data), encoding='utf-8')
+            with self.assertRaisesRegex(RuntimeError, 'reviewed Windows base'):
+                reviewed_delta(directory, run, '4', base)
 
     def test_linux_staged_resume_only_allows_runner_image_drift(self):
         with tempfile.TemporaryDirectory() as tmp:

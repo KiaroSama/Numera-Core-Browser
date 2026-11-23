@@ -30,7 +30,7 @@ CHECKPOINT_RUNNERS = {'Linux': 'ubuntu-24.04', 'Windows': 'windows-2025-vs2026'}
 PRODUCER_IDENTITY = ('head', 'run_id', 'run_attempt')
 
 
-def reviewed_checkpoint(directory, run_id, segment, host):
+def checkpoint_evidence(directory, run_id, segment, host):
     if not re.fullmatch(r'[1-9][0-9]{0,17}', run_id) or segment not in map(str, range(1, SEGMENTS + 1)):
         raise RuntimeError(f'Select a reviewed run ID and checkpoint segment from 1 to {SEGMENTS}')
     path = directory / f'chromium-staged-{run_id}-segment-{segment}.json'
@@ -39,9 +39,7 @@ def reviewed_checkpoint(directory, run_id, segment, host):
         report = evidence['report']
         context = report['context']
         digest = report['cache_archive_sha256']
-        key = evidence['cache']['exact_key']
         job_id = evidence['job_id']
-        runner = CHECKPOINT_RUNNERS[host]
         producer_head = context['head']
         producer_attempt = context['run_attempt']
         matches_run = (evidence['run_id'] == int(run_id) and report['segment'] == int(segment)
@@ -53,9 +51,34 @@ def reviewed_checkpoint(directory, run_id, segment, host):
         raise RuntimeError('No complete reviewed checkpoint evidence exists for this runner') from error
     if not (matches_run and matches_result and valid_ids):
         raise RuntimeError('Reviewed checkpoint metadata does not match the requested native graph')
-    if key != f'chromium-staged-{run_id}-{producer_attempt}-{segment}-{runner}':
+    return evidence, context, digest, job_id
+
+
+def reviewed_checkpoint(directory, run_id, segment, host):
+    evidence, context, digest, job_id = checkpoint_evidence(directory, run_id, segment, host)
+    key = evidence.get('cache', {}).get('exact_key')
+    expected = f"chromium-staged-{run_id}-{context['run_attempt']}-{segment}-{CHECKPOINT_RUNNERS[host]}"
+    if key != expected:
         raise RuntimeError('Reviewed checkpoint has an unexpected cache key')
     return {'context': context, 'sha256': digest, 'key': key, 'job_id': job_id}
+
+
+def reviewed_delta(directory, run_id, segment, base):
+    evidence, context, digest, job_id = checkpoint_evidence(directory, run_id, segment, 'Windows')
+    report = evidence['report']
+    archive = evidence.get('artifact', {})
+    previous_base = report.get('reviewed_checkpoint', {})
+    if not isinstance(archive, dict) or not isinstance(previous_base, dict):
+        raise RuntimeError('Reviewed delta artifact does not match the reviewed Windows base')
+    artifact_id = archive.get('id')
+    expected = f"staged-windows-delta-{context['run_attempt']}-{segment}"
+    if (report.get('checkpoint_transport') != 'artifact-delta'
+            or type(artifact_id) is not int or not 0 < artifact_id < 10**18 or archive.get('name') != expected
+            or any(previous_base.get(field) != base[field] for field in ('key', 'sha256'))
+            or context.get('source_lock_sha256') != base['context']['source_lock_sha256']):
+        raise RuntimeError('Reviewed delta artifact does not match the reviewed Windows base')
+    return {'context': context, 'sha256': digest, 'artifact_id': artifact_id,
+            'job_id': job_id, 'run_id': run_id}
 
 
 def restore_reviewed_context(context, checkpoint):
@@ -155,6 +178,7 @@ def main():
     parser.add_argument('--segment', required=True, type=int, choices=range(1, SEGMENTS + 1))
     parser.add_argument('--minutes', type=int, choices=range(10, 276), default=275)
     parser.add_argument('--checkpoint-key', action='store_true')
+    parser.add_argument('--delta-artifact-id', action='store_true')
     args = parser.parse_args()
     host = platform.system()
     event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text(encoding='utf-8'))
@@ -181,6 +205,18 @@ def main():
         raise RuntimeError('The compiler cache transfer requires a Windows object probe')
     if windows_staged_delta and (host != 'Windows' or reviewed is None or read_only_replay):
         raise RuntimeError('A staged compiler cache delta requires a reviewed Windows base checkpoint')
+    inherited_delta = None
+    inherited_run = os.environ.get('REVIEWED_DELTA_RUN', '')
+    if inherited_run:
+        if not windows_staged_delta or args.segment != 1:
+            raise RuntimeError('Only a first Windows segment can resume a reviewed delta artifact')
+        inherited_delta = reviewed_delta(Path('docs/evidence'), inherited_run,
+                                         os.environ.get('REVIEWED_DELTA_SEGMENT', ''), reviewed)
+    if args.delta_artifact_id:
+        if inherited_delta is None:
+            raise RuntimeError('A reviewed delta is required to resolve an artifact ID')
+        print(inherited_delta['artifact_id'])
+        return
     if args.checkpoint_key:
         if reviewed is None:
             raise RuntimeError('A reviewed run is required to resolve a cache key')
@@ -285,11 +321,20 @@ def main():
                 cache_command(wrapper, environment, '--cleanup')
         if windows_staged_delta:
             base_inventory = previous_inventory.copy()
-            if args.segment > 1:
+            if inherited_delta is not None or args.segment > 1:
                 report['stage'] = 'restore-staged-delta'
-                predecessor = transfer / 'predecessor' / 'delta.tar'
-                digest = os.environ.get('EXPECTED_CHECKPOINT_SHA')
-                restore_cache(entries, predecessor, digest, context, limit=CACHE_LIMIT,
+                if inherited_delta is None:
+                    predecessor = transfer / 'predecessor' / 'delta.tar'
+                    digest = os.environ.get('EXPECTED_CHECKPOINT_SHA')
+                    delta_context = context
+                else:
+                    predecessor = transfer / 'reviewed-delta' / 'delta.tar'
+                    digest = inherited_delta['sha256']
+                    delta_context = restore_reviewed_context(context, inherited_delta)
+                    report['reviewed_delta'] = {
+                        name: inherited_delta[name] for name in ('run_id', 'job_id', 'artifact_id', 'sha256')
+                    }
+                restore_cache(entries, predecessor, digest, delta_context, limit=CACHE_LIMIT,
                               max_entries=MAX_ENTRIES, restored_entries=previous_inventory,
                               base_checkpoint_sha256=reviewed['sha256'])
                 report['restored_delta_sha256'] = digest
@@ -353,7 +398,8 @@ def main():
                 raise RuntimeError('The read-only replay exhausted its compile budget')
             if values['local_storage_write'] < 1:
                 raise RuntimeError('The segment did not add transferable compiler outputs')
-            if values.get('cleanups_performed', 0) or values['cache_size_kibibyte'] * 1024 >= CACHE_ACCOUNTING_GUARD:
+            if values.get('cleanups_performed', 0) or (not windows_staged_delta
+                    and values['cache_size_kibibyte'] * 1024 >= CACHE_ACCOUNTING_GUARD):
                 raise RuntimeError('The compiler cache did not fit the bounded checkpoint allowance')
             report['stage'] = 'checkpoint'
             archive = transfer / ('delta.tar' if windows_staged_delta else 'checkpoint.tar')

@@ -23,6 +23,12 @@ on:
       reviewed_checkpoint_segment:
         type: string
         default: '2'
+      reviewed_delta_run:
+        type: string
+        default: ''
+      reviewed_delta_segment:
+        type: string
+        default: '4'
       reviewed_upstream_evidence:
         type: string
         default: ''
@@ -128,6 +134,31 @@ jobs:
           path: build/chromium-staged-cache/checkpoint.tar
           key: ${{ steps.reviewed.outputs.key }}
           fail-on-cache-miss: true
+      - name: Resolve the reviewed Windows delta artifact
+        if: inputs.reviewed_delta_run != ''
+        id: reviewed-delta
+        env:
+          BUILD_SEGMENT: ${{ inputs.segment }}
+          REVIEWED_CHECKPOINT_RUN: ${{ inputs.reviewed_checkpoint_run }}
+          REVIEWED_CHECKPOINT_SEGMENT: ${{ inputs.reviewed_checkpoint_segment }}
+          REVIEWED_DELTA_RUN: ${{ inputs.reviewed_delta_run }}
+          REVIEWED_DELTA_SEGMENT: ${{ inputs.reviewed_delta_segment }}
+          WINDOWS_STAGED_DELTA: ${{ inputs.windows_staged_delta }}
+        shell: pwsh
+        run: |
+          $Artifact = python scripts/chromium_staged_build.py --segment $env:BUILD_SEGMENT --delta-artifact-id
+          if ($LASTEXITCODE -ne 0 -or $Artifact -notmatch '^[1-9]\d{0,17}$') {
+            throw 'Cannot resolve the reviewed Windows delta artifact ID'
+          }
+          "artifact_id=$Artifact" >> $env:GITHUB_OUTPUT
+      - name: Download the reviewed Windows delta from the prior run
+        if: steps.reviewed-delta.outputs.artifact_id != ''
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          artifact-ids: ${{ steps.reviewed-delta.outputs.artifact_id }}
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.reviewed_delta_run }}
+          path: build/chromium-staged-cache/reviewed-delta
       - name: Restore only the predecessor cache from this workflow attempt
         if: inputs.previous > 0 && inputs.windows_staged_delta == false
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
@@ -155,6 +186,8 @@ jobs:
           EXPECTED_CHECKPOINT_SHA: ${{ inputs.checkpoint_sha }}
           REVIEWED_CHECKPOINT_RUN: ${{ inputs.reviewed_checkpoint_run }}
           REVIEWED_CHECKPOINT_SEGMENT: ${{ inputs.reviewed_checkpoint_segment }}
+          REVIEWED_DELTA_RUN: ${{ inputs.reviewed_delta_run }}
+          REVIEWED_DELTA_SEGMENT: ${{ inputs.reviewed_delta_segment }}
           REVIEWED_UPSTREAM_EVIDENCE: ${{ inputs.reviewed_upstream_evidence }}
           VERIFIED_SOURCE_EXPORT: ${{ inputs.verified_source_export }}
           READ_ONLY_REPLAY: ${{ inputs.read_only_replay }}

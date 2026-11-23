@@ -16,6 +16,15 @@ on:
         type: choice
         options: ['1', '2', '3', '4']
         default: '2'
+      reviewed_delta_run:
+        description: Optional prior Windows run with a reviewed delta artifact against the selected base
+        type: string
+        default: ''
+      reviewed_delta_segment:
+        description: Segment containing the reviewed Windows delta
+        type: choice
+        options: ['1', '2', '3', '4']
+        default: '4'
       reviewed_upstream_evidence:
         description: Optional evidence filename for a reviewed stable Chromium candidate
         type: string
@@ -43,6 +52,8 @@ jobs:
       minutes: 275
       reviewed_checkpoint_run: ${{ inputs.reviewed_checkpoint_run }}
       reviewed_checkpoint_segment: ${{ inputs.reviewed_checkpoint_segment }}
+      reviewed_delta_run: ${{ inputs.reviewed_delta_run }}
+      reviewed_delta_segment: ${{ inputs.reviewed_delta_segment }}
       windows_staged_delta: ${{ inputs.target == 'windows-2025-vs2026' && inputs.reviewed_checkpoint_run != '' }}
       reviewed_upstream_evidence: ${{ inputs.reviewed_upstream_evidence }}
       verified_source_export: ${{ inputs.verified_source_export }}
