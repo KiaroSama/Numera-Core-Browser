@@ -1,6 +1,6 @@
 {
   "schema_revision": 1,
-  "observed_at": "2026-11-24T09:52:40.939245+00:00",
+  "observed_at": "2026-11-24T22:26:11.636551+00:00",
   "status": "unreviewed-candidate",
   "trusted_release": false,
   "versions": {
@@ -37,13 +37,13 @@
       }
     },
     "gecko": {
-      "stable": "160.0.1",
-      "esr": "153.7.0esr",
+      "stable": "161.0",
+      "esr": "153.8.0esr",
       "source": "https://product-details.mozilla.org/1.0/firefox_versions.json",
       "scope": "deferred"
     },
     "webkit": {
-      "revision": "d3dc3c55d79a3cbd38b79bba13306d6fc4eea9ed",
+      "revision": "fcbbc8e862aa3253991de9d5e0bd87c77bc9e69e",
       "source": "https://api.github.com/repos/WebKit/WebKit/commits/main",
       "scope": "deferred",
       "note": "Not a universal Safari release version"
