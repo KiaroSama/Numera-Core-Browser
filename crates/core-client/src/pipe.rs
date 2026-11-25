@@ -3,7 +3,7 @@ use core_contracts::MAX_FRAME;
 use std::{
     env,
     fs::File,
-    io::{self, Read, Write},
+    io,
     path::Path,
     process::{Child, Command, ExitStatus, Stdio},
     sync::mpsc::{self, Receiver},
@@ -96,7 +96,7 @@ impl Pipes {
         let input = self.write_end.as_mut().ok_or(TransportError::Closed)?;
         while !request.is_empty() {
             let wait = remaining(deadline)?.min(POLL);
-            match input.write(request) {
+            match platform::write(input, request) {
                 Ok(0) => thread::sleep(wait),
                 Ok(count) => request = &request[count..],
                 Err(error) if error.kind() == io::ErrorKind::WouldBlock => thread::sleep(wait),
@@ -111,7 +111,7 @@ impl Pipes {
         while frame.len() < MAX_FRAME {
             let wait = remaining(deadline)?.min(POLL);
             let limit = buffer.len().min(MAX_FRAME - frame.len());
-            match output.read(&mut buffer[..limit]) {
+            match platform::read(output, &mut buffer[..limit]) {
                 Ok(0) => return Err(TransportError::Closed),
                 Ok(count) => {
                     let latest = &buffer[..count];
@@ -124,7 +124,7 @@ impl Pipes {
                     }
                     frame.extend_from_slice(latest);
                 }
-                Err(error) if platform::read_would_block(&error) => thread::sleep(wait),
+                Err(error) if error.kind() == io::ErrorKind::WouldBlock => thread::sleep(wait),
                 Err(error) if error.kind() == io::ErrorKind::Interrupted => (),
                 Err(_) => return Err(TransportError::Pipe),
             }

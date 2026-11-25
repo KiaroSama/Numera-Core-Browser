@@ -285,7 +285,7 @@ pub fn engine_env(tools: &Path, root: &Path) -> io::Result<Environment> {
         ("DEPOT_TOOLS_WIN_TOOLCHAIN", "0"),
         ("NINJA_STATUS", "[%f/%t] "),
     ] {
-        environment.insert(key.into(), value.into());
+        process::set_environment(&mut environment, key, value);
     }
     Ok(environment)
 }

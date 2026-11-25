@@ -69,16 +69,33 @@ fn test_configured_core_negotiates_and_keeps_empty_store_unmodified() {
 #[test]
 fn test_wrong_response_id_closes_inherited_stdin() {
     let work = tempfile::tempdir().unwrap();
-    assert!(matches!(
-        peer("wrong-response-id", work.path()),
-        Err(ClientError::Transport(TransportError::MismatchedResponse))
-    ));
+    assert_eq!(
+        peer("wrong-response-id", work.path()).err(),
+        Some(ClientError::Transport(TransportError::MismatchedResponse))
+    );
     let marker = work.path().join("eof");
     let deadline = Instant::now() + Duration::from_secs(3);
     while !marker.exists() && Instant::now() < deadline {
         thread::sleep(Duration::from_millis(10));
     }
     assert!(marker.is_file(), "peer did not observe EOF");
+}
+
+#[test]
+fn accepts_a_delayed_response_and_retains_partial_bytes_between_reads() {
+    let work = tempfile::tempdir().unwrap();
+    let mut client = peer("delayed-frame", work.path()).unwrap();
+    assert_eq!(client.capabilities().core_version, "fixture");
+    assert!(client.close().unwrap().success());
+}
+
+#[test]
+fn a_partial_response_followed_by_peer_exit_is_closed() {
+    let work = tempfile::tempdir().unwrap();
+    assert_eq!(
+        peer("partial-frame-eof", work.path()).err(),
+        Some(ClientError::Transport(TransportError::Closed))
+    );
 }
 
 #[test]
@@ -112,17 +129,17 @@ fn test_request_deadline_includes_a_full_stdin_pipe() {
 #[test]
 fn test_unterminated_frame_cannot_grow_past_limit() {
     let work = tempfile::tempdir().unwrap();
-    assert!(matches!(
-        peer("unterminated-frame", work.path()),
-        Err(ClientError::Transport(TransportError::FrameLimit))
-    ));
+    assert_eq!(
+        peer("unterminated-frame", work.path()).err(),
+        Some(ClientError::Transport(TransportError::FrameLimit))
+    );
 }
 
 #[test]
 fn rejects_duplicate_keys_in_a_nested_response() {
     let work = tempfile::tempdir().unwrap();
-    assert!(matches!(
-        peer("duplicate-key", work.path()),
-        Err(ClientError::Transport(TransportError::InvalidResponse))
-    ));
+    assert_eq!(
+        peer("duplicate-key", work.path()).err(),
+        Some(ClientError::Transport(TransportError::InvalidResponse))
+    );
 }

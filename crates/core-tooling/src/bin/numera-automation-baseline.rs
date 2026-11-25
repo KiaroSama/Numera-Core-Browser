@@ -1,5 +1,7 @@
 #[path = "numera-automation-baseline/contract.rs"]
 mod contract;
+#[path = "numera-automation-baseline/hosted.rs"]
+mod hosted;
 #[path = "numera-automation-baseline/sdk.rs"]
 mod sdk;
 
@@ -91,11 +93,7 @@ fn options(args: &[OsString]) -> Result<Options> {
 }
 
 fn hosted_guard(environment: &Environment) -> Result<()> {
-    let value = |name: &str| {
-        environment
-            .get(std::ffi::OsStr::new(name))
-            .and_then(|v| v.to_str())
-    };
+    let value = |name: &str| hosted::value(environment, name).and_then(|v| v.to_str());
     let event_path =
         value("GITHUB_EVENT_PATH").ok_or_else(|| failure("Missing hosted event path"))?;
     let event = read_json(Path::new(event_path))?;
@@ -118,14 +116,14 @@ fn hosted_guard(environment: &Environment) -> Result<()> {
 fn find_browser(environment: &Environment) -> Result<PathBuf> {
     if cfg!(windows) {
         for name in ["ProgramFiles", "ProgramFiles(x86)"] {
-            if let Some(root) = environment.get(std::ffi::OsStr::new(name)) {
+            if let Some(root) = hosted::value(environment, name) {
                 let candidate = Path::new(root).join("Google/Chrome/Application/chrome.exe");
                 if candidate.is_file() {
                     return Ok(candidate);
                 }
             }
         }
-    } else if let Some(path) = environment.get(std::ffi::OsStr::new("PATH")) {
+    } else if let Some(path) = hosted::value(environment, "PATH") {
         for root in env::split_paths(path) {
             let candidate = root.join("google-chrome");
             if executable_file(&candidate) {
@@ -165,8 +163,7 @@ fn baseline(options: Options) -> Result<Value> {
             .unwrap_or_else(|| PathBuf::from("build/automation-baseline")),
     )?;
     let scratch = std::path::absolute(options.scratch.unwrap_or_else(|| {
-        environment
-            .get(std::ffi::OsStr::new("RUNNER_TEMP"))
+        hosted::value(&environment, "RUNNER_TEMP")
             .map(PathBuf::from)
             .unwrap_or_else(env::temp_dir)
             .join("Numera fixture baseline")
@@ -194,16 +191,7 @@ fn baseline(options: Options) -> Result<Value> {
             .canonicalize()?;
         let driver = match options.driver {
             Some(path) => path,
-            None => PathBuf::from(
-                environment
-                    .get(std::ffi::OsStr::new("CHROMEWEBDRIVER"))
-                    .ok_or_else(|| failure("Missing hosted ChromeDriver directory"))?,
-            )
-            .join(if cfg!(windows) {
-                "chromedriver.exe"
-            } else {
-                "chromedriver"
-            }),
+            None => hosted::driver(&environment)?,
         }
         .canonicalize()?;
         if !browser.is_file() || !driver.is_file() {

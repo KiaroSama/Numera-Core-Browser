@@ -1,6 +1,6 @@
 mod settings;
 
-use core_tooling::sha256_file;
+use core_tooling::{chromium_build::process, sha256_file};
 use serde_json::json;
 use settings::{Options, Phase, SourceLock};
 use std::collections::BTreeMap;
@@ -105,27 +105,23 @@ fn bootstrap(native: &mut Native, root: &Path, repository: &Path, lock: &SourceL
     )?;
     native.checked("git", &depot, ["checkout", "--detach", "FETCH_HEAD"])?;
 
-    let path = native
-        .environment
-        .get(OsStr::new("PATH"))
-        .ok_or("PATH is required")?;
-    let path = env::join_paths(std::iter::once(depot.clone()).chain(env::split_paths(path)))?;
-    native.environment.insert("PATH".into(), path);
-    native
-        .environment
-        .insert("DEPOT_TOOLS_UPDATE".into(), "0".into());
-    native
-        .environment
-        .insert("DEPOT_TOOLS_WIN_TOOLCHAIN".into(), "0".into());
+    if process::environment_value(&native.environment, "PATH").is_none() {
+        return Err("PATH is required".into());
+    }
+    process::prepend_path(&mut native.environment, &[&depot])?;
+    process::set_environment(&mut native.environment, "DEPOT_TOOLS_UPDATE", "0");
+    process::set_environment(&mut native.environment, "DEPOT_TOOLS_WIN_TOOLCHAIN", "0");
     if cfg!(windows) {
         let config = root.join("build.gitconfig");
         fs::write(
             &config,
             "[core]\n autocrlf = false\n longpaths = true\n preloadindex = true\n fscache = true\r\n",
         )?;
-        native
-            .environment
-            .insert("GIT_CONFIG_GLOBAL".into(), config.into_os_string());
+        process::set_environment(
+            &mut native.environment,
+            "GIT_CONFIG_GLOBAL",
+            config.into_os_string(),
+        );
         if let Some(program_files) = env::var_os("ProgramFiles(x86)") {
             let vswhere =
                 PathBuf::from(program_files).join("Microsoft Visual Studio/Installer/vswhere.exe");
@@ -144,9 +140,7 @@ fn bootstrap(native: &mut Native, root: &Path, repository: &Path, lock: &SourceL
                     .output()?;
                 let location = std::str::from_utf8(&result.stdout)?.trim();
                 if result.status.success() && !location.is_empty() {
-                    native
-                        .environment
-                        .insert("vs2026_install".into(), location.into());
+                    process::set_environment(&mut native.environment, "vs2026_install", location);
                 }
             }
         }
@@ -175,9 +169,7 @@ fn bootstrap(native: &mut Native, root: &Path, repository: &Path, lock: &SourceL
 fn run(options: Options) -> Result<()> {
     let environment: BTreeMap<_, _> = env::vars_os().collect();
     let named = |name: &str, value: &str| {
-        environment
-            .get(OsStr::new(name))
-            .is_some_and(|item| item == value)
+        process::environment_value(&environment, name).is_some_and(|item| item == value)
     };
     if !named("GITHUB_ACTIONS", "true")
         || !named("RUNNER_ENVIRONMENT", "github-hosted")

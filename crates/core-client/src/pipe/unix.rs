@@ -2,7 +2,7 @@ use crate::TransportError;
 use nix::fcntl::{FcntlArg, OFlag, fcntl};
 use std::{
     fs::File,
-    io,
+    io::{self, Read, Write},
     os::{fd::OwnedFd, unix::process::CommandExt},
     process::{Child, Command, Stdio},
 };
@@ -33,6 +33,10 @@ pub(super) fn spawn(command: &mut Command) -> Result<(Child, File, File), Transp
     Ok((child, input, output))
 }
 
-pub(super) fn read_would_block(error: &io::Error) -> bool {
-    error.kind() == io::ErrorKind::WouldBlock
+pub(super) fn read(pipe: &mut File, buffer: &mut [u8]) -> io::Result<usize> {
+    pipe.read(buffer)
+}
+
+pub(super) fn write(pipe: &mut File, buffer: &[u8]) -> io::Result<usize> {
+    pipe.write(buffer)
 }

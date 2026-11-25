@@ -21,6 +21,31 @@ fn reply(output: &mut impl Write, id: String, result: Value) {
     output.flush().unwrap();
 }
 
+fn negotiate(input: &mut impl BufRead, output: &mut impl Write, hello_id: String, delayed: bool) {
+    let product = json!({"product":"Numera Core Browser","core_version":"fixture","protocol":1,"schema_revision":1});
+    if delayed {
+        let frame = serde_json::to_vec(&Response::new(Some(hello_id), Ok(product))).unwrap();
+        thread::sleep(Duration::from_millis(50));
+        output.write_all(&frame[..1]).unwrap();
+        output.flush().unwrap();
+        thread::sleep(Duration::from_millis(50));
+        output.write_all(&frame[1..]).unwrap();
+        output.write_all(b"\n").unwrap();
+        output.flush().unwrap();
+    } else {
+        reply(output, hello_id, product);
+    }
+    let capability = request(input, "capabilities.get");
+    reply(
+        output,
+        capability.id,
+        json!({"namespace":"numera.core","core_version":"fixture","protocol":1,"schema_revision":1,
+            "host":{"os":env::consts::OS,"arch":env::consts::ARCH},
+            "scope":{"engine_build":null,"device_mode":null,"automation_transport":null},
+            "features":{"protocol.ndjson":{"status":"supported"}}}),
+    );
+}
+
 fn main() {
     let mut args = env::args_os().skip(1);
     assert_eq!(args.next().unwrap(), "serve");
@@ -36,21 +61,16 @@ fn main() {
             assert_eq!(input.read(&mut [0]).unwrap(), 0);
             fs::write(work.join("eof"), b"").unwrap();
         }
+        "delayed-frame" => {
+            negotiate(&mut input, &mut output, hello.id, true);
+            assert_eq!(input.read(&mut [0]).unwrap(), 0);
+        }
+        "partial-frame-eof" => {
+            output.write_all(b"{").unwrap();
+            output.flush().unwrap();
+        }
         "stdin-backpressure" => {
-            reply(
-                &mut output,
-                hello.id,
-                json!({"product":"Numera Core Browser","core_version":"fixture","protocol":1,"schema_revision":1}),
-            );
-            let capability = request(&mut input, "capabilities.get");
-            reply(
-                &mut output,
-                capability.id,
-                json!({"namespace":"numera.core","core_version":"fixture","protocol":1,"schema_revision":1,
-                    "host":{"os":env::consts::OS,"arch":env::consts::ARCH},
-                    "scope":{"engine_build":null,"device_mode":null,"automation_transport":null},
-                    "features":{"protocol.ndjson":{"status":"supported"}}}),
-            );
+            negotiate(&mut input, &mut output, hello.id, false);
             let drain = work.join("drain");
             let failsafe = Instant::now() + Duration::from_secs(3);
             while !drain.is_file() && Instant::now() < failsafe {

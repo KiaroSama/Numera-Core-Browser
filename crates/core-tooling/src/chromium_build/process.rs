@@ -1,7 +1,7 @@
 //! Bounded native commands and resource measurements used on hosted workers.
 use std::{
     collections::{BTreeMap, BTreeSet},
-    ffi::OsString,
+    ffi::{OsStr, OsString},
     fs::File,
     io::{self, Read, Seek},
     path::{Path, PathBuf},
@@ -14,6 +14,29 @@ use std::{
 use std::fs;
 
 pub type Environment = BTreeMap<OsString, OsString>;
+
+pub fn environment_value<'a>(environment: &'a Environment, key: &str) -> Option<&'a OsStr> {
+    let name = OsStr::new(key);
+    let exact = environment.get(name).map(OsString::as_os_str);
+    if cfg!(windows) {
+        exact.or_else(|| {
+            environment.iter().find_map(|(candidate, value)| {
+                candidate
+                    .eq_ignore_ascii_case(name)
+                    .then_some(value.as_os_str())
+            })
+        })
+    } else {
+        exact
+    }
+}
+
+pub fn set_environment(environment: &mut Environment, key: &str, value: impl Into<OsString>) {
+    if cfg!(windows) {
+        environment.retain(|existing, _| !existing.eq_ignore_ascii_case(OsStr::new(key)));
+    }
+    environment.insert(key.into(), value.into());
+}
 
 pub fn build_environment() -> Environment {
     std::env::vars_os()
@@ -158,13 +181,12 @@ pub fn stdout(command: &mut Command, timeout: Duration, maximum: u64) -> io::Res
 
 pub fn prepend_path(environment: &mut Environment, paths: &[&Path]) -> io::Result<()> {
     let paths = paths.iter().map(|path| (*path).to_owned()).chain(
-        environment
-            .get(&OsString::from("PATH"))
+        environment_value(environment, "PATH")
             .into_iter()
             .flat_map(std::env::split_paths),
     );
     let path = std::env::join_paths(paths).map_err(io::Error::other)?;
-    environment.insert("PATH".into(), path);
+    set_environment(environment, "PATH", path);
     Ok(())
 }
 
@@ -258,3 +280,43 @@ pub fn process_tree(pid: u32) -> (u64, usize) {
 mod windows;
 #[cfg(windows)]
 pub use windows::{disk, memory, process_tree};
+
+#[cfg(test)]
+mod environment_tests {
+    use super::*;
+
+    #[test]
+    fn prepend_preserves_the_inherited_search_path() {
+        let key = if cfg!(windows) { "Path" } else { "PATH" };
+        let original = std::env::join_paths(["system-tools", "user-tools"]).unwrap();
+        let mut environment = Environment::from([(key.into(), original)]);
+        assert_eq!(
+            environment_value(&environment, "PATH"),
+            environment.get(OsStr::new(key)).map(OsString::as_os_str)
+        );
+        prepend_path(&mut environment, &[Path::new("pinned-tools")]).unwrap();
+        assert_eq!(environment.len(), 1);
+        let paths: Vec<_> =
+            std::env::split_paths(environment_value(&environment, "PATH").unwrap()).collect();
+        assert_eq!(
+            paths,
+            vec![
+                PathBuf::from("pinned-tools"),
+                PathBuf::from("system-tools"),
+                PathBuf::from("user-tools")
+            ]
+        );
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn unix_environment_keys_keep_their_case() {
+        let mut environment = Environment::from([("Path".into(), "separate".into())]);
+        assert!(environment_value(&environment, "PATH").is_none());
+        set_environment(&mut environment, "PATH", "pinned-tools");
+        assert_eq!(
+            environment_value(&environment, "Path"),
+            Some(OsStr::new("separate"))
+        );
+    }
+}

@@ -10,10 +10,10 @@ It never installs or launches an engine or probes the network.
 
 ```sh
 cargo install cargo-fuzz --version '=0.13.2' --locked
-python scripts/seed-fuzz.py
+cargo run --locked -p core-tooling --bin numera-seed-fuzz
 cargo +nightly-2026-11-10 fuzz run wire -- -max_total_time=60 -max_len=1048576 -rss_limit_mb=1024 -timeout=2 -seed=20261110
-python scripts/licenses-fuzz.py --check
-python scripts/security-audit.py --lock-file fuzz/Cargo.lock --output build/fuzz-security.json
+cargo run --locked -p core-tooling --bin numera-licenses-fuzz -- --check
+cargo run --locked -p core-tooling --bin numera-security-audit -- --lock-file fuzz/Cargo.lock --output build/fuzz-security.json
 ```
 
 Use an explicit nightly selection; do not change a user's global Rust default.
