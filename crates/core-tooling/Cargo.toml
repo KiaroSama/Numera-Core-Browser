@@ -10,7 +10,7 @@ publish.workspace = true
 [dependencies]
 core-contracts.workspace = true
 flate2 = "=1.1.11"
-jiff = "=0.2.46"
+jiff = "=1.0.2"
 jsonschema = { version = "=0.63.1", default-features = false }
 serde.workspace = true
 serde_json.workspace = true
