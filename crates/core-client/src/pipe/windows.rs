@@ -20,12 +20,15 @@ use windows_sys::Win32::{
     },
 };
 
+const PIPE_BUFFER_BYTES: u32 = 16 * 1024;
+const WRITE_CHUNK_BYTES: usize = 4 * 1024;
+
 fn anonymous_pipe() -> Result<(OwnedHandle, OwnedHandle), TransportError> {
     let mut reader = ptr::null_mut();
     let mut writer = ptr::null_mut();
     // SAFETY: The output pointers are valid. No pipe handle is inheritable
     // until Command configures its selected child endpoints.
-    if unsafe { CreatePipe(&mut reader, &mut writer, ptr::null(), 0) } == 0 {
+    if unsafe { CreatePipe(&mut reader, &mut writer, ptr::null(), PIPE_BUFFER_BYTES) } == 0 {
         return Err(TransportError::Pipe);
     }
     // SAFETY: CreatePipe returned ownership of two valid handles on success.
@@ -96,7 +99,9 @@ pub(super) fn read(pipe: &mut File, buffer: &mut [u8]) -> io::Result<usize> {
 }
 
 pub(super) fn write(pipe: &mut File, buffer: &[u8]) -> io::Result<usize> {
-    let length = buffer.len().min(u32::MAX as usize) as u32;
+    // A full-frame request can exceed the pipe quota and report no progress.
+    // Small writes let the caller advance the frame and check its deadline.
+    let length = buffer.len().min(WRITE_CHUNK_BYTES) as u32;
     let mut count = 0;
     // SAFETY: The parent handle is synchronous and set to PIPE_NOWAIT. The
     // buffer and byte count are valid for the call, which accepts a partial write.
@@ -141,5 +146,41 @@ mod tests {
         );
         drop(writer);
         assert_eq!(read(&mut reader, &mut bytes).unwrap(), 0);
+    }
+
+    #[test]
+    fn a_large_write_queues_bytes_before_backpressure_and_resumes_after_reading() {
+        let (reader, writer) = anonymous_pipe().unwrap();
+        nonblocking(&reader).unwrap();
+        nonblocking(&writer).unwrap();
+        let mut reader = File::from(reader);
+        let mut writer = File::from(writer);
+        let payload = vec![b'x'; core_contracts::MAX_FRAME];
+
+        let mut queued = 0;
+        while queued < payload.len() {
+            let count = write(&mut writer, &payload[queued..]).unwrap();
+            if count == 0 {
+                break;
+            }
+            queued += count;
+        }
+        assert!(
+            queued > 0 && queued < payload.len(),
+            "queued {queued} bytes before backpressure"
+        );
+
+        let mut received = vec![0; queued];
+        let mut consumed = 0;
+        while consumed < received.len() {
+            let count = read(&mut reader, &mut received[consumed..]).unwrap();
+            assert!(count > 0, "pipe reached EOF with the writer still open");
+            consumed += count;
+        }
+        assert_eq!(received, payload[..queued]);
+        assert_eq!(write(&mut writer, b"next").unwrap(), 4);
+        let mut next = [0; 4];
+        assert_eq!(read(&mut reader, &mut next).unwrap(), 4);
+        assert_eq!(&next, b"next");
     }
 }
