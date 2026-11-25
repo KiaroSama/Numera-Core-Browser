@@ -23,6 +23,8 @@ from engine_build import CheckRun, install_linux_sandbox, now, publish_check, re
 from logging_util import log
 
 SEGMENTS = 4
+DEFAULT_COMPILE_MINUTES = 275
+WINDOWS_DELTA_COMPILE_MINUTES = 305
 CACHE_LIMIT = 2_650_000_000
 CACHE_ACCOUNTING_GUARD = 2_500_000_000
 MAX_ENTRIES = 100_000
@@ -118,7 +120,11 @@ def windows_object_probe_targets(graph):
 def compile_segment(ninja, wrapper, source, targets, environment, output, report, minutes, checks=None):
     """Only stop the owned native tree, preserving completed cache writes."""
     available = psutil.virtual_memory().available
-    workers = max(1, min(os.cpu_count() or 1, 4, available // (3 * 1024**3)))
+    gib = 1024**3
+    # Reviewed Windows replay peaked below 4 GiB with three workers. Keep
+    # the default memory budget on hosts without room for four workers.
+    worker_memory = 2 * gib if report.get('checkpoint_transport') == 'artifact-delta' and available >= 8 * gib else 3 * gib
+    workers = max(1, min(os.cpu_count() or 1, 4, available // worker_memory))
     report['parallelism'] = workers
     cache_command(wrapper, environment, '--zero-stats')
     command = [str(ninja), '-C', 'out/Numera', '-j', str(workers), *targets]
@@ -176,7 +182,8 @@ def write_outputs(result, checkpoint_sha='', *, delta_sha='', objects_sha=''):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--segment', required=True, type=int, choices=range(1, SEGMENTS + 1))
-    parser.add_argument('--minutes', type=int, choices=range(10, 276), default=275)
+    parser.add_argument('--minutes', type=int, choices=range(10, WINDOWS_DELTA_COMPILE_MINUTES + 1),
+                        default=DEFAULT_COMPILE_MINUTES)
     parser.add_argument('--checkpoint-key', action='store_true')
     parser.add_argument('--delta-artifact-id', action='store_true')
     args = parser.parse_args()
@@ -205,6 +212,8 @@ def main():
         raise RuntimeError('The compiler cache transfer requires a Windows object probe')
     if windows_staged_delta and (host != 'Windows' or reviewed is None or read_only_replay):
         raise RuntimeError('A staged compiler cache delta requires a reviewed Windows base checkpoint')
+    if args.minutes > DEFAULT_COMPILE_MINUTES and not windows_staged_delta:
+        raise RuntimeError('The extended compile budget requires a reviewed Windows checkpoint')
     inherited_delta = None
     inherited_run = os.environ.get('REVIEWED_DELTA_RUN', '')
     if inherited_run:

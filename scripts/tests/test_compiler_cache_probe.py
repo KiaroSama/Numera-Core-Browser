@@ -13,6 +13,7 @@ from unittest.mock import patch
 SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
 import chromium_cache_probe as probe
+import chromium_staged_build as staged
 from chromium_staged_build import reviewed_checkpoint, reviewed_delta, restore_reviewed_context, windows_object_probe_targets
 
 
@@ -199,6 +200,25 @@ class CacheProvenance(unittest.TestCase):
 
 
 class NativeGraphOwnership(unittest.TestCase):
+    def test_reviewed_windows_delta_can_use_all_four_runner_cores(self):
+        gib = 1024**3
+        cases = (({'checkpoint_transport': 'artifact-delta'}, 9 * gib, 4),
+                 ({'checkpoint_transport': 'artifact-delta'}, 6 * gib, 2),
+                 ({}, 9 * gib, 3))
+        for report, available, workers in cases:
+            with self.subTest(report=report, available=available), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                child = SimpleNamespace(poll=lambda: 0, returncode=0)
+                with (patch.object(staged.psutil, 'virtual_memory', return_value=SimpleNamespace(available=available)),
+                      patch.object(staged.os, 'cpu_count', return_value=4),
+                      patch.object(staged, 'cache_command'),
+                      patch.object(staged.subprocess, 'Popen', return_value=child) as spawn):
+                    result = staged.compile_segment(Path('ninja'), Path('sccache'), root, ['chrome'],
+                                                    {}, root, report, 275)
+                self.assertEqual(result, 'built')
+                self.assertEqual(report['parallelism'], workers)
+                self.assertEqual(spawn.call_args.args[0][3:5], ['-j', str(workers)])
+
     def test_disk_monitor_error_stops_owned_child(self):
         with tempfile.TemporaryDirectory() as tmp:
             output = Path(tmp)
