@@ -1,6 +1,6 @@
 {
   "schema_revision": 1,
-  "observed_at": "2026-11-25T08:30:59.870094+00:00",
+  "observed_at": "2026-11-25T21:39:57.712340+00:00",
   "status": "unreviewed-candidate",
   "trusted_release": false,
   "versions": {
@@ -24,8 +24,8 @@
         "compatibility": "NOT_RUN; not an engine protocol version lock"
       },
       "puppeteer": {
-        "tag": "puppeteer-v25.18.1",
-        "published_at": "2026-11-17T16:21:18Z",
+        "tag": "puppeteer-v25.19.0",
+        "published_at": "2026-11-25T17:43:26Z",
         "source": "https://api.github.com/repos/puppeteer/puppeteer/releases?per_page=50",
         "compatibility": "NOT_RUN; not an engine protocol version lock"
       },
@@ -43,7 +43,7 @@
       "scope": "deferred"
     },
     "webkit": {
-      "revision": "29886d4d7a5e943657447a2a0274dd0297abe4f1",
+      "revision": "7a2135a049d0f13bc7f9a8bdadc461801210231f",
       "source": "https://api.github.com/repos/WebKit/WebKit/commits/main",
       "scope": "deferred",
       "note": "Not a universal Safari release version"
