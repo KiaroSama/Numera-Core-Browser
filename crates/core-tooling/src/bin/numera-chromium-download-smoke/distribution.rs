@@ -241,15 +241,16 @@ fn verify_source(
 ) -> Result<()> {
     let scratch = tempfile::tempdir()?;
     let expected_name = scratch.path().join("expected-source.zip");
-    process::stdout(
+    let status = process::ChildWatch::spawn(
         process::command("git", &process::build_environment())
             .current_dir(repository)
-            .args(["archive", "--format=zip", "--output"])
-            .arg(&expected_name)
-            .arg(selection.revision),
-        Duration::from_secs(60),
-        1024 * 1024,
-    )?;
+            .args(["archive", "--format=zip", selection.revision])
+            .stdout(File::create_new(&expected_name)?),
+    )?
+    .wait(Duration::from_secs(60))?;
+    if !status.success() {
+        return Err(failure("Could not archive the exact build commit"));
+    }
     let mut reference = ZipArchive::new(BufReader::new(File::open(expected_name)?))?;
     let mut source = ZipArchive::new(BufReader::new(regular_file(&root.join(SOURCE))?))?;
     let names = zip_members(&reference)?;

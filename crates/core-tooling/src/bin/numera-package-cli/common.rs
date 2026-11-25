@@ -3,11 +3,11 @@ use serde_json::{Value, json};
 use std::{
     collections::{BTreeMap, BTreeSet},
     env,
-    ffi::OsString,
+    ffi::{OsStr, OsString},
     fs,
     io::{self, Read, Write},
     path::{Path, PathBuf},
-    process::{Command, ExitCode, Output, Stdio},
+    process::{Child, Command, ExitCode, ExitStatus, Output, Stdio},
     thread,
     time::{Duration, Instant},
 };
@@ -156,19 +156,64 @@ pub fn git_head() -> Result<String> {
     Ok(commit)
 }
 
+pub fn git_archive_zip(
+    path: &Path,
+    commit: &str,
+    prefix: Option<&str>,
+    include: &[&str],
+    seconds: u64,
+) -> Result<()> {
+    let parent = path
+        .parent()
+        .ok_or("Missing source archive parent directory")?;
+    let archive = tempfile::NamedTempFile::new_in(parent)?;
+    let mut git = Command::new("git");
+    git.args(["archive", "--format=zip"]);
+    if let Some(prefix) = prefix {
+        git.arg(format!("--prefix={prefix}"));
+    }
+    // Rust opens the destination because Git for Windows interprets verbatim
+    // Windows paths passed as archive output arguments differently.
+    let mut child = git
+        .arg(commit)
+        .arg("--")
+        .args(include)
+        .stdin(Stdio::null())
+        .stdout(archive.reopen()?)
+        .stderr(Stdio::piped())
+        .spawn()?;
+    drop(git);
+    let stderr = child
+        .stderr
+        .take()
+        .ok_or("Missing Git archive diagnostic pipe")?;
+    let diagnostics = thread::spawn(move || read_pipe(stderr));
+    let status = wait(&mut child, Duration::from_secs(seconds))?;
+    let stderr = diagnostics
+        .join()
+        .map_err(|_| "Git archive diagnostic thread failed")??;
+    check_status(OsStr::new("git"), status, &stderr)?;
+    archive.persist_noclobber(path)?;
+    Ok(())
+}
+
 pub fn checked(command: &mut Command, seconds: u64) -> Result<Output> {
     let output = capture(command, None, Duration::from_secs(seconds))?;
-    if !output.status.success() {
-        let message = String::from_utf8_lossy(&output.stderr);
+    check_status(command.get_program(), output.status, &output.stderr)?;
+    Ok(output)
+}
+
+fn check_status(program: &OsStr, status: ExitStatus, stderr: &[u8]) -> Result<()> {
+    if !status.success() {
+        let message = String::from_utf8_lossy(stderr);
         return Err(format!(
-            "{} failed with {}: {}",
-            command.get_program().to_string_lossy(),
-            output.status,
+            "{} failed with {status}: {}",
+            program.to_string_lossy(),
             message.trim()
         )
         .into());
     }
-    Ok(output)
+    Ok(())
 }
 
 pub fn capture(command: &mut Command, input: Option<Vec<u8>>, timeout: Duration) -> Result<Output> {
@@ -192,22 +237,7 @@ pub fn capture(command: &mut Command, input: Option<Vec<u8>>, timeout: Duration)
         let mut stdin = child.stdin.take().expect("piped process input");
         thread::spawn(move || stdin.write_all(&input))
     });
-    let deadline = Instant::now() + timeout;
-    let status = loop {
-        match child.try_wait() {
-            Ok(Some(status)) => break status,
-            Ok(None) if Instant::now() < deadline => thread::sleep(Duration::from_millis(10)),
-            outcome => {
-                let _ = child.kill();
-                let _ = child.wait();
-                return match outcome {
-                    Ok(None) => Err("Native tool exceeded its deadline".into()),
-                    Err(error) => Err(error.into()),
-                    Ok(Some(_)) => unreachable!(),
-                };
-            }
-        }
-    };
+    let status = wait(&mut child, timeout)?;
     if let Some(writer) = writer {
         writer.join().map_err(|_| "Process input thread failed")??;
     }
@@ -220,6 +250,25 @@ pub fn capture(command: &mut Command, input: Option<Vec<u8>>, timeout: Duration)
             .join()
             .map_err(|_| "Process diagnostic thread failed")??,
     })
+}
+
+fn wait(child: &mut Child, timeout: Duration) -> Result<ExitStatus> {
+    let deadline = Instant::now() + timeout;
+    loop {
+        match child.try_wait() {
+            Ok(Some(status)) => return Ok(status),
+            Ok(None) if Instant::now() < deadline => thread::sleep(Duration::from_millis(10)),
+            outcome => {
+                let _ = child.kill();
+                let _ = child.wait();
+                return match outcome {
+                    Ok(None) => Err("Native tool exceeded its deadline".into()),
+                    Err(error) => Err(error.into()),
+                    Ok(Some(_)) => unreachable!(),
+                };
+            }
+        }
+    }
 }
 
 fn read_pipe(mut read: impl Read) -> io::Result<Vec<u8>> {

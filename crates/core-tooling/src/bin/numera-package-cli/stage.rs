@@ -1,6 +1,6 @@
 use crate::common::{
-    Arguments, Result, UsageError, canonical_json, capture, checked, git_head, git_tree, hash_file,
-    info, lexical_relative,
+    Arguments, Result, UsageError, canonical_json, capture, checked, git_archive_zip, git_head,
+    git_tree, hash_file, info, lexical_relative,
 };
 use flate2::{Compression, read::GzDecoder, write::GzEncoder};
 use serde_json::{Value, json};
@@ -89,13 +89,7 @@ pub fn run(args: Arguments) -> Result<PathBuf> {
     }
 
     let source = output.join(SOURCE);
-    checked(
-        Command::new("git")
-            .args(["archive", "--format=zip", "--output"])
-            .arg(&source)
-            .arg(&commit),
-        60,
-    )?;
+    git_archive_zip(&source, &commit, None, &[], 60)?;
     copy_archived_metadata(&source, &output, &tracked)?;
 
     let mut command = headless_command(&staged);

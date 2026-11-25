@@ -249,9 +249,8 @@ pub fn retain_development_bundle(
     let source = output.join("numera-source.zip");
     if !timed(
         command("git", environment)
-            .args(["archive", "--format=zip", "--output"])
-            .arg(&source)
-            .arg(commit),
+            .args(["archive", "--format=zip", commit])
+            .stdout(fs::File::create_new(&source)?),
         90,
     )?
     .success()

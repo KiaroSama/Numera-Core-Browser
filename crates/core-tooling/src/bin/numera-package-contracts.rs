@@ -4,8 +4,8 @@ mod checker;
 mod common;
 
 use common::{
-    Arguments, Result, checked, cli, git_head, git_tree, hash_file, info, lexical_relative,
-    write_new,
+    Arguments, Result, checked, cli, git_archive_zip, git_head, git_tree, hash_file, info,
+    lexical_relative, write_new,
 };
 use serde_json::Value;
 use std::{
@@ -73,18 +73,11 @@ fn package(args: Arguments) -> Result<()> {
     let output = build.join("contracts");
     fs::create_dir(&output)?;
     let archive_path = output.join(format!("{ARTIFACT}.zip"));
-    checked(
-        Command::new("git")
-            .args([
-                "archive",
-                "--format=zip",
-                &format!("--prefix={ARTIFACT}/"),
-                "--output",
-            ])
-            .arg(&archive_path)
-            .arg(&revision)
-            .arg("--")
-            .args(INCLUDED),
+    git_archive_zip(
+        &archive_path,
+        &revision,
+        Some(&format!("{ARTIFACT}/")),
+        INCLUDED,
         30,
     )?;
     append_provenance(&archive_path, &revision)?;
