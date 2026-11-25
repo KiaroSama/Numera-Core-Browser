@@ -3,9 +3,9 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['crates/**', 'Cargo.*', 'contracts/**', 'fuzz/**', 'scripts/seed-fuzz.py', 'scripts/licenses-fuzz.py', 'licenses/fuzz/**', '.github/workflows/fuzz.yml']
+    paths: ['crates/**', 'Cargo.*', 'contracts/**', 'fuzz/**', 'licenses/fuzz/**', '.github/workflows/fuzz.yml']
   pull_request:
-    paths: ['crates/**', 'Cargo.*', 'contracts/**', 'fuzz/**', 'scripts/seed-fuzz.py', 'scripts/licenses-fuzz.py', 'licenses/fuzz/**', '.github/workflows/fuzz.yml']
+    paths: ['crates/**', 'Cargo.*', 'contracts/**', 'fuzz/**', 'licenses/fuzz/**', '.github/workflows/fuzz.yml']
 permissions:
   contents: read
 concurrency:
@@ -25,9 +25,9 @@ jobs:
           cargo +nightly-2026-11-10 install cargo-fuzz --version '=0.13.2' --locked
       - name: Seed public wire fixtures and verify fuzz dependency notices
         run: |
-          python3 scripts/seed-fuzz.py
-          python3 scripts/licenses-fuzz.py --check
-          python3 scripts/security-audit.py --lock-file fuzz/Cargo.lock --output build/fuzz-security.json
+          cargo run --quiet --locked -p core-tooling --bin numera-seed-fuzz
+          cargo run --quiet --locked -p core-tooling --bin numera-licenses-fuzz -- --check
+          cargo run --quiet --locked -p core-tooling --bin numera-security-audit -- --lock-file fuzz/Cargo.lock --output build/fuzz-security.json
       - name: Run sixty-second AddressSanitizer and coverage-guided campaign
         run: |
           mkdir -p build

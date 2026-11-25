@@ -18,6 +18,9 @@ jobs:
       id-token: write
       attestations: write
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           name: development-chromium-runtime-${{ inputs.target }}
@@ -26,43 +29,7 @@ jobs:
         shell: bash
         env:
           RUNTIME_TARGET: ${{ inputs.target }}
-        run: |
-          python3 - <<'PY'
-          import hashlib
-          import json
-          import os
-          from pathlib import Path
-
-          root = Path('build/tested-runtime')
-          manifest = json.loads((root / 'development-runtime.json').read_text(encoding='utf-8'))
-          targets = {'ubuntu-24.04': 'x86_64-unknown-linux-gnu',
-                     'windows-2025-vs2026': 'x86_64-pc-windows-msvc'}
-          if manifest['trusted_release'] or manifest['build_mode'] != 'development':
-              raise SystemExit('Expected an unapproved development bundle')
-          if (manifest['numera_commit'] != os.environ['GITHUB_SHA']
-                  or manifest['workflow_run'] != int(os.environ['GITHUB_RUN_ID'])
-                  or manifest['target'] != targets[os.environ['RUNTIME_TARGET']]):
-              raise SystemExit('The bundle identity differs from its native workflow run')
-          attachments = manifest['attachments_sha256']
-          if attachments['runtime-inventory.json'] != manifest['runtime_inventory_sha256']:
-              raise SystemExit('The tested runtime inventory differs from its manifest')
-          if 'verified-upstream-source.json' not in attachments:
-              raise SystemExit('The verified upstream source record is missing')
-          subjects = attachments.copy()
-          for key, name in [('runtime', 'numera-portable-runtime.tar.gz'), ('numera_source', 'numera-source.zip')]:
-              subject = manifest[key]
-              if subject['file'] != name:
-                  raise SystemExit('Unexpected tested development subject')
-              subjects[name] = subject['sha256']
-          paths = list(root.rglob('*'))
-          files = {path.relative_to(root).as_posix() for path in paths if path.is_file()}
-          if files != set(subjects) | {'development-runtime.json'} or any(path.is_symlink() for path in paths):
-              raise SystemExit('The retained bundle file set differs from its manifest')
-          for name, digest in subjects.items():
-              with (root / name).open('rb') as file:
-                  if hashlib.file_digest(file, 'sha256').hexdigest() != digest:
-                      raise SystemExit('The tested development subject digest changed')
-          PY
+        run: cargo run --quiet --locked -p core-tooling --bin numera-chromium-download-smoke -- --verify-subjects
       - name: Attest the tested development runtime, source and manifest
         id: attest
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6

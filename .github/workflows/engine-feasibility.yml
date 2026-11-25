@@ -24,8 +24,10 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Build the native feasibility and source tools
+        run: cargo build --locked -p core-tooling --bins
       - name: Measure cold build prerequisites
-        run: python scripts/feasibility.py --output build/feasibility.json
+        run: ./target/debug/numera-feasibility --output build/feasibility.json
       - name: Preserve measurements even when build is blocked
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
@@ -34,7 +36,7 @@ jobs:
           path: build/feasibility.json
           if-no-files-found: error
       - name: Enforce owned-engine gate
-        run: python -c "import json; r=json.load(open('build/feasibility.json')); raise SystemExit(0 if r['result']=='PASS' else 1)"
+        run: ./target/debug/numera-feasibility --check build/feasibility.json
   automation-baseline:
     if: >-
       github.repository == 'KiaroSama/Numera-Core-Browser' && github.event.repository.private == false &&
@@ -59,16 +61,19 @@ jobs:
         run: |
           sudo apt-get update -q
           sudo apt-get install -y --no-install-recommends x11-utils=7.7+6build2
-      - name: Install locked browser fixture tools
+      - name: Install the locked external browser SDKs
+        run: npm --prefix tests/native-automation ci --ignore-scripts --no-fund --no-audit
+      - name: Build and pin the Rust adapter for the locked external SDKs
         run: |
-          python -m pip install --disable-pip-version-check -r requirements-engine-build.txt
-          npm --prefix tests/native-automation ci --ignore-scripts --no-fund --no-audit
-          node --test tests/native-automation/loopback.test.mjs
-        shell: bash
+          cargo build --locked -p core-sdk-fixture -p core-tooling --bin numera-sdk-fixture --bin numera-prepare-sdk-adapter
+          cargo build --locked -p core-sdk-fixture --lib
+          cargo run --quiet --locked -p core-tooling --bin numera-prepare-sdk-adapter
+      - name: Test Rust loopback and SDK evidence handling
+        run: cargo test --locked -p core-tooling --test native_automation
       - name: Build the Rust process ownership fixture
         run: cargo build --locked -p core-process --bin numera-process-fixture
       - name: Run controlled browser fixtures against the runner baseline
-        run: python scripts/automation_baseline.py
+        run: cargo run --quiet --locked -p core-tooling --bin numera-automation-baseline -- --sdk-adapter build/native-sdk/adapter.json
       - name: Retain comparison evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9

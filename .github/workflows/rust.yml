@@ -2,9 +2,9 @@ name: Rust and NCB-1 control plane
 on:
   push:
     branches: [main, 'implementation/**']
-    paths: ['crates/**', 'Cargo.*', 'rust-toolchain.toml', 'contracts/**', 'scripts/Build.ps1', 'scripts/Check-PowerShell.ps1', 'scripts/export-contracts.py', 'scripts/check-contracts.py', 'scripts/package-contracts.py', 'scripts/licenses.py', 'scripts/security-audit.py', 'scripts/logging_util.py', 'scripts/package-cli.py', 'scripts/verify-cli-package.py', 'scripts/ncb1_client.py', 'scripts/tests/test_ncb1_client.py', 'licenses/**', 'requirements-dev.txt', '.github/workflows/rust.yml']
+    paths: ['crates/**', 'Cargo.*', 'rust-toolchain.toml', 'contracts/**', 'licenses/**', '.github/workflows/rust.yml']
   pull_request:
-    paths: ['crates/**', 'Cargo.*', 'rust-toolchain.toml', 'contracts/**', 'scripts/Build.ps1', 'scripts/Check-PowerShell.ps1', 'scripts/export-contracts.py', 'scripts/check-contracts.py', 'scripts/package-contracts.py', 'scripts/licenses.py', 'scripts/security-audit.py', 'scripts/logging_util.py', 'scripts/package-cli.py', 'scripts/verify-cli-package.py', 'scripts/ncb1_client.py', 'scripts/tests/test_ncb1_client.py', 'licenses/**', 'requirements-dev.txt', '.github/workflows/rust.yml']
+    paths: ['crates/**', 'Cargo.*', 'rust-toolchain.toml', 'contracts/**', 'licenses/**', '.github/workflows/rust.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -33,32 +33,27 @@ jobs:
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           cargo clippy --workspace --all-targets --locked -- -D warnings
           exit $LASTEXITCODE
-      - name: Validate PowerShell orchestration syntax
-        shell: pwsh
-        run: ./scripts/Check-PowerShell.ps1
       - name: Unit and actual CLI process tests
         env:
           NUMERA_PARENT_SECRET: synthetic-fixture-only
         run: cargo test --workspace --locked
       - name: Build CLI without a display or automation client dependency
-        run: cargo build --locked -p core-cli
+        run: cargo build --locked -p core-cli -p core-tooling
       - name: Native executable and canonical conformance
         shell: pwsh
         run: |
-          python -m pip install -r requirements-dev.txt
-          if ($LASTEXITCODE) { exit $LASTEXITCODE }
           $Binary = if ($IsWindows) { 'target/debug/numera-core.exe' } else { 'target/debug/numera-core' }
           & $Binary --json doctor
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          python scripts/export-contracts.py --binary $Binary --check
+          cargo run --quiet --locked -p core-tooling --bin numera-export-contracts -- --binary $Binary --check
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          python scripts/package-contracts.py --binary $Binary
+          cargo run --quiet --locked -p core-tooling --bin numera-package-contracts -- --binary $Binary
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           $env:NUMERA_CORE_TEST_BINARY = (Resolve-Path $Binary).Path
-          python -m unittest discover -s scripts/tests -p test_ncb1_client.py
+          cargo test --locked -p core-client -- --ignored
           exit $LASTEXITCODE
       - name: License inventory and complete dependency notices
-        run: python scripts/licenses.py --check
+        run: cargo run --quiet --locked -p core-tooling --bin numera-licenses -- --check
       - name: Stage tested development CLI and matching complete source
         shell: pwsh
         env:
@@ -66,7 +61,7 @@ jobs:
         run: |
           $Binary = if ($IsWindows) { 'target/debug/numera-core.exe' } else { 'target/debug/numera-core' }
           $Launcher = if ($IsWindows) { 'target/debug/numera-core-gui.exe' } else { 'target/debug/numera-core-gui' }
-          python scripts/verify-cli-package.py --binary $Binary --launcher $Launcher --output build/development-cli --target $env:PACKAGE_TARGET
+          cargo run --quiet --locked -p core-tooling --bin numera-verify-cli-package -- --binary $Binary --launcher $Launcher --output build/development-cli --target $env:PACKAGE_TARGET
           exit $LASTEXITCODE
       - name: Preserve development CLI; no engine or browser release
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
@@ -90,7 +85,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Query current vulnerability database for every locked package
-        run: python3 scripts/security-audit.py
+        run: cargo run --quiet --locked -p core-tooling --bin numera-security-audit
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
@@ -110,6 +105,9 @@ jobs:
       id-token: write
       attestations: write
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           pattern: development-cli-*
@@ -119,14 +117,7 @@ jobs:
           name: numera-core-contracts-v1-ubuntu-24.04
           path: build/attestation-input/contracts
       - name: Prepare the exact tested development artifact subjects
-        shell: bash
-        run: |
-          mkdir -p build/attestation-subjects
-          mv build/attestation-input/development-cli-ubuntu-24.04/development-cli.tar.gz build/attestation-subjects/numera-core-cli-linux-x86_64.tar.gz
-          mv build/attestation-input/development-cli-windows-2025/development-cli.tar.gz build/attestation-subjects/numera-core-cli-windows-x86_64.tar.gz
-          cd build/attestation-input/contracts
-          sha256sum --check numera-core-contracts-v1.sha256
-          mv numera-core-contracts-v1.zip ../../attestation-subjects/
+        run: cargo run --quiet --locked -p core-tooling --bin numera-ci-artifacts -- stage-development-subjects
       - name: Attest the tested development packages and contract
         id: attest
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6

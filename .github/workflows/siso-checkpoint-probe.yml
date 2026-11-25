@@ -14,16 +14,24 @@ jobs:
     runs-on: ubuntu-24.04
     container:
       image: python@sha256:934f4289019d6c3dc94d5e6341ff3a70c82f19bb118756eb03bdd700fe4b5c98
-    timeout-minutes: 10
+    timeout-minutes: 20
     outputs:
       checkpoint_sha: ${{ steps.probe.outputs.checkpoint_sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
+      - name: Install pinned Rust in the unchanged probe container
+        shell: bash
+        run: |
+          curl --fail --silent --show-error --proto '=https' --output "$RUNNER_TEMP/rustup-init" https://static.rust-lang.org/rustup/archive/1.29.3/x86_64-unknown-linux-gnu/rustup-init
+          printf '%s  %s\n' b1c8cb14e30889e7e2999e6b69e62d9e9b9ffc0f4df8180564d306d9680e6c55 "$RUNNER_TEMP/rustup-init" | sha256sum --check
+          chmod 0700 "$RUNNER_TEMP/rustup-init"
+          "$RUNNER_TEMP/rustup-init" -y --no-modify-path --profile minimal --default-toolchain 1.99.1
+          printf '%s\n' "$HOME/.cargo/bin" >> "$GITHUB_PATH"
       - name: Cold compile one authored C object; no browser source or objects
         id: probe
-        run: python3 scripts/siso-checkpoint-probe.py seed
+        run: cargo run --quiet --locked -p core-tooling --bin numera-siso-checkpoint-probe -- seed
       - name: Preserve bounded research checkpoint
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
@@ -47,11 +55,19 @@ jobs:
     runs-on: ubuntu-24.04
     container:
       image: python@sha256:934f4289019d6c3dc94d5e6341ff3a70c82f19bb118756eb03bdd700fe4b5c98
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
+      - name: Install pinned Rust in the unchanged probe container
+        shell: bash
+        run: |
+          curl --fail --silent --show-error --proto '=https' --output "$RUNNER_TEMP/rustup-init" https://static.rust-lang.org/rustup/archive/1.29.3/x86_64-unknown-linux-gnu/rustup-init
+          printf '%s  %s\n' b1c8cb14e30889e7e2999e6b69e62d9e9b9ffc0f4df8180564d306d9680e6c55 "$RUNNER_TEMP/rustup-init" | sha256sum --check
+          chmod 0700 "$RUNNER_TEMP/rustup-init"
+          "$RUNNER_TEMP/rustup-init" -y --no-modify-path --profile minimal --default-toolchain 1.99.1
+          printf '%s\n' "$HOME/.cargo/bin" >> "$GITHUB_PATH"
       - name: Download checkpoint from this same run with required digest verification
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
@@ -61,7 +77,7 @@ jobs:
       - name: Verify provenance, resume and exercise dependency invalidation
         env:
           EXPECTED_CHECKPOINT_SHA: ${{ needs.seed.outputs.checkpoint_sha }}
-        run: python3 scripts/siso-checkpoint-probe.py resume --checkpoint build/checkpoint-input/checkpoint.tar.gz --expected-sha "$EXPECTED_CHECKPOINT_SHA"
+        run: cargo run --quiet --locked -p core-tooling --bin numera-siso-checkpoint-probe -- resume --checkpoint build/checkpoint-input/checkpoint.tar.gz --expected-sha "$EXPECTED_CHECKPOINT_SHA"
       - name: Preserve research result only; no engine acceptance
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9

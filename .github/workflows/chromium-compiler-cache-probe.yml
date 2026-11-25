@@ -25,13 +25,13 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - name: Install pinned telemetry dependency
-        run: python -m pip install --disable-pip-version-check -r requirements-engine-build.txt
+      - name: Build the native compiler cache tooling
+        run: cargo build --locked -p core-tooling --bins
       - name: Verify native graph ownership cleanup
-        run: python -m unittest discover -s scripts/tests -p test_compiler_cache_probe.py -v
+        run: cargo test --locked -p core-tooling --test chromium_checkpoints
       - name: Compile the real Chromium object into an empty local cache
         id: seed
-        run: python scripts/chromium_cache_probe.py seed
+        run: ./target/debug/numera-chromium-cache-probe seed
       - name: Save one bounded cache entry scoped to this attempt
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
@@ -53,8 +53,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - name: Install pinned telemetry dependency
-        run: python -m pip install --disable-pip-version-check -r requirements-engine-build.txt
+      - name: Build the native compiler cache tooling
+        run: cargo build --locked -p core-tooling --bins
       - name: Fetch the exact cache entry from this attempt
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
@@ -64,7 +64,7 @@ jobs:
       - name: Recreate the object and verify real source invalidation
         env:
           EXPECTED_CHECKPOINT_SHA: ${{ needs.seed.outputs.checkpoint_sha }}
-        run: python scripts/chromium_cache_probe.py resume
+        run: ./target/debug/numera-chromium-cache-probe resume
       - name: Preserve diagnostics only
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9

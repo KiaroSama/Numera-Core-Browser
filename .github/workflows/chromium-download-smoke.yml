@@ -37,29 +37,7 @@ jobs:
           BUNDLE_RUN: ${{ inputs.bundle_run }}
           BUNDLE_HOST: ${{ inputs.host }}
         shell: bash
-        run: |
-          "${{ runner.os == 'Windows' && 'python' || 'python3' }}" - <<'PY'
-          import json
-          import os
-          import re
-          import subprocess
-
-          run = os.environ['BUNDLE_RUN']
-          target = 'windows-2025-vs2026' if os.environ['BUNDLE_HOST'] == 'windows-2025-vs2026' else 'ubuntu-24.04'
-          repository = 'KiaroSama/Numera-Core-Browser'
-          if not re.fullmatch(r'[1-9][0-9]{0,17}', run):
-              raise SystemExit('Select a successful numeric repository build run')
-          metadata = json.loads(subprocess.check_output(['gh', 'api', f'repos/{repository}/actions/runs/{run}'], timeout=30))
-          revision = metadata['head_sha']
-          if (metadata['workflow_id'] not in {426002445, 425565660} or metadata['id'] != int(run)
-                  or metadata['status'] != 'completed' or metadata['conclusion'] != 'success'
-                  or metadata['event'] != 'workflow_dispatch' or metadata['head_branch'] != 'main'
-                  or metadata['head_repository']['full_name'] != repository
-                  or not re.fullmatch(r'[0-9a-f]{40}', revision)):
-              raise SystemExit('The selected build is outside the retained-package verification scope')
-          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
-              output.write(f'run={run}\nsha={revision}\ntarget={target}\n')
-          PY
+        run: cargo run --quiet --locked -p core-tooling --bin numera-chromium-download-smoke -- --resolve-run
       - name: Download the retained runtime from the completed workflow
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
@@ -74,11 +52,6 @@ jobs:
           path: build/downloaded-chromium/provenance
           github-token: ${{ github.token }}
           run-id: ${{ steps.source.outputs.run }}
-      - name: Select the pinned fixture Python on Ubuntu 22.04
-        if: inputs.host == 'ubuntu-22.04'
-        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
-        with:
-          python-version: '3.12.16'
       - name: Prepare the verifier and window inspection fixtures
         if: runner.os == 'Linux'
         env:
@@ -87,21 +60,18 @@ jobs:
           sudo apt-get update -q
           sudo apt-get install -y --no-install-recommends "x11-utils=$X11_UTILS_VERSION"
           command -v xvfb-run Xvfb xauth xwininfo xprop gh
-          python3 -m pip install --disable-pip-version-check -r requirements-engine-build.txt
           cargo build --locked -p core-cli --release
       - name: Prepare the native Windows archive verifier
         if: runner.os == 'Windows'
         shell: pwsh
-        run: |
-          python -m pip install --disable-pip-version-check -r requirements-engine-build.txt
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          cargo build --locked -p core-cli --release
-          exit $LASTEXITCODE
+        run: cargo build --locked -p core-cli --release
       - name: Verify provenance and run the package on this fresh native host
         env:
           NUMERA_BUNDLE_SOURCE_SHA: ${{ steps.source.outputs.sha }}
           NUMERA_BUNDLE_RUN: ${{ steps.source.outputs.run }}
-        run: ${{ runner.os == 'Windows' && 'python' || 'python3' }} scripts/chromium_download_smoke.py
+        run: |
+          cargo build --locked -p core-tooling --bin numera-chromium-headed-fixture
+          cargo run --quiet --locked -p core-tooling --bin numera-chromium-download-smoke
       - name: Retain the independent download and execution evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9

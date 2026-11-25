@@ -33,7 +33,7 @@ cargo run --locked -q -p core-cli -- serve
 
 `numera-core --json engines verify-archive FILE SHA256` verifies a portable Chromium `tar.gz` layout and SHA-256 digest. Supply the digest from a separately verified build report or signed release metadata. The command reads the archive and reports its file count and expanded size.
 
-The compiled CLI requires no Node.js, Python, display server or manager installation. Development tooling uses Python, and native automation fixtures also use Node.js. On Windows use PowerShell 7: `./scripts/Build.ps1 -Mode Check` or `-Mode Build`.
+Build and check the project with the pinned Rust toolchain. Run `cargo run --locked -p core-tooling --bin numera-build -- --mode check` or use `--mode build` for a release build. External Chromium source-build and SDK tests use their pinned upstream toolchains.
 
 Successful native CI jobs produce `development-cli-*` artifacts with a `development-cli.tar.gz` bundle containing the CLI, optional desktop launcher, notices and matching `complete-source.zip`. After extracting the artifact ZIP, extract the tar bundle with `tar -xzf development-cli.tar.gz`. Run `./numera-core --json doctor` from the extracted directory, or `.\numera-core.exe --json doctor` in PowerShell. These unsigned development archives require a separate signed Chromium package for browser sessions. Clean-machine installation validation remains open.
 
@@ -68,7 +68,8 @@ Use `numera-core serve STORE DATA_ROOT` for inherited-stdio standalone sessions,
 | `crates/core-cli` | Package administration, inherited-stdio service and Chromium desktop launcher |
 | `contracts` | Generated canonical schemas, fixtures and manager theme tokens |
 | `upstream` | Per-platform source pins, minimal branding patch and unreviewed observations |
-| `scripts` | Build, dependency review, source feasibility and external conformance tools |
+| `crates/core-client` | Bounded Rust client for the local NCB-1 service |
+| `crates/core-tooling` | Build orchestration, dependency review, packaging and conformance |
 
 The launcher supports standalone Chromium sessions. Managed grants, detached reconnect, credentialed proxy transport, mobile emulation and public publisher release acceptance remain open.
 
@@ -78,16 +79,16 @@ The launcher supports standalone Chromium sessions. Managed grants, detached rec
 cargo fmt --all -- --check
 cargo clippy --workspace --all-targets --locked -- -D warnings
 cargo test --workspace --locked
-python -m pip install -r requirements-dev.txt
-python scripts/export-contracts.py --binary target/debug/numera-core --check
-python scripts/check-contracts.py --binary target/debug/numera-core
-python scripts/licenses.py --check
-python scripts/security-audit.py
+cargo build --locked -p core-cli
+cargo run --locked -p core-tooling --bin numera-export-contracts -- --binary target/debug/numera-core --check
+cargo run --locked -p core-tooling --bin numera-check-contracts -- --binary target/debug/numera-core
+cargo run --locked -p core-tooling --bin numera-licenses -- --check
+cargo run --locked -p core-tooling --bin numera-security-audit
 ```
 
 Windows executable paths end in `.exe`. Use the native CI matrix for Windows and Linux verification. [Protocol](contracts/PROTOCOL.md) · [Security](SECURITY.md) · [Updates](docs/adr/003-updates.md) · [Feasibility](docs/feasibility.md) · [Manager integration](docs/manager-integration.md)
 
-The external consumer also tests shutdown with a saturated stderr pipe. On Linux it compiles a small development fixture with the system `cc` to reproduce file replacement during opening; this fixture is never linked into the installed CLI.
+The external consumer also tests shutdown with a saturated stderr pipe. On Linux it compiles a Rust preload fixture with the pinned `rustc` to reproduce file replacement during opening; this fixture is never linked into the installed CLI.
 
 [Bounded IPC fuzzing](fuzz/README.md) has its own pinned development toolchain,
 dependency inventory and CI job. It does not add nightly Rust or libFuzzer to

@@ -1,6 +1,6 @@
 # NCB-1 development contract
 
-Namespace `numera.core`, wire major `1`, schema revision `1`. This is distinct from the manager's existing adapter protocol numbered `1`. Canonical request/response/manifest schemas are generated from Rust types with `scripts/export-contracts.py`; fixtures and a real producer/consumer harness live alongside them. This is not a released manager-integration contract.
+Namespace `numera.core`, wire major `1`, schema revision `1`. This is distinct from the manager's existing adapter protocol numbered `1`. Canonical request/response/manifest schemas are generated from Rust types with `numera-export-contracts`; fixtures and a real producer/consumer harness live alongside them. This is not a released manager-integration contract.
 
 Inherited stdio is the only transport. Frames are UTF-8 JSON followed by LF, at most 1 MiB including LF. Duplicate keys at every depth, malformed encodings, trailing JSON, unknown fields and invalid typed payloads are rejected. Empty EOF exits successfully. EOF within a frame, oversized frames and framing errors terminate with a sanitized error and exit `2`. Parsed per-request errors leave the connection open.
 

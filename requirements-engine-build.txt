@@ -1,2 +1,0 @@
-# Hosted source-build telemetry only. Not shipped with the Core runtime.
-psutil==7.2.2

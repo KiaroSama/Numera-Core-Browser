@@ -1,6 +1,16 @@
 [workspace]
 resolver = "3"
-members = ["crates/core-contracts", "crates/core-identity", "crates/core-engines", "crates/core-process", "crates/core-runtime", "crates/core-cli"]
+members = [
+    "crates/core-contracts",
+    "crates/core-identity",
+    "crates/core-engines",
+    "crates/core-process",
+    "crates/core-runtime",
+    "crates/core-cli",
+    "crates/core-client",
+    "crates/core-sdk-fixture",
+    "crates/core-tooling",
+]
 
 [workspace.package]
 version = "0.1.0-dev.1"

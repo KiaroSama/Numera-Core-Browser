@@ -86,8 +86,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - name: Install pinned telemetry dependency
-        run: python -m pip install --disable-pip-version-check -r requirements-engine-build.txt
+      - name: Build the native Rust tooling
+        run: cargo build --locked -p core-tooling --bins
       - name: Install the Linux window inspection tools
         if: runner.os == 'Linux'
         shell: bash
@@ -102,12 +102,16 @@ jobs:
       - name: Install locked automation test clients without browser downloads
         working-directory: tests/native-automation
         run: npm ci --ignore-scripts --no-fund --no-audit
+      - name: Build and pin the Rust adapter for the locked external SDKs
+        run: |
+          cargo build --locked -p core-sdk-fixture -p core-tooling --bin numera-sdk-fixture --bin numera-prepare-sdk-adapter
+          cargo build --locked -p core-sdk-fixture --lib
+          cargo run --quiet --locked -p core-tooling --bin numera-prepare-sdk-adapter
       - name: Validate build tooling and the loopback fixture transport
         if: inputs.segment == 1
         shell: bash
         run: |
-          python -m unittest discover -s scripts/tests -v
-          node --test tests/native-automation/loopback.test.mjs
+          cargo test --locked -p core-tooling
       - name: Build the optimized native Rust archive verifier
         run: cargo build --locked -p core-cli --release
       - name: Build the native Rust process ownership fixture
@@ -122,7 +126,7 @@ jobs:
           WINDOWS_STAGED_DELTA: ${{ inputs.windows_staged_delta }}
         shell: pwsh
         run: |
-          $Key = python scripts/chromium_staged_build.py --segment $env:BUILD_SEGMENT --checkpoint-key
+          $Key = & ./target/debug/numera-chromium-staged-build --segment $env:BUILD_SEGMENT --checkpoint-key
           if ($LASTEXITCODE -ne 0 -or $Key -notmatch '^chromium-staged-\d+-\d+-[1-4]-(ubuntu-24\.04|windows-2025-vs2026)$') {
             throw 'Cannot resolve the reviewed checkpoint cache key'
           }
@@ -146,7 +150,7 @@ jobs:
           WINDOWS_STAGED_DELTA: ${{ inputs.windows_staged_delta }}
         shell: pwsh
         run: |
-          $Artifact = python scripts/chromium_staged_build.py --segment $env:BUILD_SEGMENT --delta-artifact-id
+          $Artifact = & ./target/debug/numera-chromium-staged-build --segment $env:BUILD_SEGMENT --delta-artifact-id
           if ($LASTEXITCODE -ne 0 -or $Artifact -notmatch '^[1-9]\d{0,17}$') {
             throw 'Cannot resolve the reviewed Windows delta artifact ID'
           }
@@ -198,17 +202,14 @@ jobs:
           EXPECTED_OBJECTS_SHA: ${{ inputs.expected_objects_sha }}
           GH_TOKEN: ${{ github.token }}
         shell: pwsh
-        run: python scripts/chromium_staged_build.py --segment $env:BUILD_SEGMENT --minutes $env:BUILD_MINUTES
+        run: |
+          & ./target/debug/numera-chromium-staged-build --segment $env:BUILD_SEGMENT --minutes $env:BUILD_MINUTES
+          exit $LASTEXITCODE
       - name: Confirm repository cache allowance before saving a partial compile
         if: inputs.read_only_replay == false && inputs.windows_staged_delta == false && steps.build.outputs.result == 'PARTIAL'
         env:
           GH_TOKEN: ${{ github.token }}
-        shell: pwsh
-        run: |
-          $Usage = gh api "repos/$env:GITHUB_REPOSITORY/actions/cache/usage" --jq '.active_caches_size_in_bytes'
-          if ($LASTEXITCODE -ne 0 -or $Usage -notmatch '^\d+$') { throw 'Cannot verify repository cache allowance' }
-          $Checkpoint = (Get-Item 'build/chromium-staged-cache/checkpoint.tar').Length
-          if (([int64]$Usage + $Checkpoint + 150000000) -ge 9500000000) { throw 'Repository cache headroom is too small for this checkpoint' }
+        run: ./target/debug/numera-ci-artifacts verify-cache-headroom
       - name: Save the bounded checkpoint for the next native job
         if: inputs.read_only_replay == false && inputs.windows_staged_delta == false && steps.build.outputs.result == 'PARTIAL'
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
