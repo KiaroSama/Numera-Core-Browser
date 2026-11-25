@@ -16,7 +16,7 @@ use std::{
     path::{Path, PathBuf},
     process::{Command, ExitCode},
 };
-use zip::{CompressionMethod, DateTime, ZipArchive, ZipWriter, write::SimpleFileOptions};
+use zip::{CompressionMethod, DateTime, System, ZipArchive, ZipWriter, write::SimpleFileOptions};
 
 const ARTIFACT: &str = "numera-core-contracts-v1";
 const CHECKER_SOURCE: &str = "crates/core-tooling/src/bin/numera-check-contracts.rs";
@@ -102,6 +102,7 @@ fn append_provenance(path: &Path, revision: &str) -> Result<()> {
     let options = SimpleFileOptions::default()
         .compression_method(CompressionMethod::Stored)
         .last_modified_time(DateTime::default())
+        .system(System::Unix)
         .unix_permissions(0o600);
     zip.start_file(format!("{ARTIFACT}/source-commit.txt"), options)?;
     writeln!(zip, "{revision}")?;
@@ -173,4 +174,23 @@ fn verify_hashes(extracted: &Path) -> Result<()> {
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn provenance_uses_the_same_zip_system_on_every_host() -> Result<()> {
+        let directory = tempfile::tempdir()?;
+        let path = directory.path().join("contracts.zip");
+        ZipWriter::new(File::create(&path)?).finish()?;
+
+        append_provenance(&path, "test-revision")?;
+
+        let mut archive = ZipArchive::new(File::open(&path)?)?;
+        let provenance = archive.by_name(&format!("{ARTIFACT}/source-commit.txt"))?;
+        assert_eq!(provenance.system(), System::Unix);
+        Ok(())
+    }
 }
