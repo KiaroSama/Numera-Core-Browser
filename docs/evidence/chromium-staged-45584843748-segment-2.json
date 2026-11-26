@@ -1,0 +1,169 @@
+{
+  "schema_revision": 1,
+  "run_id": 45584843748,
+  "job_id": 139289289253,
+  "workflow_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/45584843748",
+  "native_job_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/45584843748/job/139289289253",
+  "diagnostics": {
+    "artifact_id": 15059237107,
+    "sha256": "46dd7ea83596713bd05a1cb86aa990806f4a6f22dfa278798c8159fb2a7e1c3c"
+  },
+  "artifact": {
+    "id": 15059386887,
+    "name": "staged-windows-delta-1-2",
+    "zip_bytes": 2156001412,
+    "zip_sha256": "4022e12f6efb6e19b0fa9c99adb64c95a052a45c71018b6f2b926d604c807410"
+  },
+  "verified_restore": {
+    "segment": 3,
+    "job_id": 139485150654,
+    "native_job_url": "https://github.com/KiaroSama/Numera-Core-Browser/actions/runs/45584843748/job/139485150654",
+    "diagnostics": {
+      "artifact_id": 15079572457,
+      "sha256": "ad3d426abb8da0adb2a7174f1a12f5dbfb22db235f09aab7a364e1a6b67f64b0"
+    },
+    "downloaded_zip_sha256": "4022e12f6efb6e19b0fa9c99adb64c95a052a45c71018b6f2b926d604c807410",
+    "restored_delta_sha256": "e40d6d81f3ca945cc5926d013c24b9d4924f1abdeb93fddda07a84e064b9eb3e",
+    "restored_delta_entries": 25097,
+    "result": "BLOCKED",
+    "segment_stop": "time-budget",
+    "diagnostic": "The segment did not add transferable compiler outputs",
+    "native_action_progress": {
+      "completed": 53684,
+      "total": 57774
+    },
+    "new_cache_writes": 0
+  },
+  "report": {
+    "schema_revision": 1,
+    "result": "PARTIAL",
+    "stage": "checkpoint",
+    "segment": 2,
+    "commit": "bc6b5ed866b165c7c39a1864947ed8053cc9f007",
+    "host": "Windows",
+    "release_ready": false,
+    "source_build": "PARTIAL",
+    "read_only_replay": false,
+    "renderer_fixture": "NOT_RUN",
+    "driver_fixture": "NOT_RUN",
+    "automation_client_smokes": "NOT_RUN",
+    "automation_suites": "NOT_RUN",
+    "portable_runtime_fixture": "NOT_RUN",
+    "headed_browser_fixture": "NOT_RUN",
+    "linked_build_materials": "NOT_RUN",
+    "compile_budget_minutes": 305,
+    "debug_build": true,
+    "elapsed_seconds": 18301.078,
+    "disk_free_bytes": 167470931968,
+    "peak_tree_rss_bytes": 3901771776,
+    "checkpoint_transport": "artifact-delta",
+    "context": {
+      "head": "bc6b5ed866b165c7c39a1864947ed8053cc9f007",
+      "run_id": "45584843748",
+      "run_attempt": "1",
+      "runner_image": "20261116.315.1",
+      "host": "Windows",
+      "scratch": "D:\\a\\_temp\\numera-chromium-staged",
+      "targets": [
+        "chrome",
+        "chromedriver"
+      ],
+      "source_lock_sha256": "a0899efb63de8badf27b640b9bfba4f702aaaa74cd2381c19f7fd6c5ac81bf12",
+      "gn_args_sha256": "ed77d85ceb6cb8e5c1d5c3753cc61af2f7cf9e4a86224629be516c13629b9da5",
+      "commands_sha256": "6a16f8e2eb5e266e84aa6da56bcff145dd3450c0a7853abe6f35dd9d36f48260",
+      "cache_tool": "sccache",
+      "cache_tool_sha256": "ba5542107b245431e37011110c1929d635e3a8e52cc98d35c4b01d0aa328b5a5",
+      "cache_config_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "ninja_sha256": "e52a7ad9538d9618c67a0bd777964e2eec8a30f68b810a2f6adce1f2daf847b8",
+      "clang_sha256": "4da6bc64ba680144071eddd49e70e4e9ab75a683ecf471cb298760adbe275094",
+      "sdk": {
+        "directory_version": "10.0.28000.0",
+        "debugging_tools_version": "10.0.28000.2957 (WinBuild.160101.0800)",
+        "requested_release": "10.0.28000.2957"
+      },
+      "sccache_policy": {
+        "SCCACHE_CACHE_SIZE": "4G",
+        "SCCACHE_DIRECT": "false"
+      }
+    },
+    "runner_images": {
+      "seed": "20261116.315.1",
+      "resume": "20261116.315.1"
+    },
+    "reviewed_checkpoint": {
+      "sha256": "3621a100efd6bb9c8bfbb93353f06fe34c71db5f9e420bd096a07afa002df620",
+      "key": "chromium-staged-44989521034-1-1-windows-2025-vs2026",
+      "job_id": 137107418732,
+      "source_commit": "beb9c4a183ae930e33a560b8ba0599417a34935b"
+    },
+    "restored_delta_sha256": "3c9f9d7fd5cf0eb1b27cb7531aa66ec26d0aae764f51382d04789b3da2ff7f12",
+    "restored_delta_entries": 21025,
+    "parallelism": 4,
+    "native_action_progress": {
+      "completed": 56823,
+      "total": 57774
+    },
+    "compiler_cache": {
+      "preprocessed_cache_hit": 43221,
+      "local_storage_write": 4072,
+      "cache_size_kibibyte": 3300942,
+      "backend_statistics": {
+        "compile_requests": 47297,
+        "requests_unsupported_compiler": 0,
+        "requests_not_compile": 0,
+        "requests_not_cacheable": 0,
+        "requests_executed": 47297,
+        "cache_errors": {
+          "counts": {},
+          "adv_counts": {}
+        },
+        "cache_hits": {
+          "counts": {
+            "C/C++": 43221
+          },
+          "adv_counts": {
+            "c++ [msvc]": 40273,
+            "c [msvc]": 2948
+          }
+        },
+        "cache_misses": {
+          "counts": {
+            "C/C++": 4072
+          },
+          "adv_counts": {
+            "c++ [msvc]": 4069,
+            "c [msvc]": 3
+          }
+        },
+        "cache_timeouts": 0,
+        "cache_read_errors": 0,
+        "non_cacheable_compilations": 0,
+        "forced_recaches": 0,
+        "cache_write_errors": 0,
+        "cache_writes": 4072,
+        "cache_write_duration": {
+          "secs": 3,
+          "nanos": 10120700
+        },
+        "cache_read_hit_duration": {
+          "secs": 44,
+          "nanos": 839569600
+        },
+        "compilations": 4072,
+        "compiler_write_duration": {
+          "secs": 30994,
+          "nanos": 637272300
+        },
+        "compile_fails": 0,
+        "not_cached": {},
+        "dist_compiles": {},
+        "dist_errors": 0,
+        "multi_level": null
+      }
+    },
+    "segment_stop": "time-budget",
+    "cache_archive_bytes": 2156001280,
+    "cache_archive_sha256": "e40d6d81f3ca945cc5926d013c24b9d4924f1abdeb93fddda07a84e064b9eb3e",
+    "timestamp": "2026-11-25T20:16:04.117107+00:00"
+  }
+}
