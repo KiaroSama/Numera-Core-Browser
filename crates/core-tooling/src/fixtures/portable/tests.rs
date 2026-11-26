@@ -17,8 +17,38 @@ fn gn_paths_and_casefold_invariants() -> Result<()> {
         fs::write(directory.path().join("Locales/a.pak"), b"a")?;
         fs::write(directory.path().join("locales/b.pak"), b"b")?;
         let inputs = BTreeSet::from(["Locales".to_owned(), "locales".to_owned()]);
-        assert!(resolve_runtime_files(directory.path(), &inputs).is_err());
+        assert!(resolve_runtime_files(directory.path(), &inputs, "Linux").is_err());
     }
+    Ok(())
+}
+
+#[test]
+fn windows_runtime_keeps_executables_and_resources_without_debug_symbols() -> Result<()> {
+    let root = tempfile::tempdir()?;
+    fs::create_dir(root.path().join("assets"))?;
+    for path in [
+        "chrome.exe",
+        "chrome.dll",
+        "chrome.dll.pdb",
+        "assets/subsystem.PDB",
+        "assets/resources.pak",
+    ] {
+        fs::write(root.path().join(path), b"fixture")?;
+    }
+    let inputs = BTreeSet::from([
+        "chrome.exe".to_owned(),
+        "chrome.dll".to_owned(),
+        "chrome.dll.pdb".to_owned(),
+        "assets".to_owned(),
+    ]);
+    assert_eq!(
+        resolve_runtime_files(root.path(), &inputs, "Windows")?,
+        BTreeSet::from([
+            "assets/resources.pak".to_owned(),
+            "chrome.dll".to_owned(),
+            "chrome.exe".to_owned(),
+        ])
+    );
     Ok(())
 }
 

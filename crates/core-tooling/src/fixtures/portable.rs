@@ -157,6 +157,7 @@ fn collect_files(build: &Path, path: &Path, files: &mut BTreeSet<String>) -> Res
 fn resolve_runtime_files(
     build: &Path,
     dependencies: &BTreeSet<String>,
+    host: &str,
 ) -> Result<BTreeSet<String>> {
     let mut files = BTreeSet::new();
     for name in dependencies {
@@ -167,6 +168,14 @@ fn resolve_runtime_files(
             path_metadata(&path, "GN runtime dependency follows an unexpected link")?;
         }
         collect_files(build, &path, &mut files)?;
+    }
+    if host == "Windows" {
+        // PDBs are debugger symbols. Chromium loads the DLLs and resources without them.
+        files.retain(|name| {
+            !Path::new(name)
+                .extension()
+                .is_some_and(|extension| extension.eq_ignore_ascii_case("pdb"))
+        });
     }
     let mut spellings = BTreeMap::new();
     for name in &files {
@@ -213,7 +222,7 @@ fn measure(
     let build = absolute(&source.join("out/Numera"))?;
     no_link_prefix(&build, "Chromium build output follows an unexpected link")?;
     let layout = describe(source, host, environment)?;
-    let paths = resolve_runtime_files(&build, &layout.dependencies)?;
+    let paths = resolve_runtime_files(&build, &layout.dependencies, host)?;
     if layout.required.iter().any(|name| !paths.contains(*name)) {
         return Err(failure(
             "Runtime dependency list is missing required executable files",

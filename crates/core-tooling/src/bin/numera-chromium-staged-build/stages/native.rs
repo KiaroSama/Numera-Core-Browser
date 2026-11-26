@@ -163,6 +163,7 @@ pub fn accept(
     evidence["automation_client_smokes"] = evidence["automation_clients"]["result"].clone();
     evidence["stage"] = json!("portable-runtime-fixture");
     evidence["portable_runtime_fixture"] = json!("RUNNING");
+    report::write_json(&stage.output.join("report.json"), evidence)?;
     evidence["portable_runtime"] = smoke_portable_runtime(
         &graph.source,
         &stage.root,
